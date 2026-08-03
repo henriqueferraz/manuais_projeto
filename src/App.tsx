@@ -10,6 +10,7 @@ import { CartCheckoutView } from './components/CartCheckoutView';
 import { TicketsView } from './components/TicketsView';
 import { AdminManualsView } from './components/AdminManualsView';
 import { DashboardSection } from './components/DashboardSection';
+import { ArchitectureView } from './components/ArchitectureView';
 import { ImageLinksModal } from './components/ImageLinksModal';
 
 export default function App() {
@@ -270,6 +271,10 @@ export default function App() {
             onUploadManual={handleUploadManual}
           />
         )}
+
+        {currentView === 'architecture' && (
+          <ArchitectureView />
+        )}
       </div>
 
       {/* Footer */}
@@ -286,9 +291,11 @@ export default function App() {
             <h4 className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">Navegação Direta</h4>
             <ul className="space-y-1 text-[11px]">
               <li><button onClick={() => setCurrentView('catalog')} className="hover:text-cyan-400">Catálogo de Componentes</button></li>
+              <li><button onClick={() => setCurrentView('dashboard')} className="hover:text-cyan-400">Dashboard de Telemetria (Recharts)</button></li>
               <li><button onClick={() => setCurrentView('diagnostic')} className="hover:text-cyan-400">Assistente de Diagnóstico IA</button></li>
               <li><button onClick={() => setCurrentView('tickets')} className="hover:text-cyan-400">Chamados Técnicos</button></li>
               <li><button onClick={() => setCurrentView('admin_manuals')} className="hover:text-cyan-400">Fila de Revisão de Manuais</button></li>
+              <li><button onClick={() => setCurrentView('architecture')} className="text-cyan-400 hover:underline font-bold">Arquitetura Python (Django + LangGraph)</button></li>
             </ul>
           </div>
 

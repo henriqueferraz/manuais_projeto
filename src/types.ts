@@ -5,7 +5,8 @@ export type ViewMode =
   | 'cart_checkout'
   | 'tickets'
   | 'admin_manuals'
-  | 'dashboard';
+  | 'dashboard'
+  | 'architecture';
 
 export interface Product {
   id: string;
