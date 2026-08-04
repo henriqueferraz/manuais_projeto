@@ -1,0 +1,9 @@
+/*
+ * TechParts AI — theme entry (Bootstrap 5.3.x + Industrial Precision)
+ * Load AFTER bootstrap.min.css
+ */
+@import url("./tokens.css");
+@import url("./typography.css");
+@import url("./layout.css");
+@import url("./components.css");
+@import url("./states.css");

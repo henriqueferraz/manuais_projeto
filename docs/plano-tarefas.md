@@ -139,56 +139,59 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 > Objetivo: materializar o design system **Industrial Precision** antes do catálogo, para que toda UI nasça no padrão certo.  
 > **Git:** após merge da F1; antes da F2 (ver R2).  
-> Pilares centrais: **P16, P17, P18, P19, P20, P21, P22, P24**
+> Pilares centrais: **P16, P17, P18, P19, P20, P21, P22, P24**  
+> **Entrega:** [`design-system/`](../design-system/) · preview · BRAND · checklist
 
 ### T-0.1 — Tokens e tema Bootstrap customizado
 
 **Pilares:** P16, P17, P24
 
-- [ ] Definir variáveis CSS/SCSS a partir de [`DESIGN.md`](DESIGN.md) (Industrial Navy, AI Cyan, Tech Gray, surfaces, success/danger)
-- [ ] Configurar tipografia: Inter (UI) + JetBrains Mono (specs/SKU)
-- [ ] Mapear tokens para overrides do Bootstrap 5 (cores, radii 4px, espaçamento base 4px)
-- [ ] Documentar uso: cyan **somente** em features de IA
-- [ ] Página/story de tokens (preview interno) para validação visual
+- [x] Definir variáveis CSS/SCSS a partir de [`docs/design/DESIGN.md`](design/DESIGN.md) (Industrial Navy, AI Cyan, Tech Gray, surfaces, success/danger)
+- [x] Configurar tipografia: Inter (UI) + JetBrains Mono (specs/SKU)
+- [x] Mapear tokens para overrides do Bootstrap 5 (cores, radii 4px, espaçamento base 4px) — **Bootstrap 5.3.8**
+- [x] Documentar uso: cyan **somente** em features de IA
+- [x] Página/story de tokens (preview interno) para validação visual
 
-**Aceite:** tema Bootstrap não parece “tema padrão”; tokens documentados e aplicáveis em templates.
+**Aceite:** tema Bootstrap não parece “tema padrão”; tokens documentados e aplicáveis em templates. ✅
 
 ### T-0.2 — Componentes reutilizáveis
 
 **Pilares:** P16, P17, P19, P20
 
-- [ ] Botões: Primary (navy), AI Action (cyan), Ghost/Outline
-- [ ] Product Card (foto, brand label-caps, título, linha técnica mono, badge)
-- [ ] Status Badges (estoque, rascunho, SLA)
-- [ ] Inputs e tabelas densas (foco navy 2px)
-- [ ] Shell do AI Chat (header cyan, bolhas, tag de fonte técnica)
-- [ ] Skeletons, empty states e error states com ação de recuperação
-- [ ] Ícones Material Symbols Outlined de forma consistente
+- [x] Botões: Primary (navy), AI Action (cyan), Ghost/Outline
+- [x] Product Card (foto, brand label-caps, título, linha técnica mono, badge)
+- [x] Status Badges (estoque, rascunho, SLA)
+- [x] Inputs e tabelas densas (foco navy 2px)
+- [x] Shell do AI Chat (header cyan, bolhas, tag de fonte técnica)
+- [x] Skeletons, empty states e error states com ação de recuperação
+- [x] Ícones Material Symbols Outlined de forma consistente
 
-**Aceite:** componentes renderizam em desktop e mobile; checklist DoD visual passa.
+**Aceite:** componentes renderizam em desktop e mobile; checklist DoD visual passa. ✅ → `design-system/preview/index.html`
 
 ### T-0.3 — Layout, responsividade e acessibilidade base
 
 **Pilares:** P21, P22
 
-- [ ] Grid 12/8/4 (desktop/tablet/mobile), container max 1280px na loja
-- [ ] Margens/gutters conforme design system
-- [ ] Contraste WCAG AA em textos, botões e badges
-- [ ] Navegação por teclado e foco visível
-- [ ] Padrão de `alt` em imagens/ícones
+- [x] Grid 12/8/4 (desktop/tablet/mobile), container max 1280px na loja
+- [x] Margens/gutters conforme design system
+- [x] Contraste WCAG AA em textos, botões e badges
+- [x] Navegação por teclado e foco visível
+- [x] Padrão de `alt` em imagens/ícones
 
-**Aceite:** layout base mobile-first; auditoria rápida de contraste e teclado OK.
+**Aceite:** layout base mobile-first; auditoria rápida de contraste e teclado OK. ✅
 
 ### T-0.4 — Guia de marca e checklist de revisão visual
 
 **Pilares:** P18, P24
 
-- [ ] Registrar tom técnico/industrial (não consumer “fofo”)
-- [ ] Regras de fotografia de produto (fundo neutro, ângulo, iluminação)
-- [ ] Checklist de revisão visual por PR/tela (ligar ao DoD abaixo)
-- [ ] Referenciar protótipos em `docs/code*.html` e `docs/src/` como meta visual
+- [x] Registrar tom técnico/industrial (não consumer “fofo”)
+- [x] Regras de fotografia de produto (fundo neutro, ângulo, iluminação)
+- [x] Checklist de revisão visual por PR/tela (ligar ao DoD abaixo)
+- [x] Referenciar protótipos em `docs/design/` e `docs/src/` como meta visual
 
-**Aceite:** qualquer nova tela pode ser revisada contra um checklist único.
+**Aceite:** qualquer nova tela pode ser revisada contra um checklist único. ✅ → [`design-system/docs/VISUAL-REVIEW-CHECKLIST.md`](../design-system/docs/VISUAL-REVIEW-CHECKLIST.md)
+
+**Encerramento F0 (R2/D7):** squash merge na `main` → iniciar F2.
 
 ---
 

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Design System — Industrial Precision | TechParts AI</title>
+    <!-- Bootstrap 5.3.8 (maior estável em 2026-08-04 — R1) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="../css/tokens.css" />
+    <link rel="stylesheet" href="../css/typography.css" />
+    <link rel="stylesheet" href="../css/layout.css" />
+    <link rel="stylesheet" href="../css/components.css" />
+    <link rel="stylesheet" href="../css/states.css" />
+    <style>
+      .swatch {
+        height: 4rem;
+        border-radius: var(--tp-radius);
+        border: 1px solid var(--tp-border-subtle);
+      }
+      .preview-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--tp-surface-lowest);
+        border-bottom: 1px solid var(--tp-border-subtle);
+      }
+    </style>
+  </head>
+  <body>
+    <a class="visually-hidden-focusable btn btn-primary m-2" href="#conteudo"
+      >Pular para o conteúdo</a
+    >
+
+    <header class="preview-nav py-3">
+      <div class="tp-container d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+          <span class="font-label-caps">TechParts AI</span>
+          <h1 class="font-headline-sm mb-0">Design System — Industrial Precision</h1>
+        </div>
+        <nav aria-label="Seções do preview" class="d-flex flex-wrap gap-3 font-body-md">
+          <a href="#tokens">Tokens</a>
+          <a href="#tipografia">Tipografia</a>
+          <a href="#botoes">Botões</a>
+          <a href="#cards">Cards</a>
+          <a href="#chat">Chat IA</a>
+          <a href="#estados">Estados</a>
+          <a href="#a11y">A11y</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="conteudo" class="tp-container tp-stack-lg py-5">
+      <section class="tp-section" id="tokens" aria-labelledby="tokens-title">
+        <h2 id="tokens-title" class="font-headline-md tp-section__title">Tokens de cor</h2>
+        <p class="tp-section__lead font-body-lg">
+          Navy para marca e ações primárias. <strong>AI Cyan somente em features de IA</strong>.
+        </p>
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <div class="swatch" style="background: var(--tp-industrial-navy)" aria-hidden="true"></div>
+            <p class="font-label-caps mt-2 mb-0">Industrial Navy</p>
+            <p class="font-technical mb-0">#1A2B3C</p>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="swatch" style="background: var(--tp-ai-cyan)" aria-hidden="true"></div>
+            <p class="font-label-caps mt-2 mb-0">AI Cyan (IA only)</p>
+            <p class="font-technical mb-0">#00E5FF</p>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="swatch" style="background: var(--tp-tech-gray)" aria-hidden="true"></div>
+            <p class="font-label-caps mt-2 mb-0">Tech Gray</p>
+            <p class="font-technical mb-0">#495057</p>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="swatch" style="background: var(--tp-surface); border-color: #bbb" aria-hidden="true"></div>
+            <p class="font-label-caps mt-2 mb-0">Surface</p>
+            <p class="font-technical mb-0">#F8F9FA</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tp-section" id="tipografia" aria-labelledby="type-title">
+        <h2 id="type-title" class="font-headline-md">Tipografia</h2>
+        <p class="tp-section__lead">Inter para UI; JetBrains Mono para specs/SKU.</p>
+        <p class="font-headline-lg">Headline LG — nome do produto</p>
+        <p class="font-headline-md">Headline MD — seção</p>
+        <p class="font-headline-sm">Headline SM — card title</p>
+        <p class="font-body-lg">Body LG — descrição comercial e textos longos.</p>
+        <p class="font-body-md">Body MD — metadados e UI secundária.</p>
+        <p class="font-technical">SKU-VTE-02-110 · 220V · Ø40cm · 6 pás</p>
+        <p class="font-label-caps">Label caps — categoria</p>
+      </section>
+
+      <section class="tp-section" id="botoes" aria-labelledby="btn-title">
+        <h2 id="btn-title" class="font-headline-md">Botões</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-primary">Adicionar ao carrinho</button>
+          <button type="button" class="btn btn-ai">
+            <span class="material-symbols-outlined" aria-hidden="true">psychology</span>
+            Iniciar diagnóstico
+          </button>
+          <button type="button" class="btn btn-outline-primary">Outline</button>
+          <button type="button" class="btn btn-ghost">Ghost / filtro</button>
+        </div>
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          <span class="tp-badge tp-badge--stock">Em estoque</span>
+          <span class="tp-badge tp-badge--draft">Rascunho</span>
+          <span class="tp-badge tp-badge--sla">SLA estourado</span>
+          <span class="tp-badge tp-badge--compat">Compatibilidade garantida</span>
+          <span class="tp-badge tp-badge--ai">Preferido pela IA</span>
+        </div>
+      </section>
+
+      <section class="tp-section" id="cards" aria-labelledby="cards-title">
+        <h2 id="cards-title" class="font-headline-md">Product card</h2>
+        <div class="row g-4">
+          <div class="col-12 col-sm-6 col-lg-4">
+            <article class="tp-product-card">
+              <div class="tp-product-card__media">
+                <img
+                  src="https://placehold.co/400x400/f3f4f5/1a2b3c?text=Helice"
+                  alt="Hélice para ventilador de teto Mondial, fundo neutro"
+                  width="400"
+                  height="400"
+                  loading="lazy"
+                />
+              </div>
+              <div class="tp-product-card__body">
+                <p class="font-label-caps tp-product-card__brand">Mondial</p>
+                <h3 class="tp-product-card__title">Hélice VTE-02 Black 40cm</h3>
+                <span class="tp-badge tp-badge--compat">Compatibilidade garantida</span>
+                <p class="tp-product-card__price">R$ 89,90</p>
+                <p class="tp-product-card__specs font-technical">6 pás · Ø40cm · 220V</p>
+              </div>
+            </article>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-4">
+            <article class="tp-product-card">
+              <div class="tp-product-card__media">
+                <img
+                  src="https://placehold.co/400x400/f3f4f5/1a2b3c?text=Capacitor"
+                  alt="Capacitor de partida, fundo neutro"
+                  width="400"
+                  height="400"
+                  loading="lazy"
+                />
+              </div>
+              <div class="tp-product-card__body">
+                <p class="font-label-caps tp-product-card__brand">Genérico</p>
+                <h3 class="tp-product-card__title">Capacitor 3µF 400V</h3>
+                <span class="tp-badge tp-badge--stock">Em estoque</span>
+                <p class="tp-product-card__price">R$ 24,50</p>
+                <p class="tp-product-card__specs font-technical">3µF · 400V · SKU-CAP-3</p>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <h3 class="font-headline-sm mt-5">Tabela densa</h3>
+        <div class="table-responsive bg-white border rounded p-2">
+          <table class="tp-table">
+            <thead>
+              <tr>
+                <th scope="col">SKU</th>
+                <th scope="col">Modelo</th>
+                <th scope="col">Voltagem</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="font-technical">VTE-02-H40</td>
+                <td>Hélice 40cm</td>
+                <td class="font-technical">220V</td>
+                <td><span class="tp-badge tp-badge--stock">Em estoque</span></td>
+              </tr>
+              <tr>
+                <td class="font-technical">VTE-02-CAP</td>
+                <td>Capacitor</td>
+                <td class="font-technical">—</td>
+                <td><span class="tp-badge tp-badge--draft">Rascunho</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="tp-section" id="chat" aria-labelledby="chat-title">
+        <h2 id="chat-title" class="font-headline-md">Shell do chat de IA</h2>
+        <p class="tp-section__lead">
+          Header cyan sinaliza interação com IA. Toda resposta técnica leva fonte (Technical Source).
+        </p>
+        <div class="tp-chat" role="region" aria-label="Assistente de diagnóstico AI">
+          <div class="tp-chat__header">
+            <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
+            Assistente de Diagnóstico AI
+          </div>
+          <div class="tp-chat__body">
+            <div class="tp-chat__bubble tp-chat__bubble--user">Meu ventilador VTE-02 não liga</div>
+            <div class="tp-chat__bubble tp-chat__bubble--ai">
+              Pelo manual, a causa mais comum é capacitor de partida defeituoso. Verifique também a
+              alimentação 220V.
+              <a class="tp-chat__source" href="#">Technical Source · Manual VTE-02 · p.12</a>
+              <div class="tp-feedback" aria-label="Avaliar resposta">
+                <button type="button" aria-label="Resposta útil">👍</button>
+                <button type="button" aria-label="Resposta não útil">👎</button>
+              </div>
+            </div>
+            <div class="tp-chat__typing" aria-live="polite" aria-label="IA está digitando">
+              <span class="tp-chat__typing-dot"></span>
+              <span class="tp-chat__typing-dot"></span>
+              <span class="tp-chat__typing-dot"></span>
+              <span class="ms-2">IA está digitando…</span>
+            </div>
+          </div>
+          <div class="tp-chat__footer">
+            <label class="visually-hidden" for="chat-input">Sua pergunta</label>
+            <input
+              id="chat-input"
+              class="form-control"
+              type="text"
+              placeholder="Descreva o problema…"
+              autocomplete="off"
+            />
+            <button type="button" class="btn btn-ai" aria-label="Enviar mensagem">
+              <span class="material-symbols-outlined" aria-hidden="true">send</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="tp-section" id="estados" aria-labelledby="states-title">
+        <h2 id="states-title" class="font-headline-md">Estados de interface</h2>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <p class="font-label-caps mb-2">Loading (skeleton)</p>
+            <div class="tp-skeleton tp-skeleton--card mb-2" aria-hidden="true"></div>
+            <div class="tp-skeleton tp-skeleton--title" aria-hidden="true"></div>
+            <div class="tp-skeleton tp-skeleton--line" aria-hidden="true"></div>
+            <div class="tp-skeleton tp-skeleton--line" aria-hidden="true"></div>
+            <span class="visually-hidden">Carregando produtos…</span>
+          </div>
+          <div class="col-md-4">
+            <div class="tp-empty">
+              <div class="tp-empty__icon material-symbols-outlined" aria-hidden="true">search_off</div>
+              <h3 class="font-headline-sm tp-empty__title">Nenhum produto encontrado</h3>
+              <p class="tp-empty__text font-body-md">
+                Tente outro modelo ou inicie um diagnóstico por sintoma.
+              </p>
+              <button type="button" class="btn btn-ai">Buscar por sintoma</button>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="tp-error" role="alert">
+              <div class="tp-error__icon material-symbols-outlined" aria-hidden="true">error</div>
+              <h3 class="font-headline-sm tp-error__title">Não foi possível carregar</h3>
+              <p class="tp-error__text font-body-md">
+                Falha temporária. Tente de novo ou abra um chamado.
+              </p>
+              <button type="button" class="btn btn-primary">Tentar novamente</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tp-section" id="a11y" aria-labelledby="a11y-title">
+        <h2 id="a11y-title" class="font-headline-md">Acessibilidade base</h2>
+        <ul class="font-body-lg">
+          <li>Contraste navy/branco e badges de baixa saturação (WCAG AA alvo)</li>
+          <li>Foco visível 2px navy; inputs com borda 2px no focus</li>
+          <li>Ícones decorativos com <code>aria-hidden</code>; ações com <code>aria-label</code></li>
+          <li>Imagens de produto com <code>alt</code> descritivo</li>
+          <li>Skip link no topo desta página</li>
+        </ul>
+        <label class="form-label" for="demo-input">Campo de teste (Tab até aqui)</label>
+        <input id="demo-input" class="form-control" style="max-width: 20rem" type="text" />
+      </section>
+    </main>
+
+    <footer class="border-top py-4 mt-5">
+      <div class="tp-container font-body-md text-secondary">
+        Fase 0 · Bootstrap 5.3.8 · Ver
+        <a href="../docs/BRAND.md">BRAND.md</a> e
+        <a href="../docs/VISUAL-REVIEW-CHECKLIST.md">checklist visual</a>.
+      </div>
+    </footer>
+  </body>
+</html>
