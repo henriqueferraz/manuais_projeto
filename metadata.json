@@ -1,6 +1,0 @@
-{
-  "name": "TechParts AI",
-  "description": "Plataforma industrial de peças técnicas com inteligência de diagnóstico por IA, verificação de compatibilidade, catálogo e gestão de manutenção.",
-  "requestFramePermissions": ["camera"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
