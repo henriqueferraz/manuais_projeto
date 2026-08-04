@@ -203,35 +203,35 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P14 (base), R2
 
-- [ ] Verificar se já existe `.git` e remote; se **não**, executar bootstrap (D8)
-- [ ] `git init`, branch `main`, `.gitignore` (Python/Django/Node/env/secrets)
-- [ ] Commit inicial na `main` com a documentação já existente em `docs/` (e demais arquivos do repo que devam versionar)
-- [ ] Criar repositório no GitHub e `git push -u origin main`
-- [ ] Abrir branch `fase/1-escopo-mvp` + PR draft para o trabalho de T-1.1/T-1.2
+- [x] Verificar se já existe `.git` e remote; se **não**, executar bootstrap (D8)
+- [x] `git init`, branch `main`, `.gitignore` (Python/Django/Node/env/secrets)
+- [x] Commit inicial na `main` com a documentação já existente em `docs/` (e demais arquivos do repo que devam versionar)
+- [x] Criar repositório no GitHub e `git push -u origin main`
+- [x] Abrir branch `fase/1-escopo-mvp` + PR draft para o trabalho de T-1.1/T-1.2
 
-**Aceite:** `main` existe no GitHub; PR da F1 aberta; working tree pronta para docs de escopo.
+**Aceite:** `main` existe no GitHub; PR da F1 aberta; working tree pronta para docs de escopo. ✅ (2026-08-04)
 
 ### T-1.1 — Escopo comercial e de IA
 
 **Pilares:** P01
 
-- [ ] Definir categorias MVP (ex.: ventiladores de teto + peças de reposição)
-- [ ] Listar fabricantes/manuais de validação (mín. 3 layouts diferentes)
-- [ ] Confirmar critérios de sucesso de [`specify.md`](specify.md) §7
-- [ ] Explicitar fora de escopo imediato (WhatsApp, multi-idioma prod, PWA, assinatura, assistências)
-- [ ] Registrar decisão: IA só entra se transformar manual em venda, suporte ou economia
+- [x] Definir categorias MVP (ex.: ventiladores de teto + peças de reposição)
+- [x] Listar fabricantes/manuais de validação (mín. 3 layouts diferentes)
+- [x] Confirmar critérios de sucesso de [`specify.md`](specify.md) §7
+- [x] Explicitar fora de escopo imediato (WhatsApp, multi-idioma prod, PWA, assinatura, assistências)
+- [x] Registrar decisão: IA só entra se transformar manual em venda, suporte ou economia
 
-**Aceite:** documento de escopo MVP aprovado; lista de manuais de teste definida.
+**Aceite:** documento de escopo MVP aprovado; lista de manuais de teste definida. → [`fase-1-escopo-mvp.md`](fase-1-escopo-mvp.md)
 
 ### T-1.2 — Schema mínimo de produto
 
 **Pilares:** P01, P11
 
-- [ ] Definir campos mínimos de `Product` para vender (SKU, nome, preço, estoque, specs-chave, compatibilidade)
-- [ ] Prever i18n no schema sem implementar conteúdo multi-idioma
-- [ ] Mapear campos extraíveis do manual → schema
+- [x] Definir campos mínimos de `Product` para vender (SKU, nome, preço, estoque, specs-chave, compatibilidade)
+- [x] Prever i18n no schema sem implementar conteúdo multi-idioma
+- [x] Mapear campos extraíveis do manual → schema
 
-**Aceite:** schema mínimo documentado e alinhado à F3/F4a.
+**Aceite:** schema mínimo documentado e alinhado à F3/F4a. → [`fase-1-schema-produto.md`](fase-1-schema-produto.md)
 
 **Encerramento F1 (R2/D7):** marcar PR ready → squash merge na `main` → apagar branch → só então iniciar F0.
 
