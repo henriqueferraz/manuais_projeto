@@ -1,0 +1,40 @@
+[project]
+name = "techparts-ai"
+version = "0.2.0"
+description = "E-commerce de peças com IA — monólito Django"
+requires-python = ">=3.13"
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+extend-exclude = "(migrations|static/vendor)"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["migrations", "static/vendor", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+pythonpath = ["backend"]
+testpaths = ["backend"]
+addopts = "-q --cov=apps --cov-report=term-missing --cov-fail-under=0"
+filterwarnings = [
+  "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+branch = true
+omit = ["*/migrations/*", "*/tests/*", "*/apps.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.2.0"
+tag_format = "v$version"

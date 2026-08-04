@@ -243,17 +243,18 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 ## Fase 2 — Base do projeto
 
 > Objetivo: monólito modular com cinto de segurança desde o dia 1.  
-> Pilares: **P04, P05, P06, P07, P12, P13, P14, P15** (+ layout base da F0)
+> Pilares: **P04, P05, P06, P07, P12, P13, P14, P15** (+ layout base da F0)  
+> **Git:** após merge da F0; branch `fase/2-base-django-ci-docker`.
 
 ### T-2.1 — Estrutura do monólito Django
 
 **Pilares:** P04, P12
 
-- [ ] Criar apps: `accounts`, `catalog`, `products`, `cart`, `checkout`, `orders`, `tickets`, `ai`, `manuals`, `compatibility`, `dashboard`, `notifications`, `core`
-- [ ] Templates base + static com tema da F0
-- [ ] Header/nav e footer no padrão Industrial Precision
-- [ ] Configurar Django Templates + htmx + Alpine.js pontual
-- [ ] Settings por ambiente (local / staging / production)
+- [x] Criar apps: `accounts`, `catalog`, `products`, `cart`, `checkout`, `orders`, `tickets`, `ai`, `manuals`, `compatibility`, `dashboard`, `notifications`, `core`
+- [x] Templates base + static com tema da F0
+- [x] Header/nav e footer no padrão Industrial Precision
+- [x] Configurar Django Templates + htmx + Alpine.js pontual
+- [x] Settings por ambiente (local / staging / production)
 
 **Aceite:** `runserver` sobe com layout base; apps vazios criados.
 
@@ -261,9 +262,9 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P04, P14
 
-- [ ] Compose: Django, PostgreSQL (+ pgvector), Redis, Celery worker/beat, Flower, Nginx (opcional local)
-- [ ] Healthchecks básicos
-- [ ] Documentar `make up` / comandos de bootstrap
+- [x] Compose: Django, PostgreSQL (+ pgvector), Redis, Celery worker/beat, Flower, Nginx (opcional local)
+- [x] Healthchecks básicos
+- [x] Documentar `make up` / comandos de bootstrap
 
 **Aceite:** stack sobe com um comando; Postgres com pgvector disponível.
 
@@ -271,13 +272,13 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P06, P14 · **Regra:** R3
 
-- [ ] GitHub Actions: lint (ruff + black), testes pytest, check migrations
-- [ ] Pre-commit: black, ruff, detect-secrets
-- [ ] Conventional Commits + commitlint
-- [ ] Bandit + pip-audit/Dependabot
-- [ ] pytest + pytest-django + pytest-cov configurados; job de CI bloqueia merge se falhar
-- [ ] Suíte smoke inicial (ex.: health/settings) para a R3 valer desde o primeiro PR de código
-- [ ] Stub de coverage nos apps críticos (meta ≥ 80% em checkout/pagamento/extração quando existirem)
+- [x] GitHub Actions: lint (ruff + black), testes pytest, check migrations
+- [x] Pre-commit: black, ruff, detect-secrets
+- [x] Conventional Commits + commitlint
+- [x] Bandit + pip-audit/Dependabot
+- [x] pytest + pytest-django + pytest-cov configurados; job de CI bloqueia merge se falhar
+- [x] Suíte smoke inicial (ex.: health/settings) para a R3 valer desde o primeiro PR de código
+- [x] Stub de coverage nos apps críticos (meta ≥ 80% em checkout/pagamento/extração quando existirem)
 
 **Aceite:** PR sem lint/testes verdes não mergeia; commits padronizados; R3 aplicável.
 
@@ -285,12 +286,12 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P05, P07, P13, P15
 
-- [ ] Secrets só via env / secret manager (nunca no repo)
-- [ ] HTTPS/HSTS, cookies secure/HttpOnly/SameSite, CSRF, CSP básico
-- [ ] Auth Django + grupos/RBAC inicial (admin, revisão catálogo, suporte)
-- [ ] structlog com `request_id`; mascaramento de PII
-- [ ] Sentry integrado (Django + Celery)
-- [ ] Rate limit stub nos endpoints futuros de IA
+- [x] Secrets só via env / secret manager (nunca no repo)
+- [x] HTTPS/HSTS, cookies secure/HttpOnly/SameSite, CSRF, CSP básico
+- [x] Auth Django + grupos/RBAC inicial (admin, revisão catálogo, suporte)
+- [x] structlog com `request_id`; mascaramento de PII
+- [x] Sentry integrado (Django + Celery)
+- [x] Rate limit stub nos endpoints futuros de IA
 
 **Aceite:** app sem secrets no git; erro de teste aparece no Sentry de staging.
 
@@ -298,11 +299,13 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P05, P15
 
-- [ ] Login/logout; proteção brute-force (django-axes ou equivalente)
-- [ ] 2FA obrigatório para staff/admin
-- [ ] Trilha de auditoria para ações sensíveis (base com django-simple-history ou equivalente)
+- [x] Login/logout; proteção brute-force (django-axes ou equivalente)
+- [x] 2FA obrigatório para staff/admin
+- [x] Trilha de auditoria para ações sensíveis (base com django-simple-history ou equivalente)
 
 **Aceite:** staff sem 2FA não acessa admin; ações sensíveis registradas.
+
+**Encerramento F2 (R2/D7):** CI verde → squash merge na `main` → iniciar F3.
 
 ---
 
