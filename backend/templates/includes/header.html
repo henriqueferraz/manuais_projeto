@@ -8,6 +8,9 @@
       <a href="{% url 'core:home' %}">Início</a>
       <a href="{% url 'core:health' %}">Status</a>
       {% if user.is_authenticated %}
+      {% if user.is_staff %}
+      <a href="{% url 'manuals:review_queue' %}">Revisão de manuais</a>
+      {% endif %}
       <a href="{% url 'admin:index' %}">Admin</a>
       <form method="post" action="{% url 'logout' %}" class="d-inline">
         {% csrf_token %}

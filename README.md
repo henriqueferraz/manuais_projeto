@@ -2,11 +2,11 @@
 
 E-commerce de peças de reposição com IA (extração de manuais, RAG, catálogo).
 
-**Stack:** Python 3.13+ · Django 6 · htmx · Bootstrap 5.3.8 · PostgreSQL/pgvector · Celery · Redis
+**Stack:** Python 3.13+ · Django 6 · htmx · Bootstrap 5.3.8 · PostgreSQL/pgvector · Celery · Redis · LangChain
 
 ## Fase atual
 
-**Fase 2 — Base do projeto** (monólito, Docker, CI, segurança, contas/2FA).
+**Fase 3 — Pipeline de ingestão de manuais** (PDF → extração → HITL → rascunho).
 
 ## Bootstrap rápido (local sem Docker)
 
@@ -22,7 +22,8 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Abra http://127.0.0.1:8000/ — shell Industrial Precision da F0.
+Abra http://127.0.0.1:8000/ — shell Industrial Precision da F0.  
+Fila de revisão (staff): http://127.0.0.1:8000/manuais/revisao/
 
 ## Docker (`make up`)
 
@@ -42,11 +43,18 @@ make up
 ## Qualidade
 
 ```bash
-make test   # pytest + smoke
-make lint   # ruff, black, bandit
-make ci     # lint + test + check migrations
-pre-commit install  # hooks + commitizen (Conventional Commits)
+make test    # pytest
+make golden  # regressão golden set de extração
+make lint    # ruff, black, bandit
+make ci      # lint + test + check migrations
+pre-commit install
 ```
+
+## Extração (F3)
+
+- `EXTRACTION_LLM_MODE=mock` (default CI/local) ou `anthropic`
+- R2: `USE_R2_STORAGE=true` + credenciais AWS/R2 no `.env`
+- Prompt versionado: `backend/apps/manuals/prompts/extraction_v1.md`
 
 ## Apps Django
 

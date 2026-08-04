@@ -23,6 +23,18 @@ env = environ.Env(
     CSRF_COOKIE_SECURE=(bool, False),
     AXES_ENABLED=(bool, True),
     AI_RATE_LIMIT=(str, "30/m"),
+    USE_R2_STORAGE=(bool, False),
+    MANUAL_MAX_UPLOAD_BYTES=(int, 25 * 1024 * 1024),
+    MANUAL_SIGNED_URL_EXPIRES=(int, 3600),
+    MANUAL_CLAMAV_ENABLED=(bool, False),
+    MANUAL_AV_STUB_OK=(bool, True),
+    MANUAL_OCR_ENABLED=(bool, False),
+    EXTRACTION_LLM_MODE=(str, "mock"),
+    ANTHROPIC_API_KEY=(str, ""),
+    ANTHROPIC_MODEL=(str, "claude-sonnet-4-5-20250929"),
+    LANGSMITH_TRACING=(bool, False),
+    LANGSMITH_API_KEY=(str, ""),
+    LANGSMITH_PROJECT=(str, "techparts-ai"),
 )
 
 environ.Env.read_env(REPO_ROOT / ".env")
@@ -208,6 +220,41 @@ RBAC_GROUPS = (
 
 # Rate limit stub para endpoints de IA (F5+)
 AI_RATE_LIMIT = env("AI_RATE_LIMIT")
+
+# --- F3: manuais / R2 / extração ---
+USE_R2_STORAGE = env("USE_R2_STORAGE")
+MANUAL_MAX_UPLOAD_BYTES = env("MANUAL_MAX_UPLOAD_BYTES")
+MANUAL_SIGNED_URL_EXPIRES = env("MANUAL_SIGNED_URL_EXPIRES")
+MANUAL_ALLOWED_MIME_TYPES = {"application/pdf"}
+MANUAL_CLAMAV_ENABLED = env("MANUAL_CLAMAV_ENABLED")
+MANUAL_AV_STUB_OK = env("MANUAL_AV_STUB_OK")
+MANUAL_OCR_ENABLED = env("MANUAL_OCR_ENABLED")
+EXTRACTION_LLM_MODE = env("EXTRACTION_LLM_MODE")
+ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY")
+ANTHROPIC_MODEL = env("ANTHROPIC_MODEL")
+LANGSMITH_TRACING = env("LANGSMITH_TRACING")
+LANGSMITH_API_KEY = env("LANGSMITH_API_KEY")
+LANGSMITH_PROJECT = env("LANGSMITH_PROJECT")
+
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID", default="")
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY", default="")
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default="")
+AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL", default="")
+AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME", default="auto")
+AWS_DEFAULT_ACL = "private"
+AWS_QUERYSTRING_AUTH = True
+AWS_QUERYSTRING_EXPIRE = MANUAL_SIGNED_URL_EXPIRES
+AWS_S3_FILE_OVERWRITE = False
+
+if USE_R2_STORAGE:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 # --- Observabilidade ---
 SENTRY_DSN = env("SENTRY_DSN")

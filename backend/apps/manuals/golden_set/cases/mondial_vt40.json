@@ -1,0 +1,17 @@
+{
+  "fixture": "mondial_vt40.txt",
+  "filename": "Manual-VT-40-NB.pdf",
+  "manufacturer_hint": "Mondial",
+  "expected": {
+    "brand": "Mondial",
+    "model_code": "VT-40-NB",
+    "name": "Mondial VT-40-NB",
+    "voltage": "220V",
+    "power_w": 80,
+    "confidence": 0.7,
+    "product_kind": "finished_good"
+  },
+  "require": {
+    "fields": ["brand", "model_code", "voltage"]
+  }
+}

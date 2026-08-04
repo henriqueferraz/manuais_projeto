@@ -312,51 +312,52 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 ## Fase 3 — Pipeline de ingestão de manuais
 
 > Objetivo: coração do diferencial — PDF → extração → revisão humana → rascunho.  
-> Pilares: **P02, P09, P11** (+ P05/P15 uploads)
+> Pilares: **P02, P09, P11** (+ P05/P15 uploads)  
+> **Git:** após merge da F2; branch `fase/3-pipeline-ingestao-manuais`.
 
 ### T-3.1 — Models e storage de manuais
 
 **Pilares:** P09, P11
 
-- [ ] Models: `Manual`, `ExtractionLog` (e vínculo futuro com `Product`)
-- [ ] Upload para Cloudflare R2 (django-storages); bucket privado; URLs assinadas
-- [ ] Validação MIME/tamanho + varredura antivírus antes do pipeline
-- [ ] Versionar PDF fonte vinculado ao produto/manual
+- [x] Models: `Manual`, `ExtractionLog` (e vínculo futuro com `Product`)
+- [x] Upload para Cloudflare R2 (django-storages); bucket privado; URLs assinadas
+- [x] Validação MIME/tamanho + varredura antivírus antes do pipeline
+- [x] Versionar PDF fonte vinculado ao produto/manual
 
-**Aceite:** PDF sobe no R2; log de extração criado; arquivo hostil rejeitado.
+**Aceite:** PDF sobe no R2; log de extração criado; arquivo hostil rejeitado. ✅ (R2 via `USE_R2_STORAGE`; local usa filesystem)
 
 ### T-3.2 — Extração de texto e estruturação com LangChain
 
 **Pilares:** P02, P09
 
-- [ ] Extrair texto/tabelas (pdfplumber/unstructured); OCR se escaneado
-- [ ] Prompt versionado + `with_structured_output` / Pydantic (schema fixo)
-- [ ] Task Celery: PDF → JSON estruturado → produto/rascunho
-- [ ] Sanitizar conteúdo do manual antes do LLM (anti prompt injection via PDF)
-- [ ] Medir tokens/custo por execução (hook LangSmith)
+- [x] Extrair texto/tabelas (pdfplumber/unstructured); OCR se escaneado
+- [x] Prompt versionado + `with_structured_output` / Pydantic (schema fixo)
+- [x] Task Celery: PDF → JSON estruturado → produto/rascunho
+- [x] Sanitizar conteúdo do manual antes do LLM (anti prompt injection via PDF)
+- [x] Medir tokens/custo por execução (hook LangSmith)
 
-**Aceite:** ≥3 manuais reais geram JSON válido no schema; custo visível por run.
+**Aceite:** ≥3 manuais reais geram JSON válido no schema; custo visível por run. ✅ (mock heurístico no CI; Anthropic via `EXTRACTION_LLM_MODE=anthropic`)
 
 ### T-3.3 — Human-in-the-loop (revisão)
 
 **Pilares:** P02, P08, P09
 
-- [ ] Produto nasce como **rascunho**; nunca publicar automático
-- [ ] Django admin + evolução para tela amigável de revisão (fila, confiança, diff)
-- [ ] Aprovar / corrigir / rejeitar com auditoria (quem, quando, o quê)
-- [ ] UI da fila alinhada ao protótipo (`AdminManualsView` / `code (cópia 2).html`)
+- [x] Produto nasce como **rascunho**; nunca publicar automático
+- [x] Django admin + evolução para tela amigável de revisão (fila, confiança, diff)
+- [x] Aprovar / corrigir / rejeitar com auditoria (quem, quando, o quê)
+- [x] UI da fila alinhada ao protótipo (`AdminManualsView` / `code (cópia 2).html`)
 
-**Aceite:** nada vai ao catálogo sem aprovação humana; auditoria completa.
+**Aceite:** nada vai ao catálogo sem aprovação humana; auditoria completa. ✅ → `/manuais/revisao/`
 
 ### T-3.4 — Golden set inicial de extração
 
 **Pilares:** P02, P06
 
-- [ ] Conjunto fixo de manuais + JSON esperado
-- [ ] Script/teste local de regressão (CI completo na F6)
-- [ ] Critério de qualidade mínimo para aprovação em massa
+- [x] Conjunto fixo de manuais + JSON esperado
+- [x] Script/teste local de regressão (CI completo na F6)
+- [x] Critério de qualidade mínimo para aprovação em massa
 
-**Aceite:** regressão local detecta quebra de prompt.
+**Aceite:** regressão local detecta quebra de prompt. ✅ → `make golden` / `run_golden_set`
 
 ---
 

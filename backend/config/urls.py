@@ -12,4 +12,5 @@ urlpatterns = [
         name="logout",
     ),
     path("", include("apps.core.urls")),
+    path("manuais/", include("apps.manuals.urls")),
 ]

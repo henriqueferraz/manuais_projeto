@@ -1,0 +1,17 @@
+{
+  "fixture": "mondial_vte02.txt",
+  "filename": "Manual-VTE-02.pdf",
+  "manufacturer_hint": "Mondial",
+  "expected": {
+    "brand": "Mondial",
+    "model_code": "VTE-02",
+    "name": "Mondial VTE-02",
+    "voltage": "Bivolt",
+    "power_w": 120,
+    "confidence": 0.7,
+    "product_kind": "finished_good"
+  },
+  "require": {
+    "fields": ["brand", "model_code", "voltage", "power_w"]
+  }
+}
