@@ -19,3 +19,15 @@ django-two-factor-auth==1.18.1
 django-simple-history==3.13.0
 django-ratelimit==4.1.0
 qrcode==8.2
+
+# Fase 3 — ingestão de manuais (R1, 2026-08-04)
+django-storages[boto3]==1.14.6
+boto3==1.43.64
+pydantic==2.13.4
+pdfplumber==0.11.10
+pypdf==6.14.2
+filetype==1.2.0
+langchain==1.3.14
+langchain-core==1.5.3
+langchain-anthropic==1.5.3
+langsmith==0.10.15

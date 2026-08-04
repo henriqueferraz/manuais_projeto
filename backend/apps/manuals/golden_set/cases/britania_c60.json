@@ -1,0 +1,17 @@
+{
+  "fixture": "britania_c60.txt",
+  "filename": "Documento_Circulador_C60.pdf",
+  "manufacturer_hint": "Britânia",
+  "expected": {
+    "brand": "Britânia",
+    "model_code": "C60",
+    "name": "Britânia C60 Turbo",
+    "voltage": "Bivolt",
+    "power_w": 150,
+    "confidence": 0.7,
+    "product_kind": "finished_good"
+  },
+  "require": {
+    "fields": ["brand", "model_code", "voltage"]
+  }
+}

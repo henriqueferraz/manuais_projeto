@@ -1,4 +1,4 @@
-.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver
+.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden
 
 help:
 	@echo "Targets:"
@@ -9,6 +9,7 @@ help:
 	@echo "  make bootstrap    - RBAC groups"
 	@echo "  make runserver    - Django local (venv)"
 	@echo "  make test         - pytest"
+	@echo "  make golden       - regressão golden set de extração (F3)"
 	@echo "  make lint         - ruff + black --check + bandit"
 	@echo "  make fmt          - black + ruff --fix"
 	@echo "  make ci           - lint + test + check migrations"
@@ -41,6 +42,10 @@ runserver:
 test:
 	cd backend && DJANGO_SETTINGS_MODULE=config.settings.test \
 		../.venv/bin/pytest -q
+
+golden:
+	cd backend && DJANGO_SETTINGS_MODULE=config.settings.test \
+		../.venv/bin/python manage.py run_golden_set
 
 lint:
 	.venv/bin/ruff check backend

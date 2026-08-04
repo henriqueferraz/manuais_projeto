@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Revisão #{{ log.pk }} — {{ brand_name }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'manuals:review_queue' %}">Fila de revisão</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Extração #{{ log.pk }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card border mb-3">
+      <div class="card-body">
+        <h1 class="h4">{{ log.manual.original_filename }}</h1>
+        <dl class="row small mb-0">
+          <dt class="col-4">Status</dt>
+          <dd class="col-8">{{ log.get_status_display }}</dd>
+          <dt class="col-4">Fabricante</dt>
+          <dd class="col-8">{{ log.manual.manufacturer|default:"—" }}</dd>
+          <dt class="col-4">Confiança</dt>
+          <dd class="col-8 font-monospace">{{ log.confidence|default:"—" }}</dd>
+          <dt class="col-4">Modelo LLM</dt>
+          <dd class="col-8 font-monospace">{{ log.model_name|default:"—" }}</dd>
+          <dt class="col-4">Tokens</dt>
+          <dd class="col-8 font-monospace">{{ log.tokens_in }} in / {{ log.tokens_out }} out</dd>
+          <dt class="col-4">Custo est.</dt>
+          <dd class="col-8 font-monospace">USD {{ log.cost_estimate }}</dd>
+          <dt class="col-4">Prompt</dt>
+          <dd class="col-8 font-monospace">{{ log.prompt_version }}</dd>
+        </dl>
+        {% if pdf_url %}
+        <a class="btn btn-outline-primary btn-sm mt-2" href="{{ pdf_url }}" target="_blank" rel="noopener">Abrir PDF</a>
+        {% endif %}
+        {% if log.error_message %}
+        <div class="alert alert-danger mt-3 mb-0" role="alert">{{ log.error_message }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card border">
+      <div class="card-header">Prévia do texto sanitizado</div>
+      <div class="card-body">
+        <pre class="small mb-0" style="max-height: 280px; overflow: auto; white-space: pre-wrap">{{ log.raw_text_preview|default:"—" }}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card border">
+      <div class="card-header d-flex justify-content-between">
+        <span>JSON estruturado</span>
+        <span class="badge text-bg-info">Human-in-the-loop</span>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label" for="id_corrected_json">Editar / corrigir JSON</label>
+            {{ form.corrected_json }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="id_notes">Notas</label>
+            {{ form.notes }}
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <button
+              type="submit"
+              name="action"
+              value="approve"
+              class="btn btn-primary"
+              {% if log.status != 'awaiting_review' and log.status != 'rejected' %}disabled{% endif %}
+            >
+              Aprovar → rascunho
+            </button>
+            <button
+              type="submit"
+              name="action"
+              value="reject"
+              class="btn btn-outline-danger"
+              {% if log.status != 'awaiting_review' and log.status != 'approved' %}disabled{% endif %}
+            >
+              Rejeitar
+            </button>
+            <a class="btn btn-ghost" href="{% url 'manuals:review_queue' %}">Voltar</a>
+          </div>
+          <p class="small text-secondary mt-3 mb-0">
+            Aprovação cria produto com status <code>draft</code>. Publicação automática é proibida (P02/P09).
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -17,6 +17,10 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 CELERY_TASK_ALWAYS_EAGER = True
 AXES_ENABLED = False
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+EXTRACTION_LLM_MODE = "mock"
+MANUAL_AV_STUB_OK = True
+MANUAL_CLAMAV_ENABLED = False
+USE_R2_STORAGE = False
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},

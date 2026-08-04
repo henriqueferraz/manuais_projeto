@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Fila de Revisão de Manuais — {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="mb-4">
+  <div class="p-4 rounded border bg-dark text-white">
+    <p class="text-uppercase small mb-1" style="letter-spacing: 0.08em; color: var(--tp-ai-cyan, #22d3ee)">
+      <span class="material-symbols-outlined align-middle" style="font-size: 1rem">psychology</span>
+      Painel de Ingestão de Manuais por IA
+    </p>
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start">
+      <div>
+        <h1 class="h3 mb-1">Fila de Revisão de Manuais Técnicos</h1>
+        <p class="small text-secondary mb-0">
+          Valide extrações automatizadas antes de qualquer publicação no catálogo.
+          Produtos nascem como <strong>rascunho</strong>.
+        </p>
+      </div>
+    </div>
+    <div class="row g-3 mt-3 pt-3 border-top border-secondary">
+      <div class="col-md-4">
+        <div class="p-3 rounded border border-secondary">
+          <span class="text-uppercase small text-secondary">Aguardando revisão</span>
+          <div class="fs-3 fw-bold text-warning">{{ stats.awaiting|default:0 }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 rounded border border-secondary">
+          <span class="text-uppercase small text-secondary">Processados hoje</span>
+          <div class="fs-3 fw-bold text-success">{{ stats.processed_today|default:0 }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 rounded border border-secondary">
+          <span class="text-uppercase small text-secondary">Erros de extração</span>
+          <div class="fs-3 fw-bold text-danger">{{ stats.failed|default:0 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card border mb-4">
+  <div class="card-body">
+    <h2 class="h5">Upload de Manual PDF</h2>
+    <form method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="upload" value="1" />
+      <div class="col-md-5">
+        <label class="form-label" for="id_file">Arquivo</label>
+        {{ upload_form.file }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="id_manufacturer">Fabricante</label>
+        {{ upload_form.manufacturer }}
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-ai w-100">Enviar e extrair</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="card border">
+  <div class="card-header d-flex flex-column flex-md-row justify-content-between gap-2">
+    <form method="get" class="d-flex gap-2 flex-wrap">
+      <input
+        type="search"
+        name="q"
+        value="{{ q }}"
+        class="form-control"
+        placeholder="Buscar fabricante, PDF ou SKU…"
+        aria-label="Buscar"
+      />
+      <select name="status" class="form-select" aria-label="Filtrar status">
+        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Todos</option>
+        {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-outline-primary" type="submit">Filtrar</button>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Arquivo</th>
+          <th>Fabricante</th>
+          <th>Modelo / SKU</th>
+          <th>Confiança</th>
+          <th>Status</th>
+          <th>Custo est.</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in extractions %}
+        <tr>
+          <td class="font-monospace small">{{ item.manual.original_filename }}</td>
+          <td>{{ item.manual.manufacturer|default:"—" }}</td>
+          <td class="font-monospace small">
+            {{ item.raw_json.model_code|default:"—" }}
+            {% if item.raw_json.sku_suggestion %}<br /><span class="text-secondary">{{ item.raw_json.sku_suggestion }}</span>{% endif %}
+          </td>
+          <td>
+            {% if item.confidence != None %}
+            <span class="badge text-bg-{% if item.confidence >= 0.75 %}success{% elif item.confidence >= 0.5 %}warning{% else %}danger{% endif %}">
+              {{ item.confidence|floatformat:2 }}
+            </span>
+            {% else %}—{% endif %}
+          </td>
+          <td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td>
+          <td class="font-monospace small">{{ item.cost_estimate }}</td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'manuals:review_detail' item.pk %}">Revisar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-secondary py-5">
+            Nenhuma extração nesta fila.
+            <div class="mt-2">Faça upload de um PDF ou ajuste os filtros.</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

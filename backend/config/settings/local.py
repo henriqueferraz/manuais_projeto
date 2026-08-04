@@ -1,10 +1,21 @@
 """Settings locais — DEBUG, SQLite ou Postgres via DATABASE_URL."""
 
 from .base import *  # noqa: F401,F403
+from .base import ALLOWED_HOSTS as BASE_ALLOWED_HOSTS
+from .base import CSRF_TRUSTED_ORIGINS as BASE_CSRF_TRUSTED_ORIGINS
 from .base import env
 
 DEBUG = env.bool("DEBUG", default=True)
 SECRET_KEY = env("SECRET_KEY", default="dev-only-change-me-techparts-f2")
+
+# runserver em 0.0.0.0:8000 — Host do browser costuma ser localhost/127.0.0.1
+_local_hosts = ("localhost", "127.0.0.1", "web")
+ALLOWED_HOSTS = list(dict.fromkeys([*BASE_ALLOWED_HOSTS, *_local_hosts]))
+_local_origins = (
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+)
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys([*BASE_CSRF_TRUSTED_ORIGINS, *_local_origins]))
 
 # Em local, Manifest static storage exige collectstatic; usar StaticFiles simples
 STORAGES = {
