@@ -1,0 +1,21 @@
+<header class="border-bottom bg-white sticky-top" role="banner">
+  <div class="tp-container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <a href="{% url 'core:home' %}" class="text-decoration-none text-reset">
+      <span class="font-label-caps d-block">{{ brand_name }}</span>
+      <span class="font-headline-sm mb-0">{{ brand_tagline }}</span>
+    </a>
+    <nav aria-label="Principal" class="d-flex flex-wrap align-items-center gap-3 font-body-md">
+      <a href="{% url 'core:home' %}">Início</a>
+      <a href="{% url 'core:health' %}">Status</a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'admin:index' %}">Admin</a>
+      <form method="post" action="{% url 'logout' %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary btn-sm">Sair</button>
+      </form>
+      {% else %}
+      <a class="btn btn-primary btn-sm" href="{% url 'two_factor:login' %}">Entrar</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>

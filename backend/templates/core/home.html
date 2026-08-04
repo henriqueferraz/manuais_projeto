@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ brand_name }} — Início{% endblock %}
+
+{% block content %}
+<section class="tp-section" aria-labelledby="home-title">
+  <p class="font-label-caps mb-2">TechParts AI</p>
+  <h1 id="home-title" class="font-headline-lg">Peças com precisão industrial</h1>
+  <p class="tp-section__lead font-body-lg col-lg-8">
+    Monólito modular Django pronto para catálogo, ingestão de manuais e chat com RAG.
+    A identidade visual Industrial Precision da Fase 0 já está aplicada neste shell.
+  </p>
+  <div class="d-flex flex-wrap gap-2 mt-4">
+    <a class="btn btn-primary" href="{% url 'two_factor:login' %}">Acessar conta</a>
+    <a class="btn btn-outline-primary" href="{% url 'core:health' %}">Healthcheck</a>
+  </div>
+</section>
+{% endblock %}

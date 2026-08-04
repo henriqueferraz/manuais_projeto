@@ -1,0 +1,289 @@
+/*
+ * Reusable components (P16, P17, P19, P20)
+ */
+
+/* —— Buttons: AI Action (cyan ONLY for IA) —— */
+.btn-ai {
+  --bs-btn-color: var(--tp-industrial-navy);
+  --bs-btn-bg: var(--tp-ai-cyan);
+  --bs-btn-border-color: var(--tp-ai-cyan);
+  --bs-btn-hover-color: var(--tp-industrial-navy);
+  --bs-btn-hover-bg: #5aedff;
+  --bs-btn-hover-border-color: #5aedff;
+  --bs-btn-active-color: var(--tp-industrial-navy);
+  --bs-btn-active-bg: #00c4db;
+  --bs-btn-active-border-color: #00c4db;
+  font-weight: 700;
+}
+
+.btn-ghost {
+  --bs-btn-color: var(--tp-tech-gray);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: var(--tp-border-subtle);
+  --bs-btn-hover-color: var(--tp-industrial-navy);
+  --bs-btn-hover-bg: var(--tp-surface-lowest);
+  --bs-btn-hover-border-color: var(--tp-tech-gray);
+}
+
+/* —— Status badges —— */
+.tp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--tp-radius);
+  font-size: var(--tp-label);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.tp-badge--stock {
+  background: #d4edda;
+  color: #155724;
+}
+
+.tp-badge--draft {
+  background: var(--tp-surface-container);
+  color: var(--tp-tech-gray);
+}
+
+.tp-badge--sla {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.tp-badge--compat {
+  background: rgba(0, 229, 255, 0.2);
+  color: var(--tp-industrial-navy);
+}
+
+.tp-badge--ai {
+  background: var(--tp-ai-cyan);
+  color: var(--tp-industrial-navy);
+}
+
+/* —— Product card —— */
+.tp-product-card {
+  background: var(--tp-surface-lowest);
+  border: 1px solid var(--tp-border-subtle);
+  border-radius: var(--tp-radius-lg);
+  overflow: hidden;
+  transition: box-shadow var(--tp-transition);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-product-card:hover {
+  box-shadow: var(--tp-shadow-hover);
+}
+
+.tp-product-card__media {
+  aspect-ratio: 1 / 1;
+  background: var(--tp-surface-low);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.tp-product-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tp-product-card__body {
+  padding: var(--tp-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  flex: 1;
+}
+
+.tp-product-card__brand {
+  margin: 0;
+}
+
+.tp-product-card__title {
+  margin: 0;
+  font-size: var(--tp-headline-sm);
+  font-weight: 600;
+  color: var(--tp-industrial-navy);
+  line-height: 1.3;
+}
+
+.tp-product-card__specs {
+  margin-top: auto;
+  padding-top: var(--tp-space-3);
+  border-top: 1px solid var(--tp-border-subtle);
+  color: var(--tp-tech-gray);
+}
+
+.tp-product-card__price {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--tp-industrial-navy);
+}
+
+/* —— AI Chat shell —— */
+.tp-chat {
+  display: flex;
+  flex-direction: column;
+  max-width: 28rem;
+  min-height: 24rem;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: var(--tp-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--tp-shadow-hover);
+}
+
+.tp-chat__header {
+  background: var(--tp-ai-cyan);
+  color: var(--tp-industrial-navy);
+  padding: var(--tp-space-3) var(--tp-space-4);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+}
+
+.tp-chat__body {
+  flex: 1;
+  padding: var(--tp-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+  overflow-y: auto;
+  background: var(--tp-surface-lowest);
+}
+
+.tp-chat__bubble {
+  max-width: 90%;
+  padding: var(--tp-space-3);
+  border-radius: var(--tp-radius-lg);
+  font-size: var(--tp-body-md);
+}
+
+.tp-chat__bubble--user {
+  align-self: flex-end;
+  background: var(--tp-surface-container);
+  color: var(--tp-on-surface);
+}
+
+.tp-chat__bubble--ai {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid rgba(0, 229, 255, 0.45);
+}
+
+.tp-chat__source {
+  display: inline-flex;
+  margin-top: var(--tp-space-2);
+  font-family: var(--tp-font-mono);
+  font-size: 0.7rem;
+  color: var(--tp-tech-gray);
+  text-decoration: underline;
+}
+
+.tp-chat__typing {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+  color: var(--tp-tech-gray);
+  font-size: var(--tp-body-md);
+}
+
+.tp-chat__typing-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--tp-ai-cyan);
+  animation: tp-pulse 1.2s ease-in-out infinite;
+}
+
+.tp-chat__typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.tp-chat__typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes tp-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.tp-chat__footer {
+  padding: var(--tp-space-3);
+  border-top: 1px solid var(--tp-border-subtle);
+  display: flex;
+  gap: var(--tp-space-2);
+  background: var(--tp-surface-lowest);
+}
+
+.tp-chat__footer .form-control {
+  flex: 1;
+}
+
+.tp-feedback {
+  display: inline-flex;
+  gap: var(--tp-space-1);
+  margin-top: var(--tp-space-2);
+}
+
+.tp-feedback button {
+  border: none;
+  background: transparent;
+  color: var(--tp-tech-gray);
+  cursor: pointer;
+  padding: 0.15rem;
+  border-radius: var(--tp-radius-sm);
+  transition: color var(--tp-transition), background var(--tp-transition);
+}
+
+.tp-feedback button:hover,
+.tp-feedback button:focus-visible {
+  color: var(--tp-industrial-navy);
+  background: var(--tp-surface-low);
+}
+
+/* —— Dense table —— */
+.tp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tp-body-md);
+}
+
+.tp-table th {
+  text-align: left;
+  font-size: var(--tp-label);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tp-tech-gray);
+  border-bottom: 1px solid var(--tp-border-subtle);
+  padding: var(--tp-space-2) var(--tp-space-3);
+}
+
+.tp-table td {
+  border-bottom: 1px solid var(--tp-border-subtle);
+  padding: var(--tp-space-3);
+  vertical-align: middle;
+}
+
+.tp-table td.font-technical {
+  color: var(--tp-on-surface);
+}

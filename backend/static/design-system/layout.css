@@ -1,0 +1,47 @@
+/*
+ * Layout grid & container (P21)
+ */
+
+.tp-container {
+  width: 100%;
+  max-width: var(--tp-container-max);
+  margin-inline: auto;
+  padding-inline: var(--tp-margin-mobile);
+}
+
+@media (min-width: 992px) {
+  .tp-container {
+    padding-inline: var(--tp-margin-desktop);
+  }
+}
+
+/* Storefront: fixed max width. Admin dashboards may use .tp-container-fluid */
+.tp-container-fluid {
+  width: 100%;
+  padding-inline: var(--tp-margin-mobile);
+}
+
+@media (min-width: 992px) {
+  .tp-container-fluid {
+    padding-inline: var(--tp-margin-desktop);
+  }
+}
+
+.tp-section {
+  margin-block: var(--tp-space-12);
+}
+
+.tp-section__title {
+  margin-bottom: var(--tp-space-2);
+}
+
+.tp-section__lead {
+  color: var(--tp-on-surface-variant);
+  margin-bottom: var(--tp-space-6);
+  max-width: 40rem;
+}
+
+/* Utility: generous vertical rhythm between major blocks */
+.tp-stack-lg > * + * {
+  margin-top: var(--tp-space-12);
+}
