@@ -1,0 +1,414 @@
+<!DOCTYPE html><html class="light" lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#dbe4ed",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#9cf0ff",
+                        "surface-variant": "#e1e3e4",
+                        "surface-tint": "#4f6073",
+                        "success-green": "#28A745",
+                        "surface-dim": "#d9dadb",
+                        "secondary": "#006875",
+                        "on-secondary-fixed": "#001f24",
+                        "ai-cyan": "#00E5FF",
+                        "error-container": "#ffdad6",
+                        "industrial-navy": "#1A2B3C",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-container": "#00616d",
+                        "tertiary-fixed-dim": "#bfc8d0",
+                        "surface-container-high": "#e7e8e9",
+                        "on-surface": "#191c1d",
+                        "inverse-surface": "#2e3132",
+                        "surface-container": "#edeeef",
+                        "danger-red": "#DC3545",
+                        "primary": "#041627",
+                        "secondary-fixed-dim": "#00daf3",
+                        "on-tertiary-container": "#89929b",
+                        "outline": "#74777d",
+                        "primary-container": "#1a2b3c",
+                        "background": "#f8f9fa",
+                        "tertiary-container": "#222b32",
+                        "on-primary-fixed-variant": "#38485a",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#8192a7",
+                        "on-secondary-fixed-variant": "#004f58",
+                        "on-tertiary-fixed": "#141d23",
+                        "inverse-primary": "#b7c8de",
+                        "primary-fixed-dim": "#b7c8de",
+                        "inverse-on-surface": "#f0f1f2",
+                        "tertiary": "#0e171d",
+                        "surface-container-highest": "#e1e3e4",
+                        "outline-variant": "#c4c6cd",
+                        "tech-gray": "#495057",
+                        "on-primary-fixed": "#0b1d2d",
+                        "on-tertiary-fixed-variant": "#3f484f",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "primary-fixed": "#d2e4fb",
+                        "on-surface-variant": "#44474c",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1d",
+                        "secondary-container": "#00e3fd",
+                        "surface": "#f8f9fa",
+                        "border-subtle": "#DEE2E6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "container-max-width": "1280px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "technical-data": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["26px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "technical-data": ["13px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ai-glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background pb-20 md:pb-0">
+<!-- TopNavBar -->
+<nav class="bg-surface sticky top-0 z-50 border-b border-border-subtle">
+<div class="flex justify-between items-center h-16 px-4 md:px-margin-desktop max-w-container-max-width mx-auto">
+<span class="font-headline-sm text-headline-sm font-bold text-industrial-navy">TechParts AI</span>
+<!-- Desktop Links (Hidden on Mobile) -->
+<div class="hidden md:flex gap-8">
+<a class="font-body-md text-body-md text-industrial-navy border-b-2 border-industrial-navy pb-1" href="#">Catálogo</a>
+<a class="font-body-md text-body-md text-tech-gray hover:text-industrial-navy transition-colors" href="#">Suporte</a>
+<a class="font-body-md text-body-md text-tech-gray hover:text-industrial-navy transition-colors" href="#">Pedidos</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-industrial-navy">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="p-2 text-industrial-navy relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute top-1 right-1 bg-industrial-navy text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">2</span>
+</button>
+<button class="hidden md:block p-2 text-industrial-navy">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="max-w-container-max-width mx-auto">
+<!-- Hero Carousel Section -->
+<section class="relative h-[480px] md:h-[600px] overflow-hidden">
+<div class="absolute inset-0 bg-industrial-navy">
+<img alt="Diagnóstico Industrial por IA" class="w-full h-full object-cover opacity-60" src="https://lh3.googleusercontent.com/aida/AP1WRLv5QJXkL4HblIwavfxKBECrsDWTaO0NFwtu0bQTFh54McihHiST2rureF78vXb8XxrhiI2J7TdCpMFODb_ilkbuiUGzHtfD2_UfPbp23NOQwdjDJbpZLuUhyK4zVUSFmrMuXK6Prb3SqtQibFfLlz5ZbGWFquXpRGr2yvg3Kqg5DtiaQY1egdDq-1fPbiW63EK3cgt5pzO16Xq81wNbg2zbiYl7rtGSWRneKRDFvEeF3wryIIFK5XNt8Q">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-industrial-navy/80 via-transparent to-transparent"></div>
+<div class="relative h-full flex flex-col justify-end p-6 md:p-12 space-y-4 max-w-xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-ai-cyan text-industrial-navy rounded-full font-label-caps text-label-caps uppercase">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                    Diagnóstico IA Ativo
+                </div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-white">
+                    Precisão Absoluta na <br><span class="text-ai-cyan">Identificação de Peças</span>
+</h1>
+<p class="font-body-lg text-body-lg text-tertiary-fixed max-w-md">
+                    Utilize nossa IA avançada para escanear componentes e obter compatibilidade técnica em tempo real.
+                </p>
+<div class="flex gap-4 pt-4">
+<button class="flex-1 md:flex-none px-6 py-3 bg-ai-cyan text-industrial-navy font-bold rounded shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">camera_enhance</span>
+                        Escanear Peça
+                    </button>
+<button class="flex-1 md:flex-none px-6 py-3 border border-ai-cyan text-ai-cyan font-bold rounded hover:bg-ai-cyan/10 transition-all flex items-center justify-center">
+                        Explorar Catálogo
+                    </button>
+</div>
+</div>
+<!-- Indicators -->
+<div class="absolute bottom-6 right-6 flex gap-2">
+<div class="w-8 h-1 bg-ai-cyan"></div>
+<div class="w-8 h-1 bg-white/30"></div>
+<div class="w-8 h-1 bg-white/30"></div>
+</div>
+</section>
+<!-- Quick Search & Filters -->
+<section class="p-6 md:py-12 bg-surface-container-low">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-border-subtle shadow-sm space-y-6">
+<div class="flex flex-col md:flex-row gap-4">
+<div class="flex-1 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-tech-gray">search</span>
+<input class="w-full pl-10 pr-4 py-3 border border-border-subtle rounded font-body-md text-body-md focus:ring-2 focus:ring-industrial-navy focus:border-industrial-navy outline-none" placeholder="Número de série, modelo ou SKU..." type="text">
+</div>
+<button class="bg-industrial-navy text-white px-8 py-3 font-bold rounded hover:bg-opacity-90 transition-all">
+                        BUSCAR AGORA
+                    </button>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-tech-gray uppercase">Marca</label>
+<select class="w-full p-2 border border-border-subtle rounded font-body-md text-body-md">
+<option>Todas</option>
+<option>Siemens</option>
+<option>ABB</option>
+<option>Schneider</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-tech-gray uppercase">Tensão (V)</label>
+<select class="w-full p-2 border border-border-subtle rounded font-body-md text-body-md">
+<option>Todas</option>
+<option>110V</option>
+<option>220V</option>
+<option>380V</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-tech-gray uppercase">Categoria</label>
+<select class="w-full p-2 border border-border-subtle rounded font-body-md text-body-md">
+<option>Automotivo</option>
+<option>Industrial</option>
+<option>Eletrônicos</option>
+</select>
+</div>
+<div class="space-y-2 flex items-end">
+<button class="w-full py-2 border border-tech-gray text-tech-gray font-label-caps text-label-caps rounded flex items-center justify-center gap-2 hover:bg-tech-gray/5">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+                            LIMPAR FILTROS
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Product Grid -->
+<section class="p-6 md:py-16 space-y-8">
+<div class="flex justify-between items-end">
+<div>
+<span class="font-label-caps text-label-caps text-secondary uppercase">Destaques da Semana</span>
+<h2 class="font-headline-md text-headline-md text-industrial-navy mt-1">Componentes de Alta Performance</h2>
+</div>
+<a class="hidden md:flex items-center gap-1 text-industrial-navy font-bold hover:underline" href="#">
+                    Ver tudo
+                    <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Product Card 1 -->
+<div class="bg-surface border border-border-subtle rounded-lg overflow-hidden flex flex-col group hover:shadow-md transition-shadow">
+<div class="relative aspect-square bg-white flex items-center justify-center p-4">
+<img class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" data-alt="Close-up professional studio shot of a high-tech industrial electric motor on a clean white background. The motor features brushed aluminum surfaces and copper wiring details. The lighting is crisp and even, emphasizing the mechanical precision and clean industrial design of the component." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCteykNcV4oIZJBeNPhcGpwnTmC81sUA9hevUSGdxnWsOJiT9Rb0J9geHQ9huMMvzubEM-8gXJcAPqLp95QLrne7-RfHIy-twvr8Fc2yt8vW_2Af5q0up1RllgzCNE065nj8Sa_8fqLAonEs6pMtSSAqZImKEARVzsbhC6G4agGZtecQa5yFG0FKaH-X2ktuPFXwPixoSFZ97Nzixo2MkURq-e-3Tk4NtYSew8qo9q62PP_WxfW2cY">
+<div class="absolute top-2 left-2 bg-success-green/10 text-success-green px-2 py-1 rounded font-label-caps text-[10px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            COMPATIBILIDADE GARANTIDA
+                        </div>
+</div>
+<div class="p-4 flex-1 flex flex-col space-y-3">
+<div>
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">SIEMENS</span>
+<h3 class="font-headline-sm text-[16px] leading-tight text-industrial-navy mt-1">Motor Trifásico de Alta Eficiência 1LE1</h3>
+</div>
+<div class="bg-surface-container-low p-2 rounded border border-border-subtle font-technical-data text-technical-data text-tech-gray">
+                            SKU: 992-SI-X01 | 380V | 5HP
+                        </div>
+<div class="mt-auto flex justify-between items-center pt-2">
+<span class="font-headline-md text-headline-md text-industrial-navy">R$ 1.250,00</span>
+<button class="bg-industrial-navy text-white p-2 rounded hover:bg-secondary transition-colors">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface border border-border-subtle rounded-lg overflow-hidden flex flex-col group hover:shadow-md transition-shadow">
+<div class="relative aspect-square bg-white flex items-center justify-center p-4">
+<img class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" data-alt="High-resolution product photography of a sophisticated PLC control module. The device is dark grey with multiple LED status lights in green and amber. It has detailed electrical connection ports clearly visible. The style is modern industrial, lit by professional studio lights to show texture and technical markings." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyyaComN2Ay9TLJ9DV0S7z1QByJPvemAfd7EZS6a5TrVxBKyiSmHu0S3wIyVqGRDa-keKxtAk8MiQtB3fFmnWwMEyeRmN12TkjQDOpmxE4hwubI3uE74sXlrfmgBN-BmM5mqViks10sJsRxzFGXNe356Rp6LnQFdIpj_t1Ix49VrpYrJ48qb1kEIUYU5zpYIQCiSAMcq_Jn15NK8Y0J15sf0CdMwzz7qJANTZB1izH_ut3bW-UN3U">
+<div class="absolute top-2 left-2 bg-ai-cyan/20 text-secondary px-2 py-1 rounded font-label-caps text-[10px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                            PREFERIDO PELA IA
+                        </div>
+</div>
+<div class="p-4 flex-1 flex flex-col space-y-3">
+<div>
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">ABB</span>
+<h3 class="font-headline-sm text-[16px] leading-tight text-industrial-navy mt-1">Módulo de Controle Digital S800 Series</h3>
+</div>
+<div class="bg-surface-container-low p-2 rounded border border-border-subtle font-technical-data text-technical-data text-tech-gray">
+                            SKU: ABB-MOD-22 | 24V DC | IP67
+                        </div>
+<div class="mt-auto flex justify-between items-center pt-2">
+<span class="font-headline-md text-headline-md text-industrial-navy">R$ 890,50</span>
+<button class="bg-industrial-navy text-white p-2 rounded hover:bg-secondary transition-colors">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface border border-border-subtle rounded-lg overflow-hidden flex flex-col group hover:shadow-md transition-shadow">
+<div class="relative aspect-square bg-white flex items-center justify-center p-4">
+<img class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" data-alt="Professional studio shot of a heavy-duty industrial bearing. The component is made of polished stainless steel, reflecting soft studio lights. Every detail of the ball bearing mechanism is visible, conveying durability and precision engineering. The background is a soft neutral grey gradient to emphasize the metallic texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDL90TibMeE8ZCMfqv9rxRAQgup8qJ-klFBFS0okFpW5AhnWafNlVAoGQXsSw64HdZA9KgMOD7wm9eGUOFXazRRQsquDB2GTOzuNBqONYDdsOEwb46wPMF20pjjF2dH2kAo16zfP9myIpqMpGtq5JACk8PbnL1X_v6iLJwEAYBRWp1BK5FY7WqTbC6CR31BPtT12A_L11PrCOyXFAidM-P7K3w9ZA3sIXh5go0607HXNbYzt5TiqIQ">
+</div>
+<div class="p-4 flex-1 flex flex-col space-y-3">
+<div>
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">SKF</span>
+<h3 class="font-headline-sm text-[16px] leading-tight text-industrial-navy mt-1">Rolamento de Esferas Série Explorer</h3>
+</div>
+<div class="bg-surface-container-low p-2 rounded border border-border-subtle font-technical-data text-technical-data text-tech-gray">
+                            SKU: SKF-6205 | 52mm OD | Aço Inox
+                        </div>
+<div class="mt-auto flex justify-between items-center pt-2">
+<span class="font-headline-md text-headline-md text-industrial-navy">R$ 145,00</span>
+<button class="bg-industrial-navy text-white p-2 rounded hover:bg-secondary transition-colors">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="bg-surface border border-border-subtle rounded-lg overflow-hidden flex flex-col group hover:shadow-md transition-shadow">
+<div class="relative aspect-square bg-white flex items-center justify-center p-4">
+<img class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" data-alt="Clean product photograph of an industrial pressure sensor with a digital readout display. The sensor body is robust stainless steel with a threaded connector. The LCD screen shows blue digits. Set against a white minimalist background with subtle shadows to define depth and professional technical quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsPg7AKe5TseH4jGMaWq-cb8s72rYvZ8oQfV-a8NGq50PodZdTPeOqEUVrMYqU7oK32g514OWfIQsePbzprDt4S0iDL3iM1gNz12qBDsfz8Gk8PzNGfv40PyeHnVPwJxV3eDgwsAv91BiaH_OBUuGnotNPhWuUsY-Rp9nxuFtk_oZZzeR-FgKSswiCwgv1Qfo_fahyrGH5cj3VzPLfSRVB4Yw6momXsaaKkMvDTazZUk-Dd9UNkTw">
+<div class="absolute top-2 left-2 bg-success-green/10 text-success-green px-2 py-1 rounded font-label-caps text-[10px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            COMPATIBILIDADE GARANTIDA
+                        </div>
+</div>
+<div class="p-4 flex-1 flex flex-col space-y-3">
+<div>
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">SCHNEIDER</span>
+<h3 class="font-headline-sm text-[16px] leading-tight text-industrial-navy mt-1">Sensor de Pressão Digital XMLP</h3>
+</div>
+<div class="bg-surface-container-low p-2 rounded border border-border-subtle font-technical-data text-technical-data text-tech-gray">
+                            SKU: SN-XM-900 | 0-10 Bar | G1/4
+                        </div>
+<div class="mt-auto flex justify-between items-center pt-2">
+<span class="font-headline-md text-headline-md text-industrial-navy">R$ 520,00</span>
+<button class="bg-industrial-navy text-white p-2 rounded hover:bg-secondary transition-colors">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full md:hidden py-4 border border-industrial-navy text-industrial-navy font-bold rounded flex items-center justify-center gap-2">
+                VER TODOS OS PRODUTOS
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</section>
+<!-- AI Assistant Banner (Mobile Focus) -->
+<section class="p-6">
+<div class="ai-glass p-8 rounded-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8 border border-ai-cyan/50 shadow-[0_0_20px_rgba(0,229,255,0.15)]">
+<div class="flex-1 space-y-4 relative z-10 text-center md:text-left">
+<div class="flex items-center justify-center md:justify-start gap-2 text-secondary font-bold">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                        AI INSIGHTS
+                    </div>
+<h2 class="font-headline-md text-headline-md text-industrial-navy">Dúvidas sobre compatibilidade?</h2>
+<p class="font-body-md text-body-md text-tech-gray">
+                        Nosso assistente técnico inteligente analisa seus manuais e fotos instantaneamente para garantir que você compre a peça certa na primeira vez.
+                    </p>
+<button class="bg-industrial-navy text-white px-8 py-4 rounded font-bold shadow-lg flex items-center justify-center gap-3 mx-auto md:mx-0">
+<span class="material-symbols-outlined text-ai-cyan">chat_bubble</span>
+                        Conversar com Consultor IA
+                    </button>
+</div>
+<div class="w-full md:w-1/3 flex justify-center relative">
+<div class="relative">
+<div class="absolute inset-0 bg-ai-cyan/20 blur-3xl rounded-full animate-pulse"></div>
+<span class="material-symbols-outlined text-[120px] text-industrial-navy relative z-10" style="font-variation-settings: 'wght' 200;">precision_manufacturing</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-border-subtle mt-12 pb-24 md:pb-8">
+<div class="w-full py-8 px-margin-desktop flex flex-col md:flex-row justify-between items-center max-w-container-max-width mx-auto gap-6 text-center md:text-left">
+<div class="space-y-2">
+<span class="font-headline-sm text-headline-sm text-industrial-navy">TechParts AI</span>
+<p class="font-body-md text-body-md text-tech-gray max-w-md">© 2024 TechParts AI - Eficiência através de Automação</p>
+</div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan transition-all" href="#">Termos de Uso</a>
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan transition-all" href="#">Privacidade</a>
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan transition-all" href="#">Manuais Técnicos</a>
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan transition-all" href="#">API</a>
+</div>
+</div>
+</footer>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center py-2 px-4 bg-surface-container-lowest border-t border-border-subtle shadow-lg z-50 md:hidden">
+<a class="flex flex-col items-center justify-center text-industrial-navy bg-secondary-fixed rounded-xl px-3 py-1 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-caps text-[10px] mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-tech-gray active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-caps text-[10px] mt-1">Suporte</span>
+</a>
+<a class="flex flex-col items-center justify-center text-tech-gray active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-caps text-[10px] mt-1">Pedidos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-tech-gray active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-label-caps text-[10px] mt-1">Carrinho</span>
+</a>
+</nav>
+<!-- FAB (Mobile Only - Scan) -->
+<button class="fixed right-6 bottom-20 bg-ai-cyan text-industrial-navy w-14 h-14 rounded-full shadow-2xl flex items-center justify-center md:hidden z-40 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[28px]">qr_code_scanner</span>
+</button>
+<script>
+        // Simple logic for active state demo if needed
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                // Logic would go here to update active state
+            });
+        });
+    </script>
+</body></html>

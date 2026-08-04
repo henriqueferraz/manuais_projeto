@@ -1,0 +1,351 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<title>TechParts AI - Diagnóstico</title>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#dbe4ed",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#9cf0ff",
+                        "surface-variant": "#e1e3e4",
+                        "surface-tint": "#4f6073",
+                        "success-green": "#28A745",
+                        "surface-dim": "#d9dadb",
+                        "secondary": "#006875",
+                        "on-secondary-fixed": "#001f24",
+                        "ai-cyan": "#00E5FF",
+                        "error-container": "#ffdad6",
+                        "industrial-navy": "#1A2B3C",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-container": "#00616d",
+                        "tertiary-fixed-dim": "#bfc8d0",
+                        "surface-container-high": "#e7e8e9",
+                        "on-surface": "#191c1d",
+                        "inverse-surface": "#2e3132",
+                        "surface-container": "#edeeef",
+                        "danger-red": "#DC3545",
+                        "primary": "#041627",
+                        "secondary-fixed-dim": "#00daf3",
+                        "on-tertiary-container": "#89929b",
+                        "outline": "#74777d",
+                        "primary-container": "#1a2b3c",
+                        "background": "#f8f9fa",
+                        "tertiary-container": "#222b32",
+                        "on-primary-fixed-variant": "#38485a",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#8192a7",
+                        "on-secondary-fixed-variant": "#004f58",
+                        "on-tertiary-fixed": "#141d23",
+                        "inverse-primary": "#b7c8de",
+                        "primary-fixed-dim": "#b7c8de",
+                        "inverse-on-surface": "#f0f1f2",
+                        "tertiary": "#0e171d",
+                        "surface-container-highest": "#e1e3e4",
+                        "outline-variant": "#c4c6cd",
+                        "tech-gray": "#495057",
+                        "on-primary-fixed": "#0b1d2d",
+                        "on-tertiary-fixed-variant": "#3f484f",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "primary-fixed": "#d2e4fb",
+                        "on-surface-variant": "#44474c",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1d",
+                        "secondary-container": "#00e3fd",
+                        "surface": "#f8f9fa",
+                        "border-subtle": "#DEE2E6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "container-max-width": "1280px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "technical-data": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["26px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "technical-data": ["13px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1;
+        }
+        .glass-ai {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+        .chat-container {
+            height: calc(100vh - 128px);
+        }
+        @media (min-width: 768px) {
+            .chat-container {
+                height: calc(100vh - 64px);
+            }
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-hidden">
+<!-- Sidebar / History Drawer (Hidden by default) -->
+<div class="fixed inset-y-0 left-0 z-[60] w-72 bg-industrial-navy text-white transform -translate-x-full transition-transform duration-300 ease-in-out shadow-2xl" id="sidebar">
+<div class="p-margin-mobile border-b border-white/10 flex justify-between items-center">
+<span class="font-headline-sm text-headline-sm font-bold text-ai-cyan">TechParts AI</span>
+<button class="p-2 hover:bg-white/10 rounded-lg" onclick="toggleSidebar()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-4 space-y-4">
+<div class="text-on-tertiary-container font-label-caps text-label-caps uppercase tracking-widest mb-2">Histórico Recente</div>
+<div class="space-y-1">
+<button class="w-full text-left p-3 rounded-lg bg-white/10 flex items-center gap-3">
+<span class="material-symbols-outlined text-ai-cyan">chat_bubble</span>
+<span class="truncate font-body-md text-body-md">Falha no Sensor X-45</span>
+</button>
+<button class="w-full text-left p-3 rounded-lg hover:bg-white/5 flex items-center gap-3 transition-colors">
+<span class="material-symbols-outlined text-tech-gray">history</span>
+<span class="truncate font-body-md text-body-md">Ruído no Motor Elétrico</span>
+</button>
+<button class="w-full text-left p-3 rounded-lg hover:bg-white/5 flex items-center gap-3 transition-colors">
+<span class="material-symbols-outlined text-tech-gray">history</span>
+<span class="truncate font-body-md text-body-md">Substituição Placa Lógica</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Overlay -->
+<div class="fixed inset-0 bg-black/50 z-[55] hidden opacity-0 transition-opacity duration-300" id="overlay" onclick="toggleSidebar()"></div>
+<!-- Main Header (TopAppBar) -->
+<header class="bg-surface border-b border-border-subtle h-16 flex items-center justify-between px-margin-mobile md:px-margin-desktop sticky top-0 z-40">
+<div class="flex items-center gap-3">
+<button class="p-2 -ml-2 text-industrial-navy" onclick="toggleSidebar()">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-bold text-industrial-navy leading-none">TechParts AI</span>
+<span class="text-[10px] text-success-green font-bold uppercase tracking-tighter">AI Diagnostic Live</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-industrial-navy relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-ai-cyan rounded-full"></span>
+</button>
+<button class="p-2 text-industrial-navy">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Chat Content Area -->
+<main class="chat-container flex flex-col max-w-container-max-width mx-auto">
+<!-- Action Highlight: Analisar Foto -->
+<div class="px-margin-mobile py-3 bg-secondary-fixed/30 flex items-center justify-between border-b border-border-subtle shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-industrial-navy" style="font-variation-settings: 'FILL' 1;">shutter_speed</span>
+<span class="font-label-caps text-label-caps text-industrial-navy">MODO DIAGNÓSTICO RÁPIDO</span>
+</div>
+<button class="bg-ai-cyan text-industrial-navy font-bold py-1.5 px-4 rounded-full text-[12px] flex items-center gap-2 shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">add_a_photo</span>
+                ANALISAR FOTO
+            </button>
+</div>
+<!-- Messages Scroll Area -->
+<div class="flex-1 overflow-y-auto p-margin-mobile space-y-6 scrollbar-hide">
+<!-- Bot Welcome Message -->
+<div class="flex flex-col items-start max-w-[85%]">
+<div class="flex items-center gap-2 mb-1 ml-1">
+<div class="w-6 h-6 bg-industrial-navy rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-ai-cyan text-[14px]">smart_toy</span>
+</div>
+<span class="text-[11px] font-bold text-tech-gray">TechBot Assistant</span>
+</div>
+<div class="bg-surface-container-high text-on-surface p-4 rounded-2xl rounded-tl-none shadow-sm border border-border-subtle">
+<p class="font-body-md text-body-md">Olá, sou o seu assistente técnico AI. Como posso ajudar no diagnóstico de hoje? Você pode descrever o problema ou enviar uma foto da peça para identificação.</p>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex flex-col items-end max-w-[85%] ml-auto">
+<div class="bg-industrial-navy text-white p-4 rounded-2xl rounded-tr-none shadow-md">
+<p class="font-body-md text-body-md">O compressor da unidade de refrigeração está superaquecendo e fazendo um ruído metálico constante.</p>
+</div>
+<span class="text-[10px] text-tech-gray mt-1 mr-1">14:02 • Visualizado</span>
+</div>
+<!-- Bot AI Analysis Response -->
+<div class="flex flex-col items-start w-full">
+<div class="flex items-center gap-2 mb-1 ml-1">
+<div class="w-6 h-6 bg-industrial-navy rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-ai-cyan text-[14px]">smart_toy</span>
+</div>
+<span class="text-[11px] font-bold text-tech-gray">Análise AI Gerada</span>
+</div>
+<div class="glass-ai p-4 rounded-2xl rounded-tl-none w-[90%] md:w-[60%] border-ai-cyan/30 shadow-lg mb-3">
+<p class="font-body-md text-body-md mb-4">Baseado na sua descrição, identifiquei 2 possíveis causas. Verifiquei os manuais técnicos correspondentes:</p>
+<!-- Manual Excerpt Card -->
+<div class="bg-white border border-border-subtle p-3 rounded-xl mb-4">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-[10px] text-tech-gray">MANUAL TÉCNICO V-204</span>
+<span class="material-symbols-outlined text-ai-cyan text-sm">open_in_new</span>
+</div>
+<p class="font-technical-data text-technical-data text-industrial-navy leading-snug">
+                            "Seção 4.2: Ruído metálico em compressores scroll indica desgaste excessivo no rolamento de encosto ou falta de lubrificação por obstrução capilar."
+                        </p>
+<div class="mt-2 flex items-center gap-1">
+<span class="w-2 h-2 bg-success-green rounded-full"></span>
+<span class="text-[10px] font-bold text-tech-gray">FONTE VERIFICADA</span>
+</div>
+</div>
+<p class="font-body-md text-body-md mb-3">Sugiro a substituição preventiva do Kit de Válvulas e verificação do óleo lubrificante.</p>
+</div>
+<!-- Product Suggestion (Buy Button) -->
+<div class="flex gap-3 overflow-x-auto w-full pb-2 scrollbar-hide">
+<div class="min-w-[200px] bg-surface-container-lowest border border-border-subtle p-3 rounded-xl shadow-sm">
+<div class="w-full h-24 rounded-lg mb-2 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional studio product photograph of a precision compressor valve kit for industrial refrigeration. The components are made of polished steel and arranged neatly on a clean white surface. Soft shadows and high-key lighting emphasize the technical precision and industrial quality of the parts. Corporate tech aesthetic with subtle blue undertones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuAsVEsRTV7ZWkNM2K0r25HNMahUmz3nsHyome81BoKecdVWcsVLNpNnOYrmNlR7jP8xlhbhrKb9zKCXxyEMOsH7eLBoncV4kbF3v63wNNoc-Ev_62g8Q_5bERBSgPKwbss4oTTbdOBRVTSHy9btx4XyciDJ4iqaIgmPGzOBEXYzMxtw-iM0cR3bmgABjyBQyGe09nUt-b9AUz4FpwOzW-4MR2mRkktA2nxSbj4E6CK6RMfuHMLrQ">
+</div>
+<div class="font-label-caps text-label-caps text-tech-gray">GENUINE PARTS</div>
+<div class="font-headline-sm text-[14px] font-bold text-industrial-navy truncate">Kit de Válvulas V-Series</div>
+<div class="font-technical-data text-technical-data text-industrial-navy mt-1">R$ 489,00</div>
+<button class="mt-3 w-full bg-industrial-navy text-white font-bold py-2 rounded-lg text-[12px] flex items-center justify-center gap-2 hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+                            COMPRAR AGORA
+                        </button>
+</div>
+<div class="min-w-[200px] bg-surface-container-lowest border border-border-subtle p-3 rounded-xl shadow-sm">
+<div class="w-full h-24 rounded-lg mb-2 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A macro photograph of a specialized industrial lubricant bottle for refrigeration systems. The bottle is transparent, showing a golden high-viscosity oil. Professional lighting highlights the clarity of the fluid and the technical label details. Minimalist industrial background with cool neutral tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlBbH3E4qPFgR-QUdz3OW0wLcj1Kayk1pD3uusImIRNAkwZ0p5bXuAZAuI_mQatOD0wv9qse7M1bpK_aRNa1QmmWVOSIxmk7oMY7GO-1Kpj1OZZU2yrHyuiCPYTpZrPnNbp9KaG7alHeQp845ZSYnACMc3PHw22ypaS_jdLf-OTNRBx3bh0UaZwb2Szzes3f-X5F3NEUAk1RMyGECjBn49mJQ-M6IocpI4igrbBjllrgRgMH5xSL8">
+</div>
+<div class="font-label-caps text-label-caps text-tech-gray">MAINTENANCE</div>
+<div class="font-headline-sm text-[14px] font-bold text-industrial-navy truncate">Óleo Sintético ISO 68</div>
+<div class="font-technical-data text-technical-data text-industrial-navy mt-1">R$ 124,50</div>
+<button class="mt-3 w-full bg-industrial-navy text-white font-bold py-2 rounded-lg text-[12px] flex items-center justify-center gap-2 hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+                            COMPRAR AGORA
+                        </button>
+</div>
+</div>
+</div>
+<!-- Bot Loading Interaction -->
+<div class="flex items-center gap-2 text-tech-gray ml-1" id="ai-loading">
+<div class="flex gap-1">
+<span class="w-1.5 h-1.5 bg-ai-cyan rounded-full animate-bounce" style="animation-delay: 0.1s;"></span>
+<span class="w-1.5 h-1.5 bg-ai-cyan rounded-full animate-bounce" style="animation-delay: 0.2s;"></span>
+<span class="w-1.5 h-1.5 bg-ai-cyan rounded-full animate-bounce" style="animation-delay: 0.3s;"></span>
+</div>
+<span class="text-[11px] font-medium italic">TechBot está processando...</span>
+</div>
+</div>
+<!-- Chat Input Footer -->
+<footer class="p-margin-mobile border-t border-border-subtle bg-surface sticky bottom-0 z-40">
+<div class="flex flex-col gap-3">
+<!-- Suggested Quick Replies -->
+<div class="flex gap-2 overflow-x-auto scrollbar-hide">
+<button class="whitespace-nowrap border border-border-subtle text-tech-gray px-3 py-1.5 rounded-full font-body-md text-[12px] bg-surface-container-low hover:bg-surface-container-high transition-colors">
+                        Como testar o sensor?
+                    </button>
+<button class="whitespace-nowrap border border-border-subtle text-tech-gray px-3 py-1.5 rounded-full font-body-md text-[12px] bg-surface-container-low hover:bg-surface-container-high transition-colors">
+                        Ver manual completo
+                    </button>
+<button class="whitespace-nowrap border border-border-subtle text-tech-gray px-3 py-1.5 rounded-full font-body-md text-[12px] bg-surface-container-low hover:bg-surface-container-high transition-colors">
+                        Falar com humano
+                    </button>
+</div>
+<!-- Input Row -->
+<div class="flex items-center gap-2">
+<button class="p-2 text-tech-gray hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<div class="flex-1 bg-surface-container-high rounded-full px-4 py-2 flex items-center border border-transparent focus-within:border-industrial-navy transition-all">
+<input class="w-full bg-transparent border-none focus:ring-0 text-body-md font-body-md py-1 placeholder:text-tech-gray" placeholder="Descreva o sintoma..." type="text">
+</div>
+<button class="w-10 h-10 bg-industrial-navy text-white rounded-full flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</footer>
+</main>
+<!-- Navigation Shell (Mobile BottomNavBar) -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center py-2 px-4 bg-surface-container-lowest border-t border-border-subtle z-50 md:hidden">
+<div class="flex flex-col items-center justify-center text-tech-gray">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-industrial-navy bg-secondary-fixed rounded-xl px-4 py-1">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="font-label-caps text-label-caps">Suporte</span>
+</div>
+<div class="flex flex-col items-center justify-center text-tech-gray">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-caps text-label-caps">Pedidos</span>
+</div>
+<div class="flex flex-col items-center justify-center text-tech-gray">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-label-caps text-label-caps">Carrinho</span>
+</div>
+</nav>
+<script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const isVisible = sidebar.classList.contains('translate-x-0');
+
+            if (isVisible) {
+                sidebar.classList.replace('translate-x-0', '-translate-x-full');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('opacity-100');
+            } else {
+                sidebar.classList.replace('-translate-x-full', 'translate-x-0');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+            }
+        }
+
+        // Auto-scroll to bottom of chat on load
+        window.onload = () => {
+            const chatBox = document.querySelector('.flex-1.overflow-y-auto');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+    </script>
+</body></html>

@@ -1,8 +1,31 @@
+# Dependencies & builds
 node_modules/
 build/
 dist/
 coverage/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+
+# OS / editors
 .DS_Store
 *.log
+.idea/
+.vscode/
+
+# Secrets
 .env*
 !.env.example
+
+# PDFs e acervo local de manuais (muito grande — não versionar)
+manuais/
+
+# Media / uploads locais
+media/
+staticfiles/

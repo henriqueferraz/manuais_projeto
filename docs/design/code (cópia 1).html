@@ -1,0 +1,431 @@
+<!DOCTYPE html><html class="light" lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Checkout | TechParts AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f4f5",
+                    "on-secondary-fixed-variant": "#004f58",
+                    "on-primary-fixed-variant": "#38485a",
+                    "surface-tint": "#4f6073",
+                    "primary-fixed-dim": "#b7c8de",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#222b32",
+                    "on-secondary-fixed": "#001f24",
+                    "industrial-navy": "#1A2B3C",
+                    "border-subtle": "#DEE2E6",
+                    "secondary": "#006875",
+                    "on-primary": "#ffffff",
+                    "danger-red": "#DC3545",
+                    "tech-gray": "#495057",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#44474c",
+                    "on-tertiary-container": "#89929b",
+                    "surface-dim": "#d9dadb",
+                    "secondary-container": "#00e3fd",
+                    "inverse-primary": "#b7c8de",
+                    "on-tertiary-fixed-variant": "#3f484f",
+                    "surface": "#f8f9fa",
+                    "background": "#f8f9fa",
+                    "surface-variant": "#e1e3e4",
+                    "tertiary-fixed-dim": "#bfc8d0",
+                    "on-tertiary": "#ffffff",
+                    "primary-container": "#1a2b3c",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#0e171d",
+                    "on-tertiary-fixed": "#141d23",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-secondary-container": "#00616d",
+                    "on-primary-fixed": "#0b1d2d",
+                    "success-green": "#28A745",
+                    "surface-container-high": "#e7e8e9",
+                    "primary": "#041627",
+                    "on-primary-container": "#8192a7",
+                    "error-container": "#ffdad6",
+                    "outline": "#74777d",
+                    "secondary-fixed": "#9cf0ff",
+                    "ai-cyan": "#00E5FF",
+                    "primary-fixed": "#d2e4fb",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-bright": "#f8f9fa",
+                    "secondary-fixed-dim": "#00daf3",
+                    "error": "#ba1a1a",
+                    "inverse-surface": "#2e3132",
+                    "outline-variant": "#c4c6cd",
+                    "surface-container": "#edeeef",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#dbe4ed",
+                    "on-surface": "#191c1d",
+                    "on-background": "#191c1d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "32px",
+                    "container-max-width": "1280px",
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "technical-data": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "technical-data": ["13px", {"lineHeight": "1.4", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .checkout-step.active .step-icon {
+            background-color: #1A2B3C;
+            color: #00E5FF;
+        }
+        .checkout-step.completed .step-icon {
+            background-color: #28A745;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-ai-cyan/30">
+<header class="bg-surface border-b border-border-subtle sticky top-0 z-50">
+<div class="flex justify-between items-center h-16 px-margin-desktop max-w-container-max-width mx-auto">
+<div class="font-headline-sm text-headline-sm font-bold text-industrial-navy">
+                TechParts AI
+            </div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="text-tech-gray font-body-md hover:text-industrial-navy transition-colors" href="#">Catálogo</a>
+<a class="text-tech-gray font-body-md hover:text-industrial-navy transition-colors" href="#">Suporte</a>
+<a class="text-tech-gray font-body-md hover:text-industrial-navy transition-colors" href="#">Pedidos</a>
+</div>
+<div class="flex items-center space-x-6">
+<button class="text-industrial-navy hover:text-ai-cyan transition-colors">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+</button>
+<button class="text-industrial-navy hover:text-ai-cyan transition-colors">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-8 space-y-12">
+<section>
+<div class="flex justify-between items-center mb-8">
+<h1 class="font-headline-lg text-headline-lg text-industrial-navy">Seu Carrinho</h1>
+<span class="font-technical-data text-tech-gray">3 ITENS</span>
+</div>
+<div class="flex items-center justify-between mb-12 overflow-x-auto pb-4">
+<div class="checkout-step active flex flex-col items-center min-w-[80px]">
+<div class="step-icon w-10 h-10 rounded-full flex items-center justify-center border-2 border-industrial-navy mb-2 transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+</div>
+<span class="font-label-caps text-label-caps text-industrial-navy">Identificação</span>
+</div>
+<div class="flex-grow h-px bg-border-subtle mx-4 mb-6"></div>
+<div class="checkout-step flex flex-col items-center min-w-[80px]">
+<div class="step-icon w-10 h-10 rounded-full flex items-center justify-center border-2 border-border-subtle text-tech-gray mb-2 transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="local_shipping">local_shipping</span>
+</div>
+<span class="font-label-caps text-label-caps text-tech-gray">Entrega</span>
+</div>
+<div class="flex-grow h-px bg-border-subtle mx-4 mb-6"></div>
+<div class="checkout-step flex flex-col items-center min-w-[80px]">
+<div class="step-icon w-10 h-10 rounded-full flex items-center justify-center border-2 border-border-subtle text-tech-gray mb-2 transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="payments">payments</span>
+</div>
+<span class="font-label-caps text-label-caps text-tech-gray">Pagamento</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-lowest border border-border-subtle p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:shadow-sm transition-all">
+<div class="w-full md:w-32 h-32 bg-surface-container-low flex-shrink-0">
+<img class="w-full h-full object-contain mix-blend-multiply" data-alt="A professional studio product shot of a high-end industrial servo motor on a clean white background. The motor features brushed metal textures and precise cable connectors, emphasizing industrial durability and precision engineering. Soft, cinematic studio lighting highlights the metallic surfaces and the intricate technical labels, adhering to a high-utility, modern corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsWjMz-fPY711Co1SjdMldg8O9oyy_c9QCOZ-msxjKm7M-eWErNilVdV45p5PxFOeXZLhG_cMabKMJWz2vZayTGor566NnjZhvbONI3KCbEiPk7BMzTqz7wkXN7fzim080HkeuNJwBmlt-mOJIoSU4h1YCFzsEpwNX5vm9YfdQpV9VByQVDwptgsYKKsF8vtzwitAweCpXGqzPV32V32dpZ3_t9qDGFKe1Ez8oI3NspVKiyf73SaE">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-caps text-label-caps text-tech-gray mb-1">SIEMENS INDUSTRIAL</p>
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy font-bold">Servo Motor 1FK7042</h3>
+<p class="font-technical-data text-tech-gray mt-1">S/N: 29384-AX | 3.5Nm | 3000RPM</p>
+</div>
+<button class="text-tech-gray hover:text-danger-red transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+<div class="flex justify-between items-center mt-4">
+<div class="flex items-center border border-border-subtle rounded">
+<button class="px-3 py-1 hover:bg-surface-container-low transition-colors">-</button>
+<span class="px-4 py-1 font-technical-data border-x border-border-subtle">1</span>
+<button class="px-3 py-1 hover:bg-surface-container-low transition-colors">+</button>
+</div>
+<div class="text-right">
+<p class="font-headline-sm text-headline-sm text-industrial-navy">R$ 4.250,00</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-border-subtle p-4 md:p-6 flex flex-col md:flex-row gap-6 group hover:shadow-sm transition-all">
+<div class="w-full md:w-32 h-32 bg-surface-container-low flex-shrink-0">
+<img class="w-full h-full object-contain mix-blend-multiply" data-alt="A detailed, macro technical photograph of a programmable logic controller module with multiple input and output ports. The design is sleek and industrial, showcasing the precise labeling and status LEDs in a bright, modern lighting setup. The focus is sharp on the technical details and connectors, set against a neutral, high-key studio background that reflects the precision and innovation of automated technologies." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALYUtiU6WTCzYn4Stmu0gCDzCWd9Rio9DnBzCpcNyIRmmSnbgwecHGWOuTZN03o7AJ84eQOzXKjqb_WMccgGsgSp-6iQ7CIzp4aT_JWUtHQdDkzIdNThspcfAikd4mUvRt4j6chtRL9cd1uQXe8EkrFhQKlQekC6W9n-LUBZGOi8Kwo8ZMhFUYdQMkz39NfEL0kZLqzXTNWi565e9hU7fvN4DyUufWzsov2D5EmI4mzTu7-RDSqEM">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-caps text-label-caps text-tech-gray mb-1">OMRON AUTOMATION</p>
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy font-bold">Módulo Digital NX-ID5342</h3>
+<p class="font-technical-data text-tech-gray mt-1">16 Inputs | 24VDC | PNP</p>
+</div>
+<button class="text-tech-gray hover:text-danger-red transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+<div class="flex justify-between items-center mt-4">
+<div class="flex items-center border border-border-subtle rounded">
+<button class="px-3 py-1 hover:bg-surface-container-low transition-colors">-</button>
+<span class="px-4 py-1 font-technical-data border-x border-border-subtle">2</span>
+<button class="px-3 py-1 hover:bg-surface-container-low transition-colors">+</button>
+</div>
+<div class="text-right">
+<p class="font-headline-sm text-headline-sm text-industrial-navy">R$ 1.180,00</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-lowest border border-border-subtle p-6">
+<h2 class="font-headline-sm text-headline-sm text-industrial-navy mb-6">Método de Pagamento</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<label class="relative flex items-center border-2 border-industrial-navy bg-surface cursor-pointer rounded-lg group p-6">
+<input checked="" class="sr-only" name="payment" type="radio">
+<span class="material-symbols-outlined text-industrial-navy mr-3" data-icon="credit_card">credit_card</span>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg text-industrial-navy font-semibold">Cartão de Crédito</span>
+<span class="text-tech-gray text-body-md">Até 12x sem juros</span>
+</div>
+<span class="absolute top-4 right-4 text-ai-cyan">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</span>
+</label>
+<label class="relative flex items-center border-2 border-border-subtle hover:border-tech-gray transition-colors cursor-pointer rounded-lg p-6">
+<input class="sr-only" name="payment" type="radio">
+<span class="material-symbols-outlined text-tech-gray mr-3" data-icon="qr_code_2">qr_code_2</span>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg text-industrial-navy font-semibold">Pix</span>
+<span class="text-success-green font-semibold text-body-md">5% de desconto extra</span>
+</div>
+</label>
+</div>
+<div class="mt-8 space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-tech-gray mb-2">Número do Cartão</label>
+<input class="border border-border-subtle p-3 font-technical-data focus:ring-1 focus:ring-industrial-navy outline-none" placeholder="0000 0000 0000 0000" type="text">
+</div>
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-tech-gray mb-2">Nome Impresso</label>
+<input class="border border-border-subtle p-3 focus:ring-1 focus:ring-industrial-navy outline-none" placeholder="JOSÉ SILVA" type="text">
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-tech-gray mb-2">Validade</label>
+<input class="border border-border-subtle p-3 font-technical-data focus:ring-1 focus:ring-industrial-navy outline-none" placeholder="MM/AA" type="text">
+</div>
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-tech-gray mb-2">CVV</label>
+<input class="border border-border-subtle p-3 font-technical-data focus:ring-1 focus:ring-industrial-navy outline-none" placeholder="123" type="text">
+</div>
+<div class="flex flex-col col-span-2 md:col-span-1">
+<label class="font-label-caps text-label-caps text-tech-gray mb-2">Parcelas</label>
+<select class="border border-border-subtle p-3 bg-white focus:ring-1 focus:ring-industrial-navy outline-none">
+<option>1x de R$ 5.430,00</option>
+<option>5x de R$ 1.086,00</option>
+<option>10x de R$ 543,00</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+</div>
+<aside class="lg:col-span-4">
+<div class="sticky top-24 space-y-6">
+<div class="bg-industrial-navy p-6 text-white rounded-lg">
+<h2 class="font-headline-sm text-headline-sm mb-6 flex items-center">
+                            Resumo do Pedido
+                        </h2>
+<div class="space-y-4 border-b border-white/10 pb-6">
+<div class="flex justify-between font-body-md">
+<span class="text-on-primary-container">Subtotal</span>
+<span class="font-technical-data">R$ 5.430,00</span>
+</div>
+<div class="flex justify-between font-body-md">
+<span class="text-on-primary-container">Frete (SEDEX)</span>
+<span class="font-technical-data text-ai-cyan">R$ 45,00</span>
+</div>
+<div class="flex justify-between font-body-md">
+<span class="text-on-primary-container">Descontos</span>
+<span class="font-technical-data text-success-green">- R$ 0,00</span>
+</div>
+</div>
+<div class="py-6 space-y-4">
+<div class="flex flex-col">
+<label class="text-xs uppercase tracking-widest text-on-primary-container mb-2">Cupom de Desconto</label>
+<div class="flex gap-2">
+<input class="flex-grow bg-white/5 border border-white/20 p-2 text-white font-technical-data focus:border-ai-cyan outline-none transition-colors" placeholder="Inserir código" type="text">
+<button class="bg-ai-cyan text-industrial-navy px-4 font-bold text-xs uppercase hover:bg-white transition-colors">Aplicar</button>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-end mb-8">
+<span class="font-headline-sm font-bold">Total</span>
+<div class="text-right">
+<p class="text-ai-cyan font-headline-lg text-headline-lg">R$ 5.475,00</p>
+<p class="text-xs text-on-primary-container">ou 12x de R$ 456,25</p>
+</div>
+</div>
+<button class="w-full bg-ai-cyan text-industrial-navy py-4 font-bold text-headline-sm hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group uppercase">
+                            FINALIZAR COMPRA
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="bg-surface border border-border-subtle p-6 space-y-6">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-success-green" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+<div>
+<p class="font-bold text-industrial-navy">Ambiente Seguro</p>
+<p class="text-xs text-tech-gray">Criptografia SSL de 256 bits para sua proteção total.</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4 pt-4 border-t border-border-subtle">
+<div class="flex flex-col items-center opacity-60 grayscale hover:grayscale-0 transition-all">
+<img alt="Visa" class="h-8 w-auto mb-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwArbg3RwqF-bXoOlm45AY0dC-RIZ89rJvgcyyFDjL8rw__WQXYARiI1uLicYAmOKGu_sdmufsa9F8bQWO_Wa04J4zaTIlmjfYLh1UCYyaiQkBvQelIH14a9YWUkVcBTh8j4Bezcr_tkxOP_O9UkJGHk9S_n_2-DV0OdNkvm2mxKS4-Uj2JmXaKgdPkRmQaPIvZVQaX1JeJV91QxDCZ6s1cpbh66xjMJ2MuRA-7k0ffltb_yZzafw">
+<span class="text-[10px] text-tech-gray">Verified</span>
+</div>
+<div class="flex flex-col items-center opacity-60 grayscale hover:grayscale-0 transition-all">
+<img alt="Mastercard" class="h-8 w-auto mb-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChyHyg_Q1Wh3RcFPXUbMdqbhmVctkBJrqOEUGWQL4IWzGyTROYte3ulHdJtgxxaxdjpZMuHay0vFpXLvpTkK-0WliC57lmFJQ6dwIJTNActaeHQ-Nhl6fKrtTJPn-EZU54ou0CYQyTYgtLCLH8ANo4xqG4vuMUSHjDwNGsgjTr8a79aOS4z2n2ADsFutJET5lzA1NST_qpm_lEodtGOqaOyyLj5I_e2z5W3bVTdU_05sKHVg7dfKg">
+<span class="text-[10px] text-tech-gray">SecureCode</span>
+</div>
+<div class="flex flex-col items-center opacity-60 grayscale hover:grayscale-0 transition-all">
+<img alt="PCI" class="h-8 w-auto mb-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACDyVOYx-uGA05-NaLFw6qjgM5bTCigRiBOtOVZ_nxCFFLzjyZPR4l39F178QVo7ZFMeu6HmZ1mNqjGH9XVuL1qV4J-wVISEZoWSJOqiPTJx31rbJOs1xmmWmYH20hH26DkUiWtHa0IJZ4CalJWWwOYp535HzfGiaGe9SJXytEHHNCumw3cTHgkZgNqfh4pl3bg6ZuM7La-dzzcFcllHzMbBntKPIunincG-Ae5339dTOS_XfTHZk">
+<span class="text-[10px] text-tech-gray">Compliance</span>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-secondary-fixed/20 p-3 rounded">
+<span class="material-symbols-outlined text-secondary" data-icon="verified">verified</span>
+<p class="text-xs font-semibold text-on-secondary-fixed-variant">Garantia TechParts AI: Peças originais com rastreabilidade total.</p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<footer class="bg-surface-container-low border-t border-border-subtle mt-20 md:py-16">
+<div class="w-full py-12 px-margin-desktop flex flex-col md:flex-row justify-between items-start max-w-container-max-width mx-auto gap-8">
+<div class="max-w-xs">
+<div class="font-headline-sm text-headline-sm text-industrial-navy font-bold mb-4">TechParts AI</div>
+<p class="text-tech-gray text-body-md">Soluções inteligentes em reposição industrial. Eficiência através de Automação.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-12">
+<div class="flex flex-col gap-3">
+<p class="font-label-caps text-label-caps text-industrial-navy mb-2">Suporte</p>
+<a class="text-tech-gray hover:text-industrial-navy transition-colors" href="#">Termos de Uso</a>
+<a class="text-tech-gray hover:text-industrial-navy transition-colors" href="#">Privacidade</a>
+</div>
+<div class="flex flex-col gap-3">
+<p class="font-label-caps text-label-caps text-industrial-navy mb-2">Documentação</p>
+<a class="text-tech-gray hover:text-industrial-navy transition-colors" href="#">Manuais Técnicos</a>
+<a class="text-tech-gray hover:text-industrial-navy transition-colors" href="#">API</a>
+</div>
+</div>
+</div>
+<div class="max-w-container-max-width mx-auto px-margin-desktop pb-8 text-center md:text-left text-tech-gray text-xs border-t border-border-subtle pt-8">
+            © 2024 TechParts AI - Eficiência através de Automação. Todos os direitos reservados.
+        </div>
+</footer>
+<nav class="fixed bottom-0 w-full flex justify-around items-center py-2 px-4 bg-surface-container-lowest border-t border-border-subtle shadow-lg md:hidden z-50">
+<a class="flex flex-col items-center justify-center text-tech-gray" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-tech-gray" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-caps text-label-caps mt-1">Suporte</span>
+</a>
+<a class="flex flex-col items-center justify-center text-tech-gray" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-caps text-label-caps mt-1">Pedidos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-industrial-navy bg-secondary-fixed rounded-xl px-4 py-1" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+<span class="font-label-caps text-label-caps mt-1">Carrinho</span>
+</a>
+</nav>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = document.querySelectorAll('input[type="text"], select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.parentElement.classList.add('border-industrial-navy');
+                });
+                input.addEventListener('blur', () => {
+                    input.parentElement.classList.remove('border-industrial-navy');
+                });
+            });
+
+            const paymentLabels = document.querySelectorAll('label[name="payment_label"]');
+            const paymentRadios = document.querySelectorAll('input[name="payment"]');
+            
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    paymentRadios.forEach(r => {
+                        const label = r.closest('label');
+                        if (r.checked) {
+                            label.classList.add('border-industrial-navy', 'bg-surface');
+                            label.classList.remove('border-border-subtle');
+                            const icon = label.querySelector('.material-symbols-outlined');
+                            // Note: dynamic fill logic could be added here
+                        } else {
+                            label.classList.remove('border-industrial-navy', 'bg-surface');
+                            label.classList.add('border-border-subtle');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
+
+</body></html>

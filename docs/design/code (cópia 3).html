@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TechParts AI - Peças Técnicas com Inteligência</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f4f5",
+                    "on-secondary-fixed-variant": "#004f58",
+                    "on-primary-fixed-variant": "#38485a",
+                    "surface-tint": "#4f6073",
+                    "primary-fixed-dim": "#b7c8de",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#222b32",
+                    "on-secondary-fixed": "#001f24",
+                    "industrial-navy": "#1A2B3C",
+                    "border-subtle": "#DEE2E6",
+                    "secondary": "#006875",
+                    "on-primary": "#ffffff",
+                    "danger-red": "#DC3545",
+                    "tech-gray": "#495057",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#44474c",
+                    "on-tertiary-container": "#89929b",
+                    "surface-dim": "#d9dadb",
+                    "secondary-container": "#00e3fd",
+                    "inverse-primary": "#b7c8de",
+                    "on-tertiary-fixed-variant": "#3f484f",
+                    "surface": "#f8f9fa",
+                    "background": "#f8f9fa",
+                    "surface-variant": "#e1e3e4",
+                    "tertiary-fixed-dim": "#bfc8d0",
+                    "on-tertiary": "#ffffff",
+                    "primary-container": "#1a2b3c",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#0e171d",
+                    "on-tertiary-fixed": "#141d23",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-secondary-container": "#00616d",
+                    "on-primary-fixed": "#0b1d2d",
+                    "success-green": "#28A745",
+                    "surface-container-high": "#e7e8e9",
+                    "primary": "#041627",
+                    "on-primary-container": "#8192a7",
+                    "error-container": "#ffdad6",
+                    "outline": "#74777d",
+                    "secondary-fixed": "#9cf0ff",
+                    "ai-cyan": "#00E5FF",
+                    "primary-fixed": "#d2e4fb",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-bright": "#f8f9fa",
+                    "secondary-fixed-dim": "#00daf3",
+                    "error": "#ba1a1a",
+                    "inverse-surface": "#2e3132",
+                    "outline-variant": "#c4c6cd",
+                    "surface-container": "#edeeef",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#dbe4ed",
+                    "on-surface": "#191c1d",
+                    "on-background": "#191c1d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "32px",
+                    "container-max-width": "1280px",
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "technical-data": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "technical-data": ["13px", {"lineHeight": "1.4", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-ai {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+        .tech-shadow {
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #1A2B3C; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-surface">
+<!-- TopNavBar -->
+<header class="bg-surface border-b border-border-subtle sticky top-0 z-50">
+<div class="flex justify-between items-center h-16 px-margin-desktop max-w-container-max-width mx-auto">
+<div class="font-headline-sm text-headline-sm font-bold text-industrial-navy">TechParts AI</div>
+<nav class="hidden md:flex items-center space-x-8">
+<a class="font-body-md text-body-md text-industrial-navy border-b-2 border-industrial-navy pb-1" href="#">Catálogo</a>
+<a class="font-body-md text-body-md text-tech-gray hover:text-industrial-navy transition-colors" href="#">Suporte</a>
+<a class="font-body-md text-body-md text-tech-gray hover:text-industrial-navy transition-colors" href="#">Pedidos</a>
+</nav>
+<div class="flex items-center space-x-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-tech-gray text-sm">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-border-subtle rounded text-sm w-64 focus:ring-1 focus:ring-industrial-navy focus:border-industrial-navy outline-none" placeholder="Busca inteligente..." type="text"/>
+</div>
+<div class="flex items-center space-x-2">
+<button class="p-2 text-industrial-navy hover:bg-surface-container-high transition-colors rounded-full">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+<button class="p-2 text-industrial-navy hover:bg-surface-container-high transition-colors rounded-full">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-8">
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-industrial-navy rounded-xl mb-12 min-h-[400px] flex items-center px-8 md:px-16 py-12">
+<div class="absolute inset-0 opacity-20 pointer-events-none">
+
+</div>
+<div class="relative z-10 max-w-2xl">
+<span class="inline-block px-3 py-1 bg-ai-cyan text-industrial-navy font-label-caps text-label-caps rounded mb-4">Eficiência através de Automação</span>
+<h1 class="font-headline-lg text-headline-lg text-white mb-6">Encontre a peça exata com Diagnóstico por IA</h1>
+<p class="text-on-primary-container font-body-lg text-body-lg mb-8 max-w-lg">Nossa rede neural analisa esquemas técnicos e especificações em milissegundos para garantir 100% de compatibilidade com seu equipamento.</p>
+<div class="flex flex-col sm:flex-row gap-4">
+<div class="relative flex-1">
+<input class="w-full h-14 pl-12 pr-4 bg-white/10 border border-white/20 text-white rounded-lg focus:outline-none focus:border-ai-cyan" placeholder="Ex: Motor compressor embraco 1/4..." type="text"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-ai-cyan">smart_toy</span>
+</div>
+<button class="h-14 px-8 bg-ai-cyan text-industrial-navy font-bold rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
+<span>Analisar Compatibilidade</span>
+</button>
+</div>
+</div>
+<div class="hidden lg:block absolute right-16 top-1/2 -translate-y-1/2 w-80 h-80">
+<div class="w-full h-full rounded-2xl border border-ai-cyan/30 glass-ai p-6 flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-ai-cyan text-6xl mb-4" style="font-variation-settings: 'FILL' 1;">precision_manufacturing</span>
+<p class="font-technical-data text-technical-data text-industrial-navy">SISTEMA ATIVO<br/>v2.4.88 - Diagnostic Ready</p>
+</div>
+</div>
+</section>
+<!-- Main Content Area -->
+<div class="flex flex-col md:flex-row gap-8">
+<!-- Filter Sidebar -->
+<aside class="w-full md:w-64 flex-shrink-0">
+<div class="sticky top-24 space-y-8">
+<div>
+<h3 class="font-label-caps text-label-caps text-tech-gray mb-4">FILTROS TÉCNICOS</h3>
+<div class="space-y-4">
+<div class="space-y-2">
+<label class="font-body-md text-body-md font-semibold">Marca</label>
+<select class="w-full bg-white border border-border-subtle rounded px-3 py-2 text-sm focus:border-industrial-navy outline-none">
+<option>Todas as marcas</option>
+<option>Brastemp</option>
+<option>Electrolux</option>
+<option>Samsung</option>
+<option>LG</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-body-md text-body-md font-semibold">Voltagem</label>
+<div class="grid grid-cols-2 gap-2">
+<button class="border border-border-subtle px-3 py-2 text-sm hover:border-industrial-navy transition-colors">110v</button>
+<button class="border border-border-subtle px-3 py-2 text-sm hover:border-industrial-navy transition-colors">220v</button>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-body-md text-body-md font-semibold">Tipo de Peça</label>
+<div class="space-y-1">
+<label class="flex items-center gap-2 cursor-pointer py-1">
+<input class="rounded border-border-subtle text-industrial-navy focus:ring-industrial-navy" type="checkbox"/>
+<span class="text-sm">Eletrônicos</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer py-1">
+<input class="rounded border-border-subtle text-industrial-navy focus:ring-industrial-navy" type="checkbox"/>
+<span class="text-sm">Motores</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer py-1">
+<input class="rounded border-border-subtle text-industrial-navy focus:ring-industrial-navy" type="checkbox"/>
+<span class="text-sm">Estrutural</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg border border-border-subtle">
+<p class="font-label-caps text-label-caps text-tech-gray mb-2">SUPORTE RÁPIDO</p>
+<p class="text-xs mb-3">Dúvidas sobre o código SKU ou dimensões da peça?</p>
+<button class="w-full py-2 bg-industrial-navy text-white text-xs font-bold rounded">Consultar Técnico</button>
+</div>
+</div>
+</aside>
+<!-- Product Feed -->
+<div class="flex-1">
+<!-- Categories Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+<div class="md:col-span-2 group relative h-48 bg-surface-container rounded-xl overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="A detailed, clean studio photograph of industrial air conditioning internal components and fans arranged neatly on a white surface. The lighting is bright and professional, highlighting technical details and metallic textures. The overall mood is modern and corporate, following the TechParts AI industrial-navy and tech-gray color palette." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDgaS-r09-R9PHCxxsoFUeBneG2f-tMJvFH4wNqQLbE4EXS6HJ_mmajzc_fgz8UDn5yWhExLNh4_s06d7VQRD1gBpuMR9dFbaq6aSQ4Id-sjYqUUryAeiWX4udu8DPhXFyW6gKdoWfFoHljG7oUdwK_IhlqG82a5Uk-TNI3M6yzEOcp1-EvFXgzu3xS0LBf0MbyHJpgIAwJ0_B38KXlt98A5QorL_L0Qcfo_1JRAls4Qk3t5mTWVGs')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-industrial-navy/80 to-transparent flex flex-col justify-end p-6">
+<h2 class="text-white font-headline-sm text-headline-sm">Ar-condicionado</h2>
+<p class="text-ai-cyan text-sm">Compressores, placas e filtros</p>
+</div>
+</div>
+<div class="group relative h-48 bg-surface-container rounded-xl overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="A macro photograph of high-tech kitchen appliance parts, specifically focus on a blender motor and dishwasher heating elements. The scene is bright and clinical, emphasizing reliability and engineering precision. Use a high-key lighting setup with soft shadows and hints of cyan accents to maintain the brand's innovation theme." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAp7u747W1vEpKeaHvcOKZ1PI2MVpw-hdI1tYgXVluucqfFK84Z0mkev51cHMH-OZAplpFSevAHM968tDDyrHxEKD-LNS0bX8AuWhEIOWLbF7P72xvmPyodv039UIEa0qM2gRvCddWTw7AHNZeOZAw4ffokUhCHPvW42CLKw2obiYfCqY90TrDwpvQT3MhmKw7ng2jNV_T4eAN2pVZ9OZXhtJtB9XPvc6rdYua_9Cv40hwDB_1Wlys')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-industrial-navy/80 to-transparent flex flex-col justify-end p-6">
+<h2 class="text-white font-headline-sm text-headline-sm">Cozinha</h2>
+<p class="text-ai-cyan text-sm">Motores e sensores</p>
+</div>
+</div>
+<div class="group relative h-48 bg-surface-container rounded-xl overflow-hidden cursor-pointer">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="An artistic view of industrial ventilation fans and blowers captured with a shallow depth of field. The lighting highlights the matte black finishes and copper wiring. The atmosphere is professional and industrial, suitable for a technical e-commerce platform. Colors include cool greys and industrial navy with sharp focus on technical labels." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD3cHpq-EwZ7bw21WPTRmKrg2QZwXPKfwE5CPw3d7lTqdVuNiwieL_Du4yrl9_cf7f0zxVQCToA23c0nsx-ifhSmi4RP1BCABkBwhTLxowghXRmG5TID_2dB7mQDheKUAIqgZn6H8vkE2Ih2QCH1EoYB4EDnO2kHYuHK5H7BJZdKoORfboh4hMYiLpWGS0QRvS0hSfYwM9BkFOWMvKnFRD8uspYDcWcbq7DrcP2EB67hhu6Ltl_srg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-industrial-navy/80 to-transparent flex flex-col justify-end p-6">
+<h2 class="text-white font-headline-sm text-headline-sm">Ventiladores</h2>
+<p class="text-ai-cyan text-sm">Hélices e capacitores</p>
+</div>
+</div>
+</div>
+<!-- Product Grid -->
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-sm text-headline-sm text-industrial-navy">Produtos em Destaque</h2>
+<span class="text-sm text-tech-gray">Mostrando 12 de 450 peças</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Product Card 1 -->
+<div class="bg-white border border-border-subtle rounded-lg overflow-hidden flex flex-col tech-shadow transition-all hover:translate-y-[-4px]">
+<div class="h-48 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A close-up studio shot of a high-efficiency refrigerator compressor component, sitting on a white reflective surface. Bright, professional photography with cool industrial tones. The image focuses on the technical build quality and metal finishing, fitting the precise aesthetic of the TechParts AI store." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3D0IJVqL602cSyAfU1-z63oFx2i7j1ywm7Y61zltdy4Ipc6pnDYzRARbsjG9kL346BohMI9mPDwXGd2s1iItMmmq1-Hd_aRXehrffgfFItu0nT60AwlWky21M9SZ9Gb6CnKqCSEcCmy4gJVE36gkO76taQyVMupNz4IFB49iQRjVMj7Mo-39RXWePYQGg83ThSn1hOAUAA5JRwGv8EMB0EWH4LJdFIc_wsfPPMDQUdgpfm3Ke-nk"/>
+<div class="absolute top-2 right-2 px-2 py-1 bg-success-green/10 text-success-green font-label-caps text-[10px] rounded border border-success-green/20">EM ESTOQUE</div>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<span class="font-label-caps text-label-caps text-tech-gray mb-1">BRASTEMP / ELECTROLUX</span>
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy mb-2 line-clamp-2">Motor Compressor 1/4 HP R134a 110v</h3>
+<div class="font-technical-data text-technical-data text-tech-gray bg-surface-container-low p-2 rounded mb-4">
+                                SKU: COMP-R134-440
+                            </div>
+<div class="flex items-center gap-1 text-on-secondary-container bg-secondary-fixed mb-4 px-2 py-1 rounded w-fit">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+<span class="text-[11px] font-bold">COMPATIBILIDADE GARANTIDA</span>
+</div>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-xs text-tech-gray">À vista</span>
+<span class="text-xl font-bold text-industrial-navy">R$ 489,90</span>
+</div>
+<button class="p-3 bg-industrial-navy text-white rounded-lg hover:bg-primary transition-colors">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-white border border-border-subtle rounded-lg overflow-hidden flex flex-col tech-shadow transition-all hover:translate-y-[-4px]">
+<div class="h-48 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Technical view of a programmable logic controller and interface board for industrial appliances. The lighting is vibrant and high-tech, using cyan highlights to emphasize the electronic complexity. Professional product photography for a high-utility technical catalog." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDi5fsbGUQ60-vIFytr-tAAf92Ijuyaj9VgOJtKQok8sVXoQFQ0JbNyF8tuTkVy4DJYBz0M2iS4SIQ3Sz_Mnlzu-zGRhGuylK2XEV7h4P-Oujgo1-ieyMtMT6vLCRA5D29Ebc9CrwHy2qX47cm8VPy2ejeWJBqKekXm-QKi0Gua9oTs-lT0NxXqCLNk7WcZZE7dMTa8JPTE5y4oRHUEl3YC8c2bJu7PivjZr1d8USeDJOjjXCwbgdk"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<span class="font-label-caps text-label-caps text-tech-gray mb-1">SAMSUNG AI</span>
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy mb-2 line-clamp-2">Placa Interface Inverter Smart Control</h3>
+<div class="font-technical-data text-technical-data text-tech-gray bg-surface-container-low p-2 rounded mb-4">
+                                SKU: PCB-INV-S880
+                            </div>
+<div class="flex items-center gap-1 text-on-secondary-container bg-secondary-fixed mb-4 px-2 py-1 rounded w-fit">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+<span class="text-[11px] font-bold">COMPATIBILIDADE GARANTIDA</span>
+</div>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-xs text-tech-gray">À vista</span>
+<span class="text-xl font-bold text-industrial-navy">R$ 325,00</span>
+</div>
+<button class="p-3 bg-industrial-navy text-white rounded-lg hover:bg-primary transition-colors">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-white border border-border-subtle rounded-lg overflow-hidden flex flex-col tech-shadow transition-all hover:translate-y-[-4px]">
+<div class="h-48 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A precise high-angle shot of a heavy-duty industrial fan blade and motor assembly on a gray background. Strong metallic reflections and sharp focus on the bolt patterns. Clean, professional, and trustworthy visual style for engineering components." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4SZLSR7zkq2uR0EHhWT06FGk4tW4-bllNEcObyy3EPK2RxGB77B9IcbR3mKaTKZFNYwCsLfrtOzDtXYXxZQFIMBpxVSTb9yZ1tEsPyAgmNsJdfV5x-yZDBRWwCBkpxU_kIc8-7kLX2r2CawAdc5eTNT1nnwJOSnKM1kEEsaYzFQRM_FpwuYpF4_w3CBSH03xTXe5RRPlVajZoP8NJ7T54Of2DambjOgNA8bHT37aRw-58Qxs7Tmk"/>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<span class="font-label-caps text-label-caps text-tech-gray mb-1">UNIVERSAL / TECH</span>
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy mb-2 line-clamp-2">Conjunto Hélice 60cm Balanceada</h3>
+<div class="font-technical-data text-technical-data text-tech-gray bg-surface-container-low p-2 rounded mb-4">
+                                SKU: FAN-BLD-60X
+                            </div>
+<div class="flex items-center gap-1 text-on-secondary-container bg-secondary-fixed mb-4 px-2 py-1 rounded w-fit">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+<span class="text-[11px] font-bold">COMPATIBILIDADE GARANTIDA</span>
+</div>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-xs text-tech-gray">À vista</span>
+<span class="text-xl font-bold text-industrial-navy">R$ 159,00</span>
+</div>
+<button class="p-3 bg-industrial-navy text-white rounded-lg hover:bg-primary transition-colors">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- AI Chatbot Button/Interface -->
+<div class="fixed bottom-24 right-8 z-[100] md:bottom-8" id="ai-chat-widget">
+<div class="hidden mb-4 w-80 h-[450px] bg-white border border-border-subtle rounded-xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform translate-y-4 opacity-0" id="chat-window">
+<div class="bg-ai-cyan p-4 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-industrial-navy">smart_toy</span>
+<span class="font-bold text-industrial-navy text-sm">TechParts Assistant</span>
+</div>
+<button class="text-industrial-navy" onclick="toggleChat()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 p-4 space-y-4 overflow-y-auto bg-surface">
+<div class="bg-surface-variant p-3 rounded-lg rounded-tl-none text-xs max-w-[85%]">
+                    Olá! Sou o assistente de IA. Como posso ajudar você a encontrar a peça certa hoje?
+                </div>
+<div class="flex flex-col items-end">
+<div class="bg-industrial-navy text-white p-3 rounded-lg rounded-tr-none text-xs max-w-[85%]">
+                        Preciso de um motor para Brastemp Frost Free antigo.
+                    </div>
+</div>
+<div class="bg-white border border-ai-cyan/30 p-3 rounded-lg rounded-tl-none shadow-sm max-w-[85%]">
+<div class="flex items-center gap-1 text-[10px] text-ai-cyan font-bold mb-1">
+<span class="material-symbols-outlined text-[12px]">search_insights</span>
+                        ANALISANDO DIAGNÓSTICO
+                    </div>
+<p class="text-xs">Para modelos antigos, recomendo o motor SKU: COMP-R134-440. Quer que eu valide o modelo exato?</p>
+<div class="mt-2 flex gap-1 overflow-x-auto">
+<span class="inline-block px-2 py-1 bg-surface-container-low text-[9px] font-technical-data border border-border-subtle rounded cursor-pointer">Ver Manual PDF</span>
+<span class="inline-block px-2 py-1 bg-surface-container-low text-[9px] font-technical-data border border-border-subtle rounded cursor-pointer">Ver Dimensões</span>
+</div>
+</div>
+</div>
+<div class="p-3 border-t border-border-subtle bg-white">
+<div class="relative">
+<input class="w-full text-xs py-2 px-3 pr-10 border border-border-subtle rounded-lg focus:outline-none focus:border-ai-cyan" placeholder="Descreva o problema ou SKU..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-ai-cyan">
+<span class="material-symbols-outlined text-sm">send</span>
+</button>
+</div>
+</div>
+</div>
+<button class="w-16 h-16 bg-ai-cyan text-industrial-navy rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform active:scale-95" onclick="toggleChat()">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</button>
+</div>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center py-2 px-4 bg-surface-container-lowest border-t border-border-subtle shadow-lg z-50 md:hidden">
+<div class="flex flex-col items-center justify-center text-industrial-navy bg-secondary-fixed rounded-xl px-3 py-1">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-tech-gray">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-caps text-label-caps">Suporte</span>
+</div>
+<div class="flex flex-col items-center justify-center text-tech-gray">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-caps text-label-caps">Pedidos</span>
+</div>
+<div class="flex flex-col items-center justify-center text-tech-gray">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-label-caps text-label-caps">Carrinho</span>
+</div>
+</nav>
+<!-- Footer -->
+<footer class="w-full py-8 px-margin-desktop bg-surface-container-low border-t border-border-subtle">
+<div class="max-w-container-max-width mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col items-center md:items-start">
+<span class="font-headline-sm text-headline-sm text-industrial-navy font-bold mb-2">TechParts AI</span>
+<p class="font-body-md text-body-md text-tech-gray">© 2024 TechParts AI - Eficiência através de Automação</p>
+</div>
+<nav class="flex flex-wrap justify-center gap-6">
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan" href="#">Termos de Uso</a>
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan" href="#">Privacidade</a>
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan" href="#">Manuais Técnicos</a>
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan" href="#">API</a>
+</nav>
+</div>
+</footer>
+<script>
+        function toggleChat() {
+            const window = document.getElementById('chat-window');
+            if (window.classList.contains('hidden')) {
+                window.classList.remove('hidden');
+                setTimeout(() => {
+                    window.classList.remove('translate-y-4', 'opacity-0');
+                }, 10);
+            } else {
+                window.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => {
+                    window.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // Micro-interactions for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => btn.classList.add('scale-95'));
+            btn.addEventListener('mouseup', () => btn.classList.remove('scale-95'));
+        });
+    </script>
+</body></html>

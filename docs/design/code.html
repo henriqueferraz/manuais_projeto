@@ -1,0 +1,414 @@
+<!DOCTYPE html><html class="light" lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AI Diagnostic | TechParts AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#004f58",
+                        "inverse-surface": "#2e3132",
+                        "primary-fixed-dim": "#b7c8de",
+                        "secondary-container": "#00e3fd",
+                        "on-error-container": "#93000a",
+                        "danger-red": "#DC3545",
+                        "surface-dim": "#d9dadb",
+                        "primary-fixed": "#d2e4fb",
+                        "outline-variant": "#c4c6cd",
+                        "on-tertiary-fixed-variant": "#3f484f",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-bright": "#f8f9fa",
+                        "on-surface": "#191c1d",
+                        "border-subtle": "#DEE2E6",
+                        "surface-container": "#edeeef",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#141d23",
+                        "tertiary-fixed": "#dbe4ed",
+                        "tertiary-container": "#222b32",
+                        "outline": "#74777d",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#00daf3",
+                        "on-primary-container": "#8192a7",
+                        "on-secondary-container": "#00616d",
+                        "on-primary-fixed-variant": "#38485a",
+                        "on-background": "#191c1d",
+                        "primary": "#041627",
+                        "on-tertiary-container": "#89929b",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#44474c",
+                        "on-secondary-fixed": "#001f24",
+                        "on-error": "#ffffff",
+                        "ai-cyan": "#00E5FF",
+                        "tertiary": "#0e171d",
+                        "surface-tint": "#4f6073",
+                        "secondary-fixed": "#9cf0ff",
+                        "surface-container-lowest": "#ffffff",
+                        "success-green": "#28A745",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#e1e3e4",
+                        "background": "#f8f9fa",
+                        "surface-container-low": "#f3f4f5",
+                        "on-tertiary": "#ffffff",
+                        "industrial-navy": "#1A2B3C",
+                        "inverse-on-surface": "#f0f1f2",
+                        "primary-container": "#1a2b3c",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface": "#f8f9fa",
+                        "tertiary-fixed-dim": "#bfc8d0",
+                        "tech-gray": "#495057"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "container-max-width": "1280px",
+                        "gutter": "16px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "technical-data": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "technical-data": ["13px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["26px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ai-glow {
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1A2B3C;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col overflow-hidden">
+<!-- TopNavBar -->
+<nav class="bg-surface border-b border-border-subtle z-40">
+<div class="flex justify-between items-center h-16 px-margin-desktop max-w-container-max-width mx-auto">
+<div class="flex items-center gap-8">
+<span class="font-headline-sm text-headline-sm font-bold text-industrial-navy">TechParts AI</span>
+<div class="hidden md:flex gap-6">
+<a class="text-tech-gray font-body-md hover:text-industrial-navy transition-colors" href="#">Catálogo</a>
+<a class="text-industrial-navy border-b-2 border-industrial-navy pb-1 font-body-md transition-colors" href="#">Suporte</a>
+<a class="text-tech-gray font-body-md hover:text-industrial-navy transition-colors" href="#">Pedidos</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-industrial-navy cursor-pointer" data-icon="shopping_cart">shopping_cart</span>
+<span class="material-symbols-outlined text-industrial-navy cursor-pointer" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</nav>
+<div class="flex-1 flex overflow-hidden">
+<!-- Sidebar: Recent Chats & Technical Docs -->
+<aside class="hidden lg:flex w-80 flex-col bg-surface-container-low border-r border-border-subtle">
+<!-- Search sidebar -->
+<div class="p-4 border-b border-border-subtle">
+<div class="relative">
+<input class="w-full pl-9 pr-4 py-2 bg-surface border border-border-subtle text-body-md rounded-lg focus:ring-1 focus:ring-industrial-navy focus:border-industrial-navy" placeholder="Ex: Erro E12 no controlador" type="text">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-tech-gray text-[20px]" data-icon="search">search</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-2 py-4 space-y-8">
+<!-- Recent Chats -->
+<section>
+<h3 class="px-3 font-label-caps text-label-caps text-tech-gray uppercase mb-3">Conversas Recentes</h3>
+<div class="space-y-1">
+<button class="w-full flex items-center gap-3 px-3 py-2.5 bg-surface-container-high rounded-xl text-left border-l-4 border-ai-cyan">
+<span class="material-symbols-outlined text-[20px] text-industrial-navy" data-icon="chat_bubble">chat_bubble</span>
+<div class="overflow-hidden">
+<p class="text-body-md font-medium text-industrial-navy truncate">Ventilador não liga - Industrial...</p>
+<p class="text-[11px] text-tech-gray">2 min atrás</p>
+</div>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-container-high rounded-xl text-left transition-colors">
+<span class="material-symbols-outlined text-[20px] text-tech-gray" data-icon="chat_bubble">chat_bubble</span>
+<div class="overflow-hidden">
+<p class="text-body-md text-tech-gray truncate">Motor Trifásico - Superaquecimento</p>
+<p class="text-[11px] text-tech-gray">Ontem</p>
+</div>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-surface-container-high rounded-xl text-left transition-colors">
+<span class="material-symbols-outlined text-[20px] text-tech-gray" data-icon="chat_bubble">chat_bubble</span>
+<div class="overflow-hidden">
+<p class="text-body-md text-tech-gray truncate">Substituição de Rolamentos</p>
+<p class="text-[11px] text-tech-gray">3 dias atrás</p>
+</div>
+</button>
+</div>
+</section>
+<!-- Technical Docs -->
+<section>
+<h3 class="px-3 font-label-caps text-label-caps text-tech-gray uppercase mb-3">Documentação Relacionada</h3>
+<div class="space-y-2">
+<a class="flex items-start gap-3 p-3 bg-surface border border-border-subtle rounded hover:border-industrial-navy transition-all group" href="#">
+<span class="material-symbols-outlined text-industrial-navy group-hover:text-ai-cyan" data-icon="description">description</span>
+<div>
+<p class="text-body-md font-semibold text-industrial-navy">Manual V-Series 2024</p>
+<p class="text-technical-data text-[11px] text-tech-gray uppercase">PDF • 12.4MB</p>
+</div>
+</a>
+<a class="flex items-start gap-3 p-3 bg-surface border border-border-subtle rounded hover:border-industrial-navy transition-all group" href="#">
+<span class="material-symbols-outlined text-industrial-navy group-hover:text-ai-cyan" data-icon="engineering">engineering</span>
+<div>
+<p class="text-body-md font-semibold text-industrial-navy">Guia de Solução de Falhas</p>
+<p class="text-technical-data text-[11px] text-tech-gray uppercase">PDF • 4.2MB</p>
+</div>
+</a>
+</div>
+</section>
+</div>
+<!-- Escalation Section -->
+<div class="p-4 bg-industrial-navy mt-auto">
+<p class="text-[12px] text-ai-cyan font-bold mb-2 uppercase tracking-wider">Confiança Baixa?</p>
+<button class="w-full bg-ai-cyan text-industrial-navy py-2 px-4 rounded font-bold text-body-md hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="support_agent">support_agent</span>
+                    Falar com Especialista
+                </button>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col relative bg-surface-container-lowest">
+<!-- Chat Header -->
+<header class="p-4 border-b border-border-subtle flex justify-between items-center bg-white/80 backdrop-blur-md">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-industrial-navy rounded-lg flex items-center justify-center ai-glow">
+<span class="material-symbols-outlined text-ai-cyan" data-icon="smart_toy" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-industrial-navy">Assistente de Diagnóstico AI</h2>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-success-green animate-pulse"></span>
+<span class="text-[11px] text-tech-gray font-technical-data uppercase">Motor de Diagnóstico v4.2 Ativo</span>
+</div>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-tech-gray hover:text-industrial-navy hover:bg-surface-container rounded-lg">
+<span class="material-symbols-outlined" data-icon="print">print</span>
+</button>
+<button class="p-2 text-tech-gray hover:text-industrial-navy hover:bg-surface-container rounded-lg">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+</div>
+</header>
+<!-- Chat Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-8 max-w-4xl mx-auto w-full">
+<!-- User Message -->
+<div class="flex justify-end items-start gap-4">
+<div class="bg-surface-container-low border border-border-subtle p-4 rounded-2xl rounded-tr-none max-w-[80%] shadow-sm">
+<p class="text-body-lg text-industrial-navy">Meu ventilador industrial V-400 não liga. Percebi um cheiro de queimado logo antes de parar.</p>
+<p class="text-[10px] text-tech-gray text-right mt-2 uppercase font-technical-data">Hoje • 10:42</p>
+</div>
+<div class="w-8 h-8 rounded-full bg-tech-gray flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="person">person</span>
+</div>
+</div>
+<!-- AI Response -->
+<div class="flex justify-start items-start gap-4">
+<div class="w-8 h-8 rounded-full bg-industrial-navy flex items-center justify-center shrink-0 ai-glow">
+<span class="material-symbols-outlined text-ai-cyan text-[18px]" data-icon="smart_toy" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="space-y-4 max-w-[85%]">
+<!-- Diagnosis Text -->
+<div class="bg-white border-l-4 border-ai-cyan p-5 rounded-2xl rounded-tl-none shadow-sm space-y-4">
+<div class="flex items-center gap-2 text-ai-cyan font-bold uppercase text-[12px] tracking-widest">
+<span class="material-symbols-outlined text-[16px]" data-icon="check_circle">check_circle</span>
+                                Diagnóstico Preliminar
+                            </div>
+<p class="text-body-lg leading-relaxed text-industrial-navy">
+                                Baseado na descrição do "cheiro de queimado" e na cessação total do funcionamento do modelo <span class="font-bold underline decoration-ai-cyan">V-400</span>, há 85% de probabilidade de falha no **Capacitor de Partida** ou no **Fusível Térmico do Estator**.
+                            </p>
+<!-- Product Manual Snippet -->
+<div class="bg-surface-container-lowest border border-border-subtle p-4 rounded-xl">
+<div class="flex justify-between items-center mb-2">
+<span class="font-technical-data text-[11px] text-tech-gray uppercase">Ref: Manual V-Series • Pág. 42</span>
+<span class="material-symbols-outlined text-[14px] text-industrial-navy" data-icon="open_in_new">open_in_new</span>
+</div>
+<p class="text-body-md text-tech-gray italic border-l-2 border-tech-gray/20 pl-3">
+                                    "Em caso de interrupção abrupta de corrente acompanhada de odor acre, verifique a integridade do componente C2 (Capacitor) e a continuidade do fusível térmico (F1)."
+                                </p>
+</div>
+<!-- Recommended Parts -->
+<div class="pt-2">
+<h4 class="font-label-caps text-label-caps text-industrial-navy uppercase mb-3">Peças de Reposição Recomendadas</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Card 1 -->
+<div class="border border-border-subtle rounded-xl p-3 flex gap-4 hover:border-ai-cyan transition-colors group">
+<div class="w-16 h-16 bg-surface rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="A professional product studio shot of a cylindrical industrial capacitor with silver metallic casing and black wire leads, sitting on a clean technical grid background with cold studio lighting in shades of navy and cyan." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWiig2CALviDoXhOy0GrFjyfba-JX_ZUzSAE--7pDWl-mVkzUOswFOE3gHFiKAp-hZ95Yokm_va13CAGOT-cKEupOeDdV3DujYv4rhmR0r6xGIX2belzhZAR9rtuKBW_QvZOKiXvlPcNu97AUxpZbJVrMHjmQnYyh2sk5URMjXp8wSR9LuFjGoGnpkE4DfNOAPc9kexqWd6ajcoYeSs7PgnEwqTUM9I-i6RPi2J6wCNw7THcSLhOI">
+</div>
+<div class="flex flex-col justify-between flex-1">
+<div>
+<p class="text-[10px] text-tech-gray uppercase font-bold">TechParts Pro</p>
+<p class="text-body-md font-bold text-industrial-navy leading-tight">Capacitor 45uF 450V</p>
+</div>
+<div class="flex justify-between items-end mt-2">
+<span class="font-technical-data text-industrial-navy font-bold">R$ 84,90</span>
+<button class="bg-industrial-navy text-white text-[11px] px-3 py-1 rounded hover:bg-ai-cyan hover:text-industrial-navy transition-all uppercase font-bold">Comprar</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="border border-border-subtle rounded-xl p-3 flex gap-4 hover:border-ai-cyan transition-colors group">
+<div class="w-16 h-16 bg-surface rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="A macro photograph of a technical thermal fuse for industrial motors, featuring a small white ceramic body and lead wires, displayed on a high-tech dark industrial background with professional sharp lighting and cyan accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgQprh83y6jm-Dy_GitoIGPSMJ-c8LBYHmAGLR8zCEVenkEMYCpUS3q9FCijMOeLJ6q3MStk42-J6LxzhMax_3Z_3cyU2dBBbi2ATAwlOMHCmYFsh9Pj0X8fvRLrLh6feGUslB5Vaytl0K_F2YMSdRJ_jPE4-GWIPhtJLxeUWgTl7nINvamVYnd3aRI7C_XpVTq1mEh8_Xt9927__pSg3VhCSg8Zp5LH_tn4oQFzNKuJJgqkJWAM8">
+</div>
+<div class="flex flex-col justify-between flex-1">
+<div>
+<p class="text-[10px] text-tech-gray uppercase font-bold">Genuine OEM</p>
+<p class="text-body-md font-bold text-industrial-navy leading-tight">Kit Fusível Térmico 135°C</p>
+</div>
+<div class="flex justify-between items-end mt-2">
+<span class="font-technical-data text-industrial-navy font-bold">R$ 22,50</span>
+<button class="bg-industrial-navy text-white text-[11px] px-3 py-1 rounded hover:bg-ai-cyan hover:text-industrial-navy transition-all uppercase font-bold">Comprar</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Feedback and Info -->
+<div class="flex items-center justify-between px-2">
+<div class="flex items-center gap-4">
+<span class="text-[11px] text-tech-gray">Esta resposta foi útil?</span>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-full border border-border-subtle flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[16px] text-tech-gray" data-icon="thumb_up">thumb_up</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-border-subtle flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[16px] text-tech-gray" data-icon="thumb_down">thumb_down</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-tech-gray" data-icon="history">history</span>
+<span class="text-[11px] text-tech-gray uppercase font-technical-data">Tempo de Resposta: 0.8s</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Low Confidence AI Warning (Simulated) -->
+<div class="flex justify-center">
+<div class="bg-error-container/20 border border-error/20 p-4 rounded-xl flex items-center gap-4 max-w-xl">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+<div>
+<p class="text-body-md text-on-error-container font-semibold">Diagnóstico Complexo Detectado</p>
+<p class="text-[12px] text-tech-gray">Se os sintomas persistirem após a troca do capacitor, o problema pode estar no enrolamento primário.</p>
+</div>
+<button class="ml-auto bg-industrial-navy text-white px-4 py-2 rounded text-[12px] font-bold shrink-0 hover:bg-tech-gray transition-colors">Solicitar Técnico</button>
+</div>
+</div>
+</div>
+<!-- Chat Input -->
+<footer class="p-6 bg-white border-t border-border-subtle">
+<div class="max-w-4xl mx-auto relative">
+<div class="flex items-center gap-4 bg-surface border border-border-subtle rounded-2xl p-2 shadow-inner focus-within:border-industrial-navy focus-within:ring-1 focus-within:ring-industrial-navy transition-all">
+<button class="p-2 text-tech-gray hover:text-industrial-navy rounded-xl">
+<span class="material-symbols-outlined" data-icon="attach_file">attach_file</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-body-lg text-industrial-navy placeholder:text-tech-gray/50" placeholder="Descreva o problema técnico aqui..." type="text">
+<button class="bg-industrial-navy text-white w-12 h-12 rounded-xl flex items-center justify-center hover:bg-tech-gray transition-transform active:scale-95 ai-glow">
+<span class="material-symbols-outlined" data-icon="send" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+<div class="flex justify-center mt-3 gap-6">
+<button class="flex items-center gap-1.5 text-[11px] text-tech-gray hover:text-industrial-navy uppercase font-bold tracking-wider">
+<span class="material-symbols-outlined text-[16px]" data-icon="camera">camera</span>
+                            Analisar Foto
+                        </button>
+<button class="flex items-center gap-1.5 text-[11px] text-tech-gray hover:text-industrial-navy uppercase font-bold tracking-wider">
+<span class="material-symbols-outlined text-[16px]" data-icon="mic">mic</span>
+                            Análise de Ruído
+                        </button>
+<button class="flex items-center gap-1.5 text-[11px] text-tech-gray hover:text-industrial-navy uppercase font-bold tracking-wider">
+<span class="material-symbols-outlined text-[16px]" data-icon="history">history</span>
+                            Histórico de Manutenção
+                        </button>
+</div>
+</div>
+</footer>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-surface-container-lowest border-t border-border-subtle flex justify-around items-center py-2 px-4 z-50">
+<a class="flex flex-col items-center justify-center text-tech-gray" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[10px] font-label-caps">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-industrial-navy bg-secondary-fixed rounded-xl px-3 py-1" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span class="text-[10px] font-label-caps">Suporte</span>
+</a>
+<a class="flex flex-col items-center justify-center text-tech-gray" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="text-[10px] font-label-caps">Pedidos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-tech-gray" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="text-[10px] font-label-caps">Carrinho</span>
+</a>
+</nav>
+<!-- Micro-interaction Script -->
+<script>
+        // Smoothly scroll chat to bottom
+        const chatContainer = document.querySelector('main > div');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Simple typing effect simulation for input placeholder
+        const input = document.querySelector('input[type="text"]');
+        const placeholders = [
+            "Descreva o problema técnico aqui...",
+            "Ex: Motor emitindo som agudo",
+            "Ex: Erro E12 no controlador",
+            "Ex: Substituir vedação V-12"
+        ];
+        let pIndex = 0;
+        setInterval(() => {
+            pIndex = (pIndex + 1) % placeholders.length;
+            input.setAttribute('placeholder', placeholders[pIndex]);
+        }, 4000);
+    </script>
+</body></html>

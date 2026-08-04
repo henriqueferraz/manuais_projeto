@@ -1,0 +1,436 @@
+<!DOCTYPE html><html class="light" lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Meus Chamados Técnicos - TechParts AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Configuração do Tailwind via Script Tag -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f4f5",
+                    "on-secondary-fixed-variant": "#004f58",
+                    "on-primary-fixed-variant": "#38485a",
+                    "surface-tint": "#4f6073",
+                    "primary-fixed-dim": "#b7c8de",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#222b32",
+                    "on-secondary-fixed": "#001f24",
+                    "industrial-navy": "#1A2B3C",
+                    "border-subtle": "#DEE2E6",
+                    "secondary": "#006875",
+                    "on-primary": "#ffffff",
+                    "danger-red": "#DC3545",
+                    "tech-gray": "#495057",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#44474c",
+                    "on-tertiary-container": "#89929b",
+                    "surface-dim": "#d9dadb",
+                    "secondary-container": "#00e3fd",
+                    "inverse-primary": "#b7c8de",
+                    "on-tertiary-fixed-variant": "#3f484f",
+                    "surface": "#f8f9fa",
+                    "background": "#f8f9fa",
+                    "surface-variant": "#e1e3e4",
+                    "tertiary-fixed-dim": "#bfc8d0",
+                    "on-tertiary": "#ffffff",
+                    "primary-container": "#1a2b3c",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#0e171d",
+                    "on-tertiary-fixed": "#141d23",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-secondary-container": "#00616d",
+                    "on-primary-fixed": "#0b1d2d",
+                    "success-green": "#28A745",
+                    "surface-container-high": "#e7e8e9",
+                    "primary": "#041627",
+                    "on-primary-container": "#8192a7",
+                    "error-container": "#ffdad6",
+                    "outline": "#74777d",
+                    "secondary-fixed": "#9cf0ff",
+                    "ai-cyan": "#00E5FF",
+                    "primary-fixed": "#d2e4fb",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-bright": "#f8f9fa",
+                    "secondary-fixed-dim": "#00daf3",
+                    "error": "#ba1a1a",
+                    "inverse-surface": "#2e3132",
+                    "outline-variant": "#c4c6cd",
+                    "surface-container": "#edeeef",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#dbe4ed",
+                    "on-surface": "#191c1d",
+                    "on-background": "#191c1d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "32px",
+                    "container-max-width": "1280px",
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "technical-data": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "technical-data": ["13px", {"lineHeight": "1.4", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-ai {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #DEE2E2;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-industrial-navy border-b border-border-subtle dark:border-tech-gray sticky top-0 z-50">
+<div class="flex justify-between items-center h-16 px-margin-desktop max-w-container-max-width mx-auto">
+<div class="font-headline-sm text-headline-sm font-bold text-industrial-navy dark:text-ai-cyan">TechParts AI</div>
+<nav class="hidden md:flex space-x-8 items-center">
+<a class="font-body-md text-body-md text-tech-gray dark:text-on-tertiary-container hover:text-industrial-navy dark:hover:text-ai-cyan transition-colors duration-200" href="#">Catálogo</a>
+<a class="font-body-md text-body-md text-industrial-navy dark:text-ai-cyan border-b-2 border-industrial-navy dark:border-ai-cyan pb-1 transition-colors duration-200" href="#">Suporte</a>
+<a class="font-body-md text-body-md text-tech-gray dark:text-on-tertiary-container hover:text-industrial-navy dark:hover:text-ai-cyan transition-colors duration-200" href="#">Pedidos</a>
+</nav>
+<div class="flex items-center space-x-4">
+<button class="material-symbols-outlined text-industrial-navy">shopping_cart</button>
+<button class="material-symbols-outlined text-industrial-navy">account_circle</button>
+</div>
+</div>
+</header>
+<main class="max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-8">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-industrial-navy mb-2">Área do Cliente</h1>
+<p class="text-tech-gray font-body-lg">Gerencie seus chamados técnicos e acompanhe diagnósticos em tempo real.</p>
+</div>
+<button class="bg-industrial-navy text-on-primary px-6 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all font-body-md font-bold shadow-sm" onclick="toggleModal('new-ticket-modal')">
+<span class="material-symbols-outlined">add_circle</span>
+                Abrir Novo Chamado
+            </button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Tickets List (Bento-style layout) -->
+<div class="lg:col-span-8 space-y-6">
+<h2 class="font-headline-sm text-headline-sm text-industrial-navy mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">assignment</span>
+                    Chamados Recentes
+                </h2>
+<!-- Ticket Card 1: Em Análise -->
+<div class="bg-surface-container-lowest border border-border-subtle p-6 rounded-xl hover:shadow-md transition-all group cursor-pointer" onclick="openChat('CH-8842')">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 bg-surface-container-low flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-industrial-navy">settings_input_component</span>
+</div>
+<div>
+<span class="font-technical-data text-label-caps text-tech-gray">#CH-8842</span>
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy leading-tight">Placa Lógica - Sensor de Pressão</h3>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-[#E3F2FD] text-[#1565C0] font-label-caps flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#1565C0] animate-pulse"></span>
+                            Em Análise
+                        </span>
+</div>
+<div class="flex items-center justify-between mt-6 pt-4 border-t border-border-subtle">
+<div class="flex gap-4">
+<div class="text-tech-gray">
+<span class="block font-label-caps text-[10px]">DATA ABERTURA</span>
+<span class="font-technical-data">14/10/2023</span>
+</div>
+<div class="text-tech-gray">
+<span class="block font-label-caps text-[10px]">TÉCNICO</span>
+<span class="font-body-md">AI Specialist Alpha</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-ai-cyan font-bold font-body-md group-hover:translate-x-1 transition-transform">
+                            Ver detalhes <span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Ticket Card 2: Aguardando Peça -->
+<div class="bg-surface-container-lowest border border-border-subtle p-6 rounded-xl hover:shadow-md transition-all cursor-pointer" onclick="openChat('CH-7751')">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 bg-surface-container-low flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-industrial-navy">compress</span>
+</div>
+<div>
+<span class="font-technical-data text-label-caps text-tech-gray">#CH-7751</span>
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy leading-tight">Motor Compressor Industrial X200</h3>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-[#FFF3E0] text-[#E65100] font-label-caps flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#E65100]"></span>
+                            Aguardando Peça
+                        </span>
+</div>
+<div class="flex items-center justify-between mt-6 pt-4 border-t border-border-subtle">
+<div class="flex gap-4">
+<div class="text-tech-gray">
+<span class="block font-label-caps text-[10px]">DATA ABERTURA</span>
+<span class="font-technical-data">10/10/2023</span>
+</div>
+<div class="text-tech-gray">
+<span class="block font-label-caps text-[10px]">ESTIMATIVA</span>
+<span class="font-body-md">2 dias úteis</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-ai-cyan font-bold font-body-md">
+                            Ver detalhes <span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Ticket Card 3: Resolvido -->
+<div class="bg-surface-container-lowest border border-border-subtle p-6 rounded-xl hover:shadow-md transition-all opacity-80 cursor-pointer" onclick="openChat('CH-6120')">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 bg-surface-container-low flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-industrial-navy">bolt</span>
+</div>
+<div>
+<span class="font-technical-data text-label-caps text-tech-gray">#CH-6120</span>
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy leading-tight">Fusível de Alta Potência - Linha A</h3>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-[#E8F5E9] text-[#2E7D32] font-label-caps flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#2E7D32]"></span>
+                            Resolvido
+                        </span>
+</div>
+<div class="flex items-center justify-between mt-6 pt-4 border-t border-border-subtle">
+<div class="flex gap-4">
+<div class="text-tech-gray">
+<span class="block font-label-caps text-[10px]">DATA CONCLUSÃO</span>
+<span class="font-technical-data">05/10/2023</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-tech-gray font-body-md">
+                            Histórico arquivado <span class="material-symbols-outlined">archive</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat Sidebar (Integrated) -->
+<div class="lg:col-span-4 h-[600px] flex flex-col glass-ai rounded-2xl overflow-hidden shadow-xl border border-ai-cyan/20">
+<div class="bg-industrial-navy p-4 text-on-primary flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-ai-cyan flex items-center justify-center">
+<span class="material-symbols-outlined text-industrial-navy text-[18px]">smart_toy</span>
+</div>
+<div>
+<p class="font-body-md font-bold leading-none">Suporte IA</p>
+<p class="text-[10px] opacity-70">Chamado #CH-8842</p>
+</div>
+</div>
+<span class="material-symbols-outlined cursor-pointer hover:text-ai-cyan">more_vert</span>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-white/50" id="chat-messages">
+<div class="max-w-[85%] bg-surface-container-high p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl text-on-surface text-body-md">
+                        Olá! Recebemos sua imagem da Placa Lógica. Estou analisando os componentes...
+                    </div>
+<div class="max-w-[85%] bg-industrial-navy text-on-primary p-3 rounded-tl-xl rounded-bl-xl rounded-br-xl ml-auto text-body-md">
+                        Conseguiram identificar o defeito no sensor?
+                    </div>
+<div class="max-w-[85%] bg-surface-container-high p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl text-on-surface text-body-md shadow-sm border-l-2 border-ai-cyan">
+                        Sim. A IA detectou uma fissura térmica no termistor R22. 
+                        <div class="mt-2 p-2 bg-white/50 rounded border border-border-subtle">
+<span class="font-technical-data text-[11px] block text-industrial-navy mb-1">FONTE TÉCNICA</span>
+<a class="text-ai-cyan text-[12px] underline flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[14px]">description</span> 
+                                Manual Service_X200_P14.pdf
+                             </a>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-border-subtle bg-white">
+<div class="flex items-center gap-2 bg-surface-container-low rounded-lg px-3 py-2 border border-border-subtle focus-within:border-industrial-navy transition-all">
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-body-md text-on-surface" placeholder="Escreva sua mensagem..." type="text">
+<button class="material-symbols-outlined text-tech-gray hover:text-industrial-navy">attach_file</button>
+<button class="material-symbols-outlined text-ai-cyan">send</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-tertiary border-t border-border-subtle dark:border-tech-gray mt-12">
+<div class="w-full py-8 px-margin-desktop flex flex-col md:flex-row justify-between items-center max-w-container-max-width mx-auto">
+<div class="font-headline-sm text-headline-sm text-industrial-navy dark:text-ai-cyan mb-4 md:mb-0">TechParts AI</div>
+<div class="flex gap-6 mb-4 md:mb-0">
+<a class="text-tech-gray dark:text-on-tertiary-container hover:underline decoration-ai-cyan transition-all" href="#">Termos de Uso</a>
+<a class="text-tech-gray dark:text-on-tertiary-container hover:underline decoration-ai-cyan transition-all" href="#">Privacidade</a>
+<a class="text-tech-gray dark:text-on-tertiary-container hover:underline decoration-ai-cyan transition-all" href="#">Manuais Técnicos</a>
+</div>
+<p class="text-tech-gray dark:text-on-tertiary-container text-body-md opacity-70">© 2024 TechParts AI - Eficiência através de Automação</p>
+</div>
+</footer>
+<!-- BottomNavBar Mobile -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center py-2 px-4 bg-surface-container-lowest dark:bg-industrial-navy border-t border-border-subtle dark:border-tech-gray shadow-lg z-50 md:hidden">
+<div class="flex flex-col items-center justify-center text-tech-gray dark:text-on-tertiary-container">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-[10px]">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-industrial-navy dark:text-ai-cyan bg-secondary-fixed dark:bg-secondary-container rounded-xl px-3 py-1">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-caps text-[10px]">Suporte</span>
+</div>
+<div class="flex flex-col items-center justify-center text-tech-gray dark:text-on-tertiary-container">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-caps text-[10px]">Pedidos</span>
+</div>
+<div class="flex flex-col items-center justify-center text-tech-gray dark:text-on-tertiary-container">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-label-caps text-[10px]">Carrinho</span>
+</div>
+</nav>
+<!-- Modal: Novo Chamado -->
+<div class="fixed inset-0 bg-industrial-navy/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4" id="new-ticket-modal">
+<div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
+<div class="bg-industrial-navy p-6 flex justify-between items-center">
+<h2 class="text-on-primary font-headline-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-ai-cyan">add_task</span>
+                    Abrir Novo Chamado Técnico
+                </h2>
+<button class="text-on-primary/60 hover:text-on-primary" onclick="toggleModal('new-ticket-modal')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<form class="p-8 space-y-6 overflow-y-auto max-h-[80vh]">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="block font-label-caps text-tech-gray">Equipamento</label>
+<input class="w-full border-border-subtle rounded-lg focus:ring-industrial-navy focus:border-industrial-navy p-3 font-body-md" placeholder="Ex: Compressor X200" type="text">
+</div>
+<div class="space-y-2">
+<label class="block font-label-caps text-tech-gray">Prioridade</label>
+<select class="w-full border-border-subtle rounded-lg focus:ring-industrial-navy focus:border-industrial-navy p-3 font-body-md">
+<option>Baixa</option>
+<option>Média</option>
+<option>Alta (Parada Crítica)</option>
+</select>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block font-label-caps text-tech-gray">Descrição do Problema</label>
+<textarea class="w-full border-border-subtle rounded-lg focus:ring-industrial-navy focus:border-industrial-navy p-3 font-body-md" placeholder="Descreva o sintoma detectado..." rows="3"></textarea>
+</div>
+<div class="space-y-4">
+<label class="block font-label-caps text-tech-gray">Identificação Visual por IA</label>
+<div class="border-2 border-dashed border-ai-cyan/30 bg-surface rounded-xl p-8 text-center cursor-pointer hover:bg-ai-cyan/5 transition-all" id="drop-area">
+<div id="upload-placeholder">
+<span class="material-symbols-outlined text-[48px] text-ai-cyan mb-2">add_a_photo</span>
+<p class="text-industrial-navy font-bold">Anexe a foto da peça quebrada</p>
+<p class="text-tech-gray text-[12px]">Nossa IA identificará o modelo e peças compatíveis instantaneamente.</p>
+</div>
+<div class="hidden flex-col items-center" id="ai-analyzing">
+<div class="w-12 h-12 border-4 border-ai-cyan border-t-transparent rounded-full animate-spin mb-4"></div>
+<p class="text-ai-cyan font-technical-data">ANALISANDO COMPONENTES...</p>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-border-subtle flex justify-end gap-4">
+<button class="px-6 py-3 text-tech-gray hover:text-industrial-navy transition-all font-body-md" onclick="toggleModal('new-ticket-modal')" type="button">Cancelar</button>
+<button class="bg-ai-cyan text-industrial-navy font-bold px-8 py-3 rounded-lg hover:shadow-lg hover:brightness-105 transition-all font-body-md" type="submit">Criar Chamado</button>
+</div>
+</form>
+</div>
+</div>
+<script>
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function openChat(ticketId) {
+            const chatHeader = document.querySelector('#chat-messages').previousElementSibling;
+            chatHeader.querySelector('p:last-child').innerText = `Chamado #${ticketId}`;
+            // Simulação de scroll
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+        }
+
+        // Simulação de IA no Upload
+        const dropArea = document.getElementById('drop-area');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const aiAnalyzing = document.getElementById('ai-analyzing');
+
+        dropArea.addEventListener('click', () => {
+            uploadPlaceholder.classList.add('hidden');
+            aiAnalyzing.classList.remove('hidden');
+            
+            setTimeout(() => {
+                aiAnalyzing.innerHTML = `
+                    <div class="flex items-center gap-4 bg-white p-4 rounded-lg border border-ai-cyan shadow-sm animate-in slide-in-from-bottom-4">
+                        <div class="w-16 h-16 bg-surface-variant rounded-md overflow-hidden relative">
+                             <div style="background-image: url('placeholder')" data-alt="A macro shot of a damaged electrical circuit board with a visible burn mark near a capacitor. The lighting is cold and clinical, highlighting the metallic textures and the precision of the technical failure in a modern industrial setting." class="w-full h-full bg-cover"></div>
+                        </div>
+                        <div class="text-left">
+                            <span class="text-[10px] font-technical-data bg-ai-cyan/20 text-industrial-navy px-2 rounded">IA DETECTOU</span>
+                            <p class="font-bold text-industrial-navy">Placa-Mãe Industrial Z-400</p>
+                            <p class="text-[12px] text-tech-gray">Falha provável: Termistor R22 (Superaquecimento)</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="resetUpload(event)" class="mt-4 text-[12px] text-tech-gray underline">Remover e trocar foto</button>
+                `;
+            }, 2000);
+        });
+
+        function resetUpload(e) {
+            e.stopPropagation();
+            aiAnalyzing.classList.add('hidden');
+            uploadPlaceholder.classList.remove('hidden');
+            aiAnalyzing.innerHTML = `
+                <div class="w-12 h-12 border-4 border-ai-cyan border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-ai-cyan font-technical-data">ANALISANDO COMPONENTES...</p>
+            `;
+        }
+    </script>
+</body></html>

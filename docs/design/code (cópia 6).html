@@ -1,0 +1,385 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<title>TechParts AI - Hélice Mondial</title>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-ai {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1A2B3C;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#d2e4fb",
+                        "on-tertiary": "#ffffff",
+                        "tech-gray": "#495057",
+                        "on-primary-fixed-variant": "#38485a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c4c6cd",
+                        "tertiary-fixed-dim": "#bfc8d0",
+                        "tertiary": "#0e171d",
+                        "surface-bright": "#f8f9fa",
+                        "secondary": "#006875",
+                        "inverse-primary": "#b7c8de",
+                        "on-tertiary-fixed-variant": "#3f484f",
+                        "surface-container-low": "#f3f4f5",
+                        "on-primary": "#ffffff",
+                        "ai-cyan": "#00E5FF",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#44474c",
+                        "surface-container-high": "#e7e8e9",
+                        "primary": "#041627",
+                        "surface-container": "#edeeef",
+                        "inverse-surface": "#2e3132",
+                        "surface-tint": "#4f6073",
+                        "on-tertiary-container": "#89929b",
+                        "on-secondary-fixed-variant": "#004f58",
+                        "inverse-on-surface": "#f0f1f2",
+                        "industrial-navy": "#1A2B3C",
+                        "on-tertiary-fixed": "#141d23",
+                        "border-subtle": "#DEE2E6",
+                        "surface-dim": "#d9dadb",
+                        "on-secondary-fixed": "#001f24",
+                        "surface": "#f8f9fa",
+                        "on-background": "#191c1d",
+                        "tertiary-container": "#222b32",
+                        "primary-container": "#1a2b3c",
+                        "outline": "#74777d",
+                        "on-error": "#ffffff",
+                        "danger-red": "#DC3545",
+                        "secondary-fixed-dim": "#00daf3",
+                        "on-surface": "#191c1d",
+                        "tertiary-fixed": "#dbe4ed",
+                        "surface-variant": "#e1e3e4",
+                        "secondary-fixed": "#9cf0ff",
+                        "success-green": "#28A745",
+                        "secondary-container": "#00e3fd",
+                        "primary-fixed-dim": "#b7c8de",
+                        "on-primary-container": "#8192a7",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#00616d",
+                        "background": "#f8f9fa",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-primary-fixed": "#0b1d2d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "container-max-width": "1280px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "technical-data": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "technical-data": ["13px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["26px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface border-b border-border-subtle fixed top-0 w-full z-[100]">
+<nav class="flex justify-between items-center h-16 px-margin-desktop max-w-container-max-width mx-auto">
+<div class="font-headline-sm text-headline-sm font-bold text-industrial-navy">
+                TechParts AI
+            </div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-body-md text-body-md text-industrial-navy border-b-2 border-industrial-navy pb-1 hover:text-industrial-navy transition-colors duration-200" href="#">Catálogo</a>
+<a class="font-body-md text-body-md text-tech-gray hover:text-industrial-navy transition-colors duration-200" href="#">Suporte</a>
+<a class="font-body-md text-body-md text-tech-gray hover:text-industrial-navy transition-colors duration-200" href="#">Pedidos</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-tech-gray">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container border border-border-subtle rounded text-body-md focus:outline-none focus:border-industrial-navy transition-all w-64" placeholder="Buscar peça..." type="text">
+</div>
+<button class="text-industrial-navy flex items-center">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+</button>
+<button class="text-industrial-navy flex items-center">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</nav>
+</header>
+<main class="mt-24 mb-32 px-margin-mobile md:px-margin-desktop max-w-container-max-width mx-auto">
+<!-- Breadcrumb -->
+<nav class="flex items-center gap-2 mb-8 text-tech-gray font-label-caps text-label-caps">
+<a class="hover:text-industrial-navy" href="#">Home</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-industrial-navy" href="#">Ventilação</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-industrial-navy">Hélice Mondial</span>
+</nav>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+<!-- Left Column: Gallery (6 Columns) -->
+<section class="lg:col-span-7 flex flex-col gap-6">
+<div class="aspect-square bg-white border border-border-subtle rounded-xl flex items-center justify-center p-8 overflow-hidden group shadow-sm">
+<img class="max-w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105" id="mainImage" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGswRYW8rWzHbAzZdBT7qHvEY1Sh5EMLnnVciJFKE2p2QsG7WSwuerrAekLo54zpnS9gIsq0GI0OZor8FqFV8t03oFNH_5tK_4K_jF0aIwrwZvNtBNenybDj2sptvf-OU2vFGbtnjtnQ8YGRkkTbtfh5gjQQ55VlQh0P40Iib1_VMaGnsSInSaCSHZirgu4sufPBXIE7QRqnbXhAOK-Def6o7o7EaIKovC6AzIXeX2eo5T0ONUWKI">
+</div>
+<div class="grid grid-cols-4 gap-4">
+<button class="aspect-square border-2 border-industrial-navy rounded-lg p-2 bg-white cursor-pointer transition-all" onclick="updateMainImage(this.querySelector('img').src, this)">
+<img class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2KHXF4nhXNkRSJ5g2EPOekrRS8XifEJ-cP4Zn0H9JODRYOCQZaQvpnXUftNR-xcvf025EYPT_92Rc8Uz36E22RYcJ-7RUyGOd9Cz70_SNsWgds8Fm8a1mCBFBXB0s9Ji7t8BLl3cckDifQ421flYeGDrza1e4eRUXOe822qXIhxG96A7rQO5eA0t6Cmvc9sFUCjSxvl7IPhnBqgrMxim91uNVJ8hUCDHw9SPXqNeYqb7P4UMtPy0">
+</button>
+<button class="aspect-square border border-border-subtle rounded-lg p-2 bg-white hover:border-tech-gray cursor-pointer transition-all" onclick="updateMainImage(this.querySelector('img').src, this)">
+<img class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBurV7C5COLoWHLcQZYb8xZSvQv4LwLRq6N1bTGFczwzWGEsopwv2l-jUP9gfaNtSw3VpfaRDgv-20tBUgnwTrL5pfdT0Ff_HnZq355Ob6xWHp0FPTrV6rJNzU8XRyPzoqjSuuOlCTJlOCn8nfNuBYwGSfxcrTguNRkSwynuzdZn2fBkYAz5p0EYzH0uvLfYdC5h1VfLKg7TCYtQJj9HwB2_4D5p-3MTcx3_2tB1dCJVJPCSK8vCQ">
+</button>
+<button class="aspect-square border border-border-subtle rounded-lg p-2 bg-white hover:border-tech-gray cursor-pointer transition-all" onclick="updateMainImage(this.querySelector('img').src, this)">
+<img class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5B4Q6x29g8qd0X0fH7dd3gxgKNm50ok3scm2RDCUogNxyXH9QFYnMHVZ3znfDCbOiywhF3htz2X1Oy1hs8dlJXe31wmzVG2BTSyNIxSC1PgO5FKUE7svhGnq99qXQ6s40msj4OGPH6jJCLQHmrgOEb8XCgxGTAh3D_GoOF12gEDXaLxNZ8X7QIjodtFsJX4upzhvcsTEA_4Qq4OXulJSIr8CfWywvziveyKpQhUwYHbmYxv2ZshU">
+</button>
+<button class="aspect-square border border-border-subtle rounded-lg p-2 bg-white hover:border-tech-gray cursor-pointer relative transition-all">
+<div class="absolute inset-0 bg-industrial-navy/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-industrial-navy">play_circle</span>
+</div>
+<img class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiOwVYKOeno-JFhv_Zgm5K1R-7KnkiyNz4tDCmNTynJhvzNY15tLzVjr9vmA4ugNWPAsbLTffoYKLGg0AdljynnooDz-gBAYkW-YSpwHdrpzqOQlIRM3_MRmqfwUfP_pKWAcd3-39Relvtg7b92BF2IAsldPLc2utGvXYjBnK4NrmMYf0LdXckn-oPGHO4DrnYHHoo-sb26rlh_Ocp_ec3ZPLPxbxlm5GFLl0Na_6EL8iaLb6olno">
+</button>
+</div>
+<div class="mt-8 border-t border-border-subtle pt-8">
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy mb-4">Descrição do Especialista</h3>
+<p class="font-body-lg text-body-lg text-tech-gray leading-relaxed">
+                        Hélice de reposição original desenvolvida para garantir o fluxo de ar máximo e baixo ruído. O design aerodinâmico Mondial foi otimizado para motores de alto torque, reduzindo o aquecimento e prolongando a vida útil do seu ventilador. Fabricado em polímero virgem para evitar o amarelamento precoce e garantir a flexibilidade necessária para evitar quebras em altas rotações.
+                    </p>
+</div>
+</section>
+<!-- Right Column: Sidebar (5 Columns) -->
+<section class="lg:col-span-5 flex flex-col gap-6 lg:sticky lg:top-24">
+<div class="space-y-1">
+<span class="font-label-caps text-label-caps text-tech-gray uppercase tracking-widest">SKU: MON-FAN-HEL-02</span>
+<h1 class="font-headline-lg text-headline-lg text-industrial-navy leading-tight">Hélice para Ventilador de Teto Mondial</h1>
+<div class="flex items-center gap-3 pt-2">
+<div class="flex text-ai-cyan">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined">star_half</span>
+</div>
+<span class="font-body-md text-body-md text-tech-gray">(128 avaliações)</span>
+</div>
+</div>
+<div class="bg-white p-6 border border-border-subtle rounded-xl shadow-sm space-y-6">
+<div class="flex items-baseline gap-3">
+<span class="font-headline-lg text-headline-lg text-industrial-navy">R$ 54,90</span>
+<span class="font-body-md text-body-md text-tech-gray line-through">R$ 69,00</span>
+</div>
+<div class="flex items-center gap-2 text-success-green font-semibold">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<p class="font-body-md text-body-md">Em estoque - Envio Imediato</p>
+</div>
+<div class="space-y-3">
+<button class="w-full bg-industrial-navy text-on-primary py-4 rounded-lg font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-primary transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">shopping_cart</span>
+                            Comprar Agora
+                        </button>
+<button class="w-full border border-industrial-navy text-industrial-navy py-4 rounded-lg font-headline-sm text-headline-sm hover:bg-surface-container-low transition-all">
+                            Adicionar ao Carrinho
+                        </button>
+</div>
+</div>
+<!-- AI Compatibility Widget -->
+<div class="glass-ai p-6 rounded-xl relative border border-ai-cyan/20">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-industrial-navy">smart_toy</span>
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy">Verificar Compatibilidade</h3>
+</div>
+<p class="font-body-md text-body-md text-tech-gray mb-4 leading-snug">
+                        Digite o modelo do seu aparelho (ex: VT-41-6P) para validar.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-2">
+<input class="flex-1 bg-white border border-border-subtle px-4 py-3 rounded-lg text-body-md focus:border-ai-cyan focus:ring-1 focus:ring-ai-cyan outline-none" id="modelInput" placeholder="Modelo Mondial..." type="text">
+<button class="bg-ai-cyan text-industrial-navy px-6 py-3 rounded-lg font-bold hover:brightness-110 transition-all" onclick="checkCompatibility()">
+                            Verificar
+                        </button>
+</div>
+<div class="mt-4 hidden p-3 rounded-lg font-body-md transition-all duration-300" id="compatibilityResult"></div>
+</div>
+<!-- PDF Manual Link -->
+<a class="flex items-center justify-between p-4 bg-surface-container-low border border-border-subtle rounded-lg hover:border-industrial-navy group transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-danger-red">picture_as_pdf</span>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-bold text-industrial-navy">Manual de Instalação</span>
+<span class="font-label-caps text-label-caps text-tech-gray">PDF (2.4 MB) - Original</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-tech-gray group-hover:translate-x-1 transition-transform">download</span>
+</a>
+</section>
+</div>
+<!-- Technical Specs Section -->
+<div class="mt-16 pt-12 border-t border-border-subtle">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12">
+<div class="md:col-span-8">
+<h2 class="font-headline-md text-headline-md text-industrial-navy mb-8">Especificações Técnicas</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6">
+<div class="border-b border-border-subtle pb-4 flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">Material</span>
+<span class="font-technical-data text-technical-data text-industrial-navy text-lg">Polipropileno de Alta Resistência (UV Protected)</span>
+</div>
+<div class="border-b border-border-subtle pb-4 flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">Diâmetro Nominal</span>
+<span class="font-technical-data text-technical-data text-industrial-navy text-lg">400mm (40cm)</span>
+</div>
+<div class="border-b border-border-subtle pb-4 flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">Quantidade de Pás</span>
+<span class="font-technical-data text-technical-data text-industrial-navy text-lg">3 Pás Balanceadas eletronicamente</span>
+</div>
+<div class="border-b border-border-subtle pb-4 flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">Furação de Encaixe</span>
+<span class="font-technical-data text-technical-data text-industrial-navy text-lg">Padrão Mondial de 4 furos</span>
+</div>
+<div class="border-b border-border-subtle pb-4 flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">Cor</span>
+<span class="font-technical-data text-technical-data text-industrial-navy text-lg">Branco Neve</span>
+</div>
+<div class="border-b border-border-subtle pb-4 flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-tech-gray uppercase">Peso</span>
+<span class="font-technical-data text-technical-data text-industrial-navy text-lg">145g por pá</span>
+</div>
+</div>
+</div>
+<aside class="md:col-span-4">
+<h3 class="font-headline-sm text-headline-sm text-industrial-navy mb-8">Recomendados</h3>
+<div class="flex flex-col gap-4">
+<!-- Cross-sell Card 1 -->
+<div class="p-4 border border-border-subtle rounded-xl flex gap-4 hover:shadow-md transition-all group bg-white">
+<div class="w-16 h-16 bg-surface-container-low rounded-lg p-2 flex-shrink-0">
+<img class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQpG3p5MCKv2fh8nS5ierg5VApbET5OQl9A68R41Gb0gT3uTxR1gvgSWXel5bWf8yYf-6VuBuLUlLKiDdMoOTMgMQGnkCkUIlI9G-P_cL4wJhS4OHFHaVPtPU4NpGi3-BY1LfZzFahi206hyt2xHvOjhirdAMhvCZZLHcOhQ85apxBNjI1vQMbAO3XcvR7VsESh3cNA6ZhFxNvrAyLzn1VqS0McaEGtcrlRnIlCpX-GCwYNQbo_58">
+</div>
+<div class="flex flex-col justify-center">
+<span class="font-label-caps text-label-caps text-tech-gray">Capacitor</span>
+<h4 class="font-body-md text-body-md font-bold text-industrial-navy leading-tight">4uF 400V Original</h4>
+<span class="font-body-md text-body-md text-industrial-navy mt-1">R$ 15,90</span>
+</div>
+</div>
+<!-- Cross-sell Card 2 -->
+<div class="p-4 border border-border-subtle rounded-xl flex gap-4 hover:shadow-md transition-all group bg-white">
+<div class="w-16 h-16 bg-surface-container-low rounded-lg p-2 flex-shrink-0">
+<img class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD93nKO567DmHnaXP-ZTElxdePRJdEX4A5A1_t-8aNY3Yoo7jj7S5RhypaHfVRP96HjhgdwzYb3MzstY_snhBdiLRKnzZGP25ptcURqdth33JEklrrPOsG1q9sk1YzZM509FiFg6NSGgiQpcJcj8_26MYW0FAoCoi8B629EsVwJxHcjjbNbTrKCLkFWtTQ4w1OE5xVRN72Sm5ZnqWTOb50RaO4exg6BeCxR4M0tku_vSbzDJcng008">
+</div>
+<div class="flex flex-col justify-center">
+<span class="font-label-caps text-label-caps text-tech-gray">Controle</span>
+<h4 class="font-body-md text-body-md font-bold text-industrial-navy leading-tight">Chave de Parede</h4>
+<span class="font-body-md text-body-md text-industrial-navy mt-1">R$ 29,90</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-border-subtle mt-20">
+<div class="w-full py-12 px-margin-desktop flex flex-col md:flex-row justify-between items-center max-w-container-max-width mx-auto">
+<div class="font-headline-sm text-headline-sm text-industrial-navy font-bold mb-6 md:mb-0">
+                TechParts AI
+            </div>
+<div class="flex flex-wrap justify-center gap-8 mb-6 md:mb-0">
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan" href="#">Termos</a>
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan" href="#">Privacidade</a>
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan" href="#">Manuais</a>
+<a class="font-body-md text-body-md text-tech-gray hover:underline decoration-ai-cyan" href="#">API</a>
+</div>
+<div class="font-body-md text-body-md text-tech-gray opacity-80">
+                © 2024 TechParts AI
+            </div>
+</div>
+</footer>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center py-3 px-4 bg-surface-container-lowest border-t border-border-subtle shadow-lg md:hidden z-50">
+<div class="flex flex-col items-center justify-center text-tech-gray">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-[10px] mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-tech-gray">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-caps text-[10px] mt-1">IA</span>
+</div>
+<div class="flex flex-col items-center justify-center text-industrial-navy bg-ai-cyan/20 rounded-xl px-4 py-1">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-label-caps text-[10px] mt-1 font-bold">Carrinho</span>
+</div>
+</nav>
+<script>
+        function updateMainImage(src, button) {
+            document.getElementById('mainImage').src = src;
+            // Clear all borders
+            document.querySelectorAll('section.lg\\:col-span-7 button').forEach(btn => {
+                btn.classList.remove('border-industrial-navy', 'border-2');
+                btn.classList.add('border-border-subtle', 'border');
+            });
+            // Highlight active
+            button.classList.remove('border-border-subtle', 'border');
+            button.classList.add('border-industrial-navy', 'border-2');
+        }
+
+        function checkCompatibility() {
+            const input = document.getElementById('modelInput');
+            const result = document.getElementById('compatibilityResult');
+            const model = input.value.trim().toUpperCase();
+
+            result.classList.remove('hidden');
+            result.innerHTML = '<span class="flex items-center gap-2"><span class="animate-spin material-symbols-outlined text-ai-cyan">autorenew</span> Analisando...</span>';
+            result.className = "mt-4 p-3 rounded-lg font-body-md transition-all duration-300 bg-surface-container-high text-industrial-navy";
+
+            setTimeout(() => {
+                if (model.includes('VT-41') || model.includes('VT41') || model.includes('MAXI') || model.includes('V-81')) {
+                    result.className = "mt-4 p-3 rounded-lg font-body-md transition-all duration-300 bg-success-green/10 text-success-green flex items-center gap-2 border border-success-green/20";
+                    result.innerHTML = '<span class="material-symbols-outlined">check_circle</span> 100% Compatível com ' + model;
+                } else if (model === "") {
+                    result.className = "mt-4 p-3 rounded-lg font-body-md transition-all duration-300 bg-tech-gray/10 text-tech-gray";
+                    result.innerHTML = 'Informe o modelo para validar.';
+                } else {
+                    result.className = "mt-4 p-3 rounded-lg font-body-md transition-all duration-300 bg-danger-red/10 text-danger-red flex items-center gap-2 border border-danger-red/20";
+                    result.innerHTML = '<span class="material-symbols-outlined">error</span> Incompatível ou não identificado.';
+                }
+            }, 600);
+        }
+    </script>
+</body></html>
