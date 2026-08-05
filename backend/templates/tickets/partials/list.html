@@ -1,0 +1,20 @@
+{% if tickets %}
+<div class="list-group">
+  {% for t in tickets %}
+  <a href="{% url 'tickets:detail' t.code %}?email={{ t.email|urlencode }}" class="list-group-item list-group-item-action">
+    <div class="d-flex justify-content-between">
+      <span class="font-monospace small">{{ t.code }}</span>
+      <span class="tp-badge {% if t.sla_breached %}tp-badge--sla{% elif t.status == 'resolved' %}tp-badge--stock{% else %}tp-badge--draft{% endif %}">{{ t.get_status_display }}</span>
+    </div>
+    <strong>{{ t.title }}</strong>
+    <div class="small text-secondary">{{ t.equipment|default:"—" }} · SLA {{ t.sla_due_at|date:"d/m H:i" }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="tp-empty">
+  <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">support_agent</span>
+  <h2 class="tp-empty__title">Nenhum chamado</h2>
+  <p class="tp-empty__text">Abra um chamado ao lado ou busque pelo e-mail usado no atendimento.</p>
+</div>
+{% endif %}

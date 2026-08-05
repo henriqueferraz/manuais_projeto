@@ -145,9 +145,11 @@ def _mark_order_paid(order: Order) -> None:
     Invoice.objects.get_or_create(order=order, defaults={"status": Invoice.Status.PENDING})
 
     from apps.checkout.tasks import emit_invoice_task, send_order_emails_task
+    from apps.tickets.tasks import send_cross_sell_email_task
 
     emit_invoice_task.delay(str(order.id))
     send_order_emails_task.delay(str(order.id))
+    send_cross_sell_email_task.delay(str(order.id))
 
 
 @transaction.atomic

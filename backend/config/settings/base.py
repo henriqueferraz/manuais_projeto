@@ -251,6 +251,14 @@ SHIPPING_FIXED_PRICE = env("SHIPPING_FIXED_PRICE", default="19.90")
 SHIPPING_FREE_FROM = env("SHIPPING_FREE_FROM", default="299.00")
 NFE_PROVIDER = env("NFE_PROVIDER", default="mock")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@techparts.local")
+TICKET_SLA_HOURS = env.int("TICKET_SLA_HOURS", default=24)
+
+CELERY_BEAT_SCHEDULE = {
+    "tickets-check-sla": {
+        "task": "tickets.check_sla",
+        "schedule": 15 * 60.0,  # segundos
+    },
+}
 
 AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID", default="")
 AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY", default="")

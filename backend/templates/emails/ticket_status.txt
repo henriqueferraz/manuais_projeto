@@ -1,0 +1,12 @@
+{{ brand_name }} — Atualização do chamado {{ ticket.code }}
+
+Olá,
+
+O chamado "{{ ticket.title }}" foi atualizado.
+Status atual: {{ ticket.get_status_display }}
+{% if previous %}Status anterior: {{ previous }}{% endif %}
+
+Equipamento: {{ ticket.equipment|default:"—" }}
+SLA: {{ ticket.sla_due_at }}
+
+— Equipe {{ brand_name }}
