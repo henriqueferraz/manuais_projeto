@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Carrinho — {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="tp-section">
+  <h1 class="font-headline-lg">Carrinho</h1>
+  <div id="cart-root">
+    {% include "cart/partials/cart_panel.html" %}
+  </div>
+</section>
+{% endblock %}

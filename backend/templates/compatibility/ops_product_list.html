@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Operação — Produtos{% endblock %}
+{% block content %}
+<section class="tp-section">
+  <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+    <div>
+      <h1 class="font-headline-lg mb-1">Cadastro / revisão de produtos</h1>
+      <p class="text-secondary mb-0">Tela interna — sem admin cru.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-primary" href="{% url 'compatibility:ops_create' %}">Novo produto</a>
+      <a class="btn btn-ghost" href="{% url 'compatibility:ops_compat' %}">Compatibilidades</a>
+    </div>
+  </div>
+
+  <form method="get" class="mb-3">
+    <select name="status" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
+      <option value="">Todos os status</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <div class="table-responsive bg-white border rounded">
+    <table class="table tp-table mb-0">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Nome</th>
+          <th>Status</th>
+          <th>Estoque</th>
+          <th>Preço</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td class="font-technical">{{ p.sku }}</td>
+          <td>{{ p.name_pt }}</td>
+          <td><span class="tp-badge {% if p.status == 'published' %}tp-badge--stock{% else %}tp-badge--draft{% endif %}">{{ p.get_status_display }}</span></td>
+          <td class="font-technical">{% if p.stock %}{{ p.stock.sellable }}{% else %}—{% endif %}</td>
+          <td class="font-technical">R$ {{ p.price }}</td>
+          <td><a href="{% url 'compatibility:ops_edit' p.pk %}">Editar</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum produto.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -13,4 +13,7 @@ urlpatterns = [
     ),
     path("", include("apps.core.urls")),
     path("manuais/", include("apps.manuals.urls")),
+    path("catalogo/", include("apps.catalog.urls")),
+    path("carrinho/", include("apps.cart.urls")),
+    path("compatibilidade/", include("apps.compatibility.urls")),
 ]

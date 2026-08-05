@@ -1,0 +1,65 @@
+{% if products %}
+<p class="small text-secondary mb-3">{{ total }} produto{{ total|pluralize }}</p>
+<div class="row g-4">
+  {% for product in products %}
+  <div class="col-12 col-md-6 col-lg-4">
+    <article class="tp-product-card">
+      <a href="{% url 'catalog:detail' product.slug %}" class="text-decoration-none text-reset">
+        <div class="tp-product-card__media">
+          {% if product.primary_image and product.primary_image.image %}
+          <img src="{{ product.primary_image.image.url }}" alt="{{ product.primary_image.alt_text|default:product.name_pt }}" loading="lazy" />
+          {% else %}
+          <span class="material-symbols-outlined text-secondary" style="font-size: 3rem" aria-hidden="true">precision_manufacturing</span>
+          {% endif %}
+        </div>
+        <div class="tp-product-card__body">
+          <span class="tp-product-card__brand font-label-caps">{{ product.brand }}</span>
+          <h2 class="tp-product-card__title">{{ product.name_pt }}</h2>
+          <p class="tp-product-card__specs font-technical mb-0">
+            {{ product.sku }}
+            {% if product.voltage %} · {{ product.voltage }}{% endif %}
+            {% if product.model_code %} · {{ product.model_code }}{% endif %}
+          </p>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span class="tp-product-card__price">R$ {{ product.price }}</span>
+            {% if product.in_stock %}
+            <span class="tp-badge tp-badge--stock">Em estoque</span>
+            {% else %}
+            <span class="tp-badge tp-badge--draft">Indisponível</span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    </article>
+  </div>
+  {% endfor %}
+</div>
+{% if products.has_other_pages %}
+<nav class="mt-4" aria-label="Paginação">
+  <ul class="pagination">
+    {% if products.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ products.previous_page_number }}&q={{ params.q }}&category={{ params.category }}&voltage={{ params.voltage }}&model={{ params.model }}&compat_model={{ params.compat_model }}"
+         hx-get="{% url 'catalog:list' %}?page={{ products.previous_page_number }}&q={{ params.q }}&category={{ params.category }}&voltage={{ params.voltage }}&model={{ params.model }}&compat_model={{ params.compat_model }}"
+         hx-target="#product-grid">Anterior</a>
+    </li>
+    {% endif %}
+    <li class="page-item disabled"><span class="page-link">{{ products.number }} / {{ products.paginator.num_pages }}</span></li>
+    {% if products.has_next %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ products.next_page_number }}&q={{ params.q }}&category={{ params.category }}&voltage={{ params.voltage }}&model={{ params.model }}&compat_model={{ params.compat_model }}"
+         hx-get="{% url 'catalog:list' %}?page={{ products.next_page_number }}&q={{ params.q }}&category={{ params.category }}&voltage={{ params.voltage }}&model={{ params.model }}&compat_model={{ params.compat_model }}"
+         hx-target="#product-grid">Próxima</a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% else %}
+<div class="tp-empty">
+  <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">search_off</span>
+  <h2 class="tp-empty__title">Nenhum produto encontrado</h2>
+  <p class="tp-empty__text">Tente outro termo ou use o verificador de compatibilidade pelo modelo do aparelho.</p>
+  <a class="btn btn-ai" href="{% url 'compatibility:checker' %}">Verificar compatibilidade</a>
+</div>
+{% endif %}

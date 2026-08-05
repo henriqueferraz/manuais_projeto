@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{% if product %}Editar {{ product.sku }}{% else %}Novo produto{% endif %}{% endblock %}
+{% block content %}
+<section class="tp-section" style="max-width: 40rem">
+  <h1 class="font-headline-lg">{% if product %}Editar produto{% else %}Novo produto{% endif %}</h1>
+  <form method="post" class="vstack gap-3">
+    {% csrf_token %}
+    {% for field in form %}
+    <div>
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Salvar</button>
+      <a class="btn btn-ghost" href="{% url 'compatibility:ops_list' %}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

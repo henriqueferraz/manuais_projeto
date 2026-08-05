@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Verificar compatibilidade — {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="tp-section">
+  <h1 class="font-headline-lg">Verificador de compatibilidade</h1>
+  <p class="tp-section__lead">Informe a marca e o modelo do aparelho para listar peças compatíveis (consulta direta no catálogo, sem IA).</p>
+
+  <form
+    method="post"
+    class="row g-3 align-items-end mb-4"
+    hx-post="{% url 'compatibility:checker' %}"
+    hx-target="#compat-results"
+    hx-indicator="#compat-skeleton"
+  >
+    {% csrf_token %}
+    <div class="col-md-4">
+      <label class="form-label" for="brand">Marca</label>
+      <input id="brand" name="brand" class="form-control" value="{{ brand }}" placeholder="Mondial" />
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="model">Modelo</label>
+      <input id="model" name="model" class="form-control font-monospace" value="{{ model }}" placeholder="VTE-02" />
+    </div>
+    <div class="col-md-4">
+      <button type="submit" class="btn btn-primary w-100">Buscar peças</button>
+    </div>
+  </form>
+
+  <div id="compat-skeleton" class="htmx-indicator mb-3">
+    <div class="tp-skeleton tp-skeleton--line"></div>
+    <div class="tp-skeleton tp-skeleton--card" style="height: 120px"></div>
+  </div>
+
+  <div id="compat-results">
+    {% include "compatibility/partials/results.html" %}
+  </div>
+</section>
+{% endblock %}
