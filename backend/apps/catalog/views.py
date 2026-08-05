@@ -10,6 +10,7 @@ from django.views.decorators.http import require_GET
 from apps.catalog.services import autocomplete, cached_filter_count, filter_catalog
 from apps.compatibility.services import compat_labels_for_product
 from apps.products.models import Product
+from apps.tickets.services import cross_sell_for_product
 
 
 def _filter_params(request: HttpRequest) -> dict:
@@ -62,6 +63,7 @@ def product_detail(request: HttpRequest, slug: str) -> HttpResponse:
             "product": product,
             "compat_labels": compat_labels_for_product(product),
             "images": list(product.images.all()),
+            "cross_sell": cross_sell_for_product(product),
         },
     )
 

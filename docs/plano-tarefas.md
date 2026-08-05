@@ -470,28 +470,29 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 ## Fase 4c — Chamados técnicos e cross-sell
 
 > Objetivo: pós-venda básico + venda por compatibilidade.  
-> Pilares: **P03, P08, P11, P12, P19**
+> Pilares: **P03, P08, P11, P12, P19**  
+> **Git:** branch `fase/4c-chamados-cross-sell`.
 
 ### T-4c.1 — Área de chamados
 
 **Pilares:** P11, P12, P19
 
-- [ ] Model `Ticket` (status, origem, SLA, histórico, anexos)
-- [ ] “Meus chamados” no site (htmx) + painel suporte
-- [ ] Notificações de mudança de status (e-mail) e alerta de SLA (Celery beat)
-- [ ] Empty/loading/error states; DoD visual
-- [ ] Alinhar a `TicketsView` / `code (cópia 5).html`
+- [x] Model `Ticket` (status, origem, SLA, histórico, anexos)
+- [x] “Meus chamados” no site (htmx) + painel suporte
+- [x] Notificações de mudança de status (e-mail) e alerta de SLA (Celery beat)
+- [x] Empty/loading/error states; DoD visual
+- [x] Alinhar a `TicketsView` / `code (cópia 5).html`
 
-**Aceite:** cliente abre e acompanha chamado; SLA estourado alerta a equipe.
+**Aceite:** cliente abre e acompanha chamado; SLA estourado alerta a equipe. ✅ → `/chamados/`
 
 ### T-4c.2 — Cross-sell por compatibilidade
 
 **Pilares:** P01, P23
 
-- [ ] Sugestões na PDP e e-mail pós-compra a partir da tabela de compatibilidade
-- [ ] Tracking simples de pedidos influenciados (para F7)
+- [x] Sugestões na PDP e e-mail pós-compra a partir da tabela de compatibilidade
+- [x] Tracking simples de pedidos influenciados (para F7)
 
-**Aceite:** peça relacionada aparece na PDP; dado de influência registrado.
+**Aceite:** peça relacionada aparece na PDP; dado de influência registrado. ✅
 
 ---
 

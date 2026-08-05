@@ -1,0 +1,12 @@
+{{ brand_name }} — Peças compatíveis para o pedido {{ order.number }}
+
+Olá,
+
+Com base no seu pedido, estas peças podem interessar:
+
+{% for p in suggestions %}
+- {{ p.sku }} {{ p.name_pt }} — R$ {{ p.price }}
+  https://localhost/catalogo/{{ p.slug }}/
+{% endfor %}
+
+— Equipe {{ brand_name }}
