@@ -429,40 +429,41 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 ## Fase 4b — Checkout, pagamento, frete e NF-e
 
 > Objetivo: fechar o ciclo de compra legal no Brasil.  
-> Pilares: **P05, P15** (+ UX P19–P21)
+> Pilares: **P05, P15** (+ UX P19–P21)  
+> **Git:** após merge da F4a; branch `fase/4b-checkout-pagamento-frete-nfe`.
 
 ### T-4b.1 — Checkout e frete
 
 **Pilares:** P12, P19, P21
 
-- [ ] Fluxo checkout (endereço, frete, resumo)
-- [ ] Integração frete (Melhor Envio / Correios) + fallback frete fixo
-- [ ] UX mobile: teclado, steps claros, erros recuperáveis
-- [ ] Alinhar ao protótipo de checkout
+- [x] Fluxo checkout (endereço, frete, resumo)
+- [x] Integração frete (Melhor Envio / Correios) + fallback frete fixo
+- [x] UX mobile: teclado, steps claros, erros recuperáveis
+- [x] Alinhar ao protótipo de checkout
 
-**Aceite:** pedido criado ponta a ponta em staging com frete calculado.
+**Aceite:** pedido criado ponta a ponta em staging com frete calculado. ✅ → `/checkout/`
 
 ### T-4b.2 — Pagamento tokenizado
 
 **Pilares:** P05, P15
 
-- [ ] Gateway (Stripe / Mercado Pago / PagSeguro) com tokenização
-- [ ] Backend nunca armazena dados de cartão — só token + status
-- [ ] Webhooks com validação de assinatura
-- [ ] Testes de sucesso/falha/estorno
+- [x] Gateway (Stripe / Mercado Pago / PagSeguro) com tokenização
+- [x] Backend nunca armazena dados de cartão — só token + status
+- [x] Webhooks com validação de assinatura
+- [x] Testes de sucesso/falha/estorno
 
-**Aceite:** pagamento sandbox OK; nenhum PAN no banco/logs.
+**Aceite:** pagamento sandbox OK; nenhum PAN no banco/logs. ✅ (`PAYMENT_PROVIDER=mock|stripe|mercadopago`)
 
 ### T-4b.3 — NF-e e e-mail transacional
 
 **Pilares:** P01 (legal), P13
 
-- [ ] Emissão NF-e via provedor (task Celery pós-pagamento)
-- [ ] Reprocessamento em falha da API fiscal
-- [ ] E-mails: confirmação, NF-e (SES/SendGrid); log de bounce
-- [ ] Templates de e-mail no tom da marca
+- [x] Emissão NF-e via provedor (task Celery pós-pagamento)
+- [x] Reprocessamento em falha da API fiscal
+- [x] E-mails: confirmação, NF-e (SES/SendGrid); log de bounce
+- [x] Templates de e-mail no tom da marca
 
-**Aceite:** pedido pago gera NF-e + e-mail; falha fiscal não “some” silenciosa.
+**Aceite:** pedido pago gera NF-e + e-mail; falha fiscal não “some” silenciosa. ✅
 
 ---
 

@@ -6,9 +6,9 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Fase 4a — Catálogo, estoque e carrinho.**
+**Fase 4b — Checkout, pagamento, frete e NF-e.**
 
-Rotas principais: `/catalogo/`, `/carrinho/`, `/compatibilidade/verificar/`, `/compatibilidade/ops/produtos/` (staff).
+Rotas: `/checkout/` · webhook `/checkout/webhooks/pagamento/` · catálogo/carrinho da F4a.
 
 ## Bootstrap rápido (local sem Docker)
 

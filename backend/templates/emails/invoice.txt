@@ -1,0 +1,13 @@
+{{ brand_name }} — NF-e do pedido {{ order.number }}
+
+Olá,
+
+A nota fiscal do pedido {{ order.number }} foi emitida.
+
+Número: {{ invoice.number }}
+Série: {{ invoice.series }}
+Chave de acesso: {{ invoice.access_key }}
+{% if invoice.pdf_url %}PDF: {{ invoice.pdf_url }}{% endif %}
+{% if invoice.xml_url %}XML: {{ invoice.xml_url }}{% endif %}
+
+— Equipe {{ brand_name }}

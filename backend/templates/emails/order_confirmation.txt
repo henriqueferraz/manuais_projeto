@@ -1,0 +1,22 @@
+{{ brand_name }} — Pedido {{ order.number }} confirmado
+
+Olá{{ order.shipping_name|default:"" }},
+
+Recebemos o pagamento do seu pedido {{ order.number }}.
+
+Itens:
+{% for item in order.items.all %}
+- {{ item.sku }} {{ item.name }} x{{ item.quantity }} = R$ {{ item.line_total }}
+{% endfor %}
+
+Frete: {{ order.shipping_carrier }} {{ order.shipping_method }} — R$ {{ order.shipping_cost }}
+Total: R$ {{ order.total }}
+
+Endereço:
+{{ order.shipping_street }}, {{ order.shipping_number }} {{ order.shipping_complement }}
+{{ order.shipping_district }} — {{ order.shipping_city }}/{{ order.shipping_state }}
+CEP {{ order.shipping_cep }}
+
+A nota fiscal será enviada em e-mail separado assim que emitida.
+
+— Equipe {{ brand_name }}

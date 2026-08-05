@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Pedido {{ order.number }}{% endblock %}
+{% block content %}
+<section class="tp-section" style="max-width: 40rem">
+  {% include "checkout/partials/steps.html" %}
+  <div class="tp-empty border-0 bg-transparent px-0">
+    <span class="material-symbols-outlined text-success" style="font-size: 3rem" aria-hidden="true">check_circle</span>
+    <h1 class="font-headline-lg">Pedido confirmado</h1>
+    <p class="font-technical">{{ order.number }} · {{ order.get_status_display }}</p>
+    <p>Enviamos a confirmação para <strong>{{ order.email }}</strong>. A NF-e será emitida em seguida.</p>
+    <dl class="row font-technical text-start mt-4">
+      <dt class="col-5">Subtotal</dt><dd class="col-7">R$ {{ order.subtotal }}</dd>
+      <dt class="col-5">Frete</dt><dd class="col-7">R$ {{ order.shipping_cost }} ({{ order.shipping_method }})</dd>
+      <dt class="col-5">Total</dt><dd class="col-7"><strong>R$ {{ order.total }}</strong></dd>
+    </dl>
+    <ul class="list-unstyled text-start">
+      {% for item in order.items.all %}
+      <li class="border-bottom py-2 font-technical">{{ item.sku }} · {{ item.name }} × {{ item.quantity }} — R$ {{ item.line_total }}</li>
+      {% endfor %}
+    </ul>
+    <a class="btn btn-primary mt-3" href="{% url 'catalog:list' %}">Voltar ao catálogo</a>
+  </div>
+</section>
+{% endblock %}

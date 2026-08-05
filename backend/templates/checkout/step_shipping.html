@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Checkout — frete{% endblock %}
+{% block content %}
+<section class="tp-section" style="max-width: 40rem">
+  {% include "checkout/partials/steps.html" %}
+  <h1 class="font-headline-lg">Frete</h1>
+  <p class="text-secondary">CEP {{ draft.shipping_cep }} · {{ draft.shipping_city }}/{{ draft.shipping_state }}</p>
+
+  <form method="post" class="vstack gap-3 mt-3">
+    {% csrf_token %}
+    {% for opt in options %}
+    <label class="border rounded p-3 d-flex gap-3 align-items-start bg-white">
+      <input type="radio" name="shipping_option_id" value="{{ opt.id }}" required class="mt-1" />
+      <span class="flex-grow-1">
+        <strong>{{ opt.carrier }} — {{ opt.service }}</strong><br />
+        <span class="font-technical">R$ {{ opt.price }} · {{ opt.eta_days }} dias úteis</span>
+        <span class="badge text-bg-secondary ms-1">{{ opt.source }}</span>
+      </span>
+    </label>
+    {% endfor %}
+    <div class="d-flex gap-2">
+      <a class="btn btn-ghost" href="{% url 'checkout:start' %}">Voltar</a>
+      <button type="submit" class="btn btn-primary">Continuar para pagamento</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
