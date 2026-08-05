@@ -1,0 +1,12 @@
+{% for r in results %}
+<a class="list-group-item list-group-item-action d-flex gap-2 align-items-center" href="{{ r.url }}">
+  {% if r.thumb %}
+  <img src="{{ r.thumb }}" alt="" width="40" height="40" class="rounded object-fit-cover" loading="lazy" />
+  {% endif %}
+  <span>
+    <strong>{{ r.name }}</strong><br />
+    <span class="font-monospace small text-secondary">{{ r.sku }} · {{ r.brand }}</span>
+  </span>
+</a>
+{% empty %}
+{% endfor %}

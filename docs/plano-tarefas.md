@@ -364,64 +364,65 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 ## Fase 4a — Catálogo, estoque e carrinho
 
 > Objetivo: navegar, filtrar, ver produto e adicionar ao carrinho com estoque confiável.  
-> Pilares: **P11, P12, P17, P18, P19, P20, P21, P23** (+ P16/P24)
+> Pilares: **P11, P12, P17, P18, P19, P20, P21, P23** (+ P16/P24)  
+> **Git:** após merge da F3; branch `fase/4a-catalogo-estoque-carrinho`.
 
 ### T-4a.1 — Models de catálogo e estoque
 
 **Pilares:** P11
 
-- [ ] `Product`, categorias, imagens, specs
-- [ ] Estoque: disponível, reservado, mínimo para alerta
-- [ ] Model de compatibilidade (modelo × peça)
-- [ ] Índices em SKU e compatibilidade
-- [ ] Cache Redis para listagens/consultas quentes
+- [x] `Product`, categorias, imagens, specs
+- [x] Estoque: disponível, reservado, mínimo para alerta
+- [x] Model de compatibilidade (modelo × peça)
+- [x] Índices em SKU e compatibilidade
+- [x] Cache Redis para listagens/consultas quentes
 
-**Aceite:** migrations aplicadas; reserva de estoque testada unitariamente.
+**Aceite:** migrations aplicadas; reserva de estoque testada unitariamente. ✅
 
 ### T-4a.2 — Listagem, busca e filtros
 
 **Pilares:** P12, P21, P23
 
-- [ ] Catálogo com htmx (filtros: categoria, voltagem, modelo, compatibilidade)
-- [ ] Busca full-text Postgres + autocomplete com miniatura
-- [ ] Empty state (“nenhum produto”) com sugestão de busca/diagnóstico
-- [ ] Skeletons no carregamento de filtros
-- [ ] Mobile-first; DoD visual
+- [x] Catálogo com htmx (filtros: categoria, voltagem, modelo, compatibilidade)
+- [x] Busca full-text Postgres + autocomplete com miniatura
+- [x] Empty state (“nenhum produto”) com sugestão de busca/diagnóstico
+- [x] Skeletons no carregamento de filtros
+- [x] Mobile-first; DoD visual
 
-**Aceite:** filtrar e buscar sem reload completo; UX mobile OK.
+**Aceite:** filtrar e buscar sem reload completo; UX mobile OK. ✅ → `/catalogo/`
 
 ### T-4a.3 — Página de produto (PDP)
 
 **Pilares:** P17, P18, P20, P21
 
-- [ ] Hierarquia: nome > preço > specs > descrição
-- [ ] Specs em JetBrains Mono; whitespace generoso
-- [ ] Imagens (WebP/AVIF via R2), lazy loading; zoom/ângulos se disponível
-- [ ] Badge de compatibilidade; CTA Add to Cart / AI Action
-- [ ] Microinterações hover (~200ms)
+- [x] Hierarquia: nome > preço > specs > descrição
+- [x] Specs em JetBrains Mono; whitespace generoso
+- [x] Imagens (WebP/AVIF via R2), lazy loading; zoom/ângulos se disponível
+- [x] Badge de compatibilidade; CTA Add to Cart / AI Action
+- [x] Microinterações hover (~200ms)
 
-**Aceite:** PDP alinhada aos protótipos; DoD visual passa.
+**Aceite:** PDP alinhada aos protótipos; DoD visual passa. ✅
 
 ### T-4a.4 — Carrinho e reserva de estoque
 
 **Pilares:** P12, P19, P20
 
-- [ ] Carrinho htmx (add/update/remove)
-- [ ] Reserva temporária no checkout para evitar overselling
-- [ ] Feedback imediato ao adicionar
-- [ ] Estados de erro (sem estoque) amigáveis
+- [x] Carrinho htmx (add/update/remove)
+- [x] Reserva temporária no checkout para evitar overselling
+- [x] Feedback imediato ao adicionar
+- [x] Estados de erro (sem estoque) amigáveis
 
-**Aceite:** não vende além do estoque em teste de concorrência simples.
+**Aceite:** não vende além do estoque em teste de concorrência simples. ✅ → `/carrinho/`
 
 ### T-4a.5 — Verificador de compatibilidade e tela de revisão amigável
 
 **Pilares:** P12, P23
 
-- [ ] Widget: informar modelo → listar peças compatíveis (ORM, sem LLM)
-- [ ] Tela interna de cadastro/revisão de produtos (além do admin cru)
-- [ ] Gestão de categorias e relações de compatibilidade
+- [x] Widget: informar modelo → listar peças compatíveis (ORM, sem LLM)
+- [x] Tela interna de cadastro/revisão de produtos (além do admin cru)
+- [x] Gestão de categorias e relações de compatibilidade
 
-**Aceite:** cliente acha peça pelo modelo; operação revisa sem admin cru.
+**Aceite:** cliente acha peça pelo modelo; operação revisa sem admin cru. ✅ → `/compatibilidade/`
 
 ---
 

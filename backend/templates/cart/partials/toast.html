@@ -1,0 +1,7 @@
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags|default:'info' }} py-2" role="status">{{ message }}</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-success py-2" role="status">Carrinho atualizado.</div>
+{% endif %}

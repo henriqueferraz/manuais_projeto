@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Compatibilidades — operação{% endblock %}
+{% block content %}
+<section class="tp-section">
+  <div class="d-flex justify-content-between mb-3">
+    <h1 class="font-headline-lg">Relações de compatibilidade</h1>
+    <a class="btn btn-ghost" href="{% url 'compatibility:ops_list' %}">Voltar aos produtos</a>
+  </div>
+
+  <form method="post" class="row g-3 mb-4 p-3 bg-white border rounded">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="col-md-3">
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+    </div>
+    {% endfor %}
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Adicionar</button>
+    </div>
+  </form>
+
+  <table class="table tp-table bg-white border rounded">
+    <thead>
+      <tr>
+        <th>Equipamento</th>
+        <th>Peça</th>
+        <th>Notas</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td class="font-technical">{{ row.equipment_brand }} {{ row.equipment_model }}</td>
+        <td>{{ row.part_product.sku }} — {{ row.part_product.name_pt }}</td>
+        <td>{{ row.notes|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="text-secondary text-center py-3">Nenhuma relação ainda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

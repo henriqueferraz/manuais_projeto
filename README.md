@@ -6,7 +6,9 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Fase 3 — Pipeline de ingestão de manuais** (PDF → extração → HITL → rascunho).
+**Fase 4a — Catálogo, estoque e carrinho.**
+
+Rotas principais: `/catalogo/`, `/carrinho/`, `/compatibilidade/verificar/`, `/compatibilidade/ops/produtos/` (staff).
 
 ## Bootstrap rápido (local sem Docker)
 

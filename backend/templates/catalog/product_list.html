@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Catálogo — {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="tp-section">
+  <h1 class="font-headline-lg">Catálogo de peças</h1>
+  <p class="tp-section__lead">Filtre por categoria, voltagem ou modelo. Busca sem recarregar a página.</p>
+
+  <form
+    id="catalog-filters"
+    class="row g-3 align-items-end mb-4"
+    method="get"
+    hx-get="{% url 'catalog:list' %}"
+    hx-target="#product-grid"
+    hx-trigger="change, keyup changed delay:300ms from:#id_q"
+    hx-indicator="#catalog-skeleton"
+  >
+    <div class="col-md-4 position-relative">
+      <label class="form-label" for="id_q">Busca</label>
+      <input
+        id="id_q"
+        name="q"
+        type="search"
+        class="form-control"
+        value="{{ params.q }}"
+        placeholder="SKU, marca, modelo…"
+        autocomplete="off"
+        hx-get="{% url 'catalog:autocomplete' %}"
+        hx-trigger="keyup changed delay:250ms"
+        hx-target="#ac-results"
+        hx-include="this"
+      />
+      <div id="ac-results" class="list-group position-absolute w-100 shadow-sm" style="z-index: 20"></div>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="id_category">Categoria</label>
+      <select id="id_category" name="category" class="form-select">
+        <option value="">Todas</option>
+        {% for c in categories %}
+        <option value="{{ c.slug }}" {% if params.category == c.slug %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="id_voltage">Voltagem</label>
+      <select id="id_voltage" name="voltage" class="form-select">
+        <option value="">Qualquer</option>
+        {% for v in voltages %}
+        <option value="{{ v }}" {% if params.voltage == v %}selected{% endif %}>{{ v }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="id_model">Modelo</label>
+      <input id="id_model" name="model" class="form-control font-monospace" value="{{ params.model }}" placeholder="VTE-02" />
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="id_compat_model">Compatível com</label>
+      <input id="id_compat_model" name="compat_model" class="form-control" value="{{ params.compat_model }}" placeholder="modelo aparelho" />
+    </div>
+  </form>
+
+  <div id="catalog-skeleton" class="htmx-indicator mb-3">
+    <div class="tp-skeleton tp-skeleton--title"></div>
+    <div class="row g-3">
+      <div class="col-md-4"><div class="tp-skeleton tp-skeleton--card" style="height: 220px"></div></div>
+      <div class="col-md-4"><div class="tp-skeleton tp-skeleton--card" style="height: 220px"></div></div>
+      <div class="col-md-4"><div class="tp-skeleton tp-skeleton--card" style="height: 220px"></div></div>
+    </div>
+  </div>
+
+  <div id="product-grid">
+    {% include "catalog/partials/product_grid.html" %}
+  </div>
+</section>
+{% endblock %}

@@ -1,8 +1,18 @@
 """Context processors do shell da loja."""
 
+from apps.cart.models import Cart
+from apps.cart.services import CART_SESSION_KEY
+
 
 def brand(request):
+    count = 0
+    cart_id = request.session.get(CART_SESSION_KEY)
+    if cart_id:
+        cart = Cart.objects.filter(pk=cart_id).prefetch_related("items").first()
+        if cart:
+            count = sum(i.quantity for i in cart.items.all())
     return {
         "brand_name": "TechParts AI",
         "brand_tagline": "Peças com precisão industrial",
+        "cart_item_count": count,
     }

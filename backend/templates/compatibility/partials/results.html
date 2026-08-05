@@ -1,0 +1,26 @@
+{% if searched and parts %}
+<div class="row g-3">
+  {% for product in parts %}
+  <div class="col-md-6 col-lg-4">
+    <article class="tp-product-card">
+      <div class="tp-product-card__body">
+        <span class="tp-badge tp-badge--compat mb-2">Compatível</span>
+        <span class="font-label-caps">{{ product.brand }}</span>
+        <h2 class="tp-product-card__title">{{ product.name_pt }}</h2>
+        <p class="font-technical">{{ product.sku }} · R$ {{ product.price }}</p>
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'catalog:detail' product.slug %}">Ver peça</a>
+      </div>
+    </article>
+  </div>
+  {% endfor %}
+</div>
+{% elif searched %}
+<div class="tp-empty">
+  <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">link_off</span>
+  <h2 class="tp-empty__title">Nenhuma peça para este modelo</h2>
+  <p class="tp-empty__text">Confira a grafia do modelo ou explore o catálogo completo.</p>
+  <a class="btn btn-primary" href="{% url 'catalog:list' %}">Ir ao catálogo</a>
+</div>
+{% else %}
+<p class="text-secondary">Preencha marca e/ou modelo para iniciar.</p>
+{% endif %}
