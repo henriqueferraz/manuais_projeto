@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Devolução {{ obj.order.number }} — {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="tp-section">
+  <p class="mb-2"><a href="{% url 'returns:list' %}">← Voltar</a></p>
+  <h1 class="font-headline-lg">Solicitação · {{ obj.order.number }}</h1>
+
+  <div class="border rounded p-3 bg-white mt-3">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Status</dt>
+      <dd class="col-sm-9"><strong>{{ obj.get_status_display }}</strong></dd>
+      <dt class="col-sm-3">Tipo</dt>
+      <dd class="col-sm-9">{{ obj.get_kind_display }}</dd>
+      <dt class="col-sm-3">Motivo</dt>
+      <dd class="col-sm-9">{{ obj.get_reason_display }}</dd>
+      <dt class="col-sm-3">Prazo CDC</dt>
+      <dd class="col-sm-9 font-technical">
+        {{ obj.deadline_at|date:"d/m/Y H:i" }}
+        {% if obj.within_cdc_window %}
+        <span class="text-success">(no prazo)</span>
+        {% else %}
+        <span class="text-danger">(expirado para arrependimento)</span>
+        {% endif %}
+      </dd>
+      <dt class="col-sm-3">Detalhes</dt>
+      <dd class="col-sm-9">{{ obj.details|default:"—" }}</dd>
+      {% if obj.staff_notes and is_ops %}
+      <dt class="col-sm-3">Notas ops</dt>
+      <dd class="col-sm-9">{{ obj.staff_notes }}</dd>
+      {% endif %}
+    </dl>
+  </div>
+
+  {% if is_ops and process_form and obj.status != "refunded" and obj.status != "exchanged" and obj.status != "rejected" and obj.status != "cancelled" %}
+  <div class="border rounded p-3 bg-white mt-4">
+    <h2 class="h5">Processar (operação)</h2>
+    <form method="post" action="{% url 'returns:process' obj.pk %}" class="vstack gap-3">
+      {% csrf_token %}
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="approve" id="id_approve" value="1" checked />
+        <label class="form-check-label" for="id_approve">Aprovar (desmarque para recusar)</label>
+      </div>
+      <div>
+        <label class="form-label" for="id_staff_notes">Notas internas</label>
+        <textarea name="staff_notes" id="id_staff_notes" class="form-control" rows="2"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary align-self-start">Confirmar</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

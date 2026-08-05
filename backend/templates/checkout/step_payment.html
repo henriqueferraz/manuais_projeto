@@ -18,7 +18,7 @@
       <div class="form-text">{{ form.payment_token.help_text }}</div>
       {% if form.payment_token.errors %}<div class="text-danger small">{{ form.payment_token.errors }}</div>{% endif %}
     </div>
-    <p class="font-technical">Itens R$ {{ totals.subtotal }}</p>
+    <p class="font-technical">Itens R$ {{ totals.subtotal }}{% if totals.discount %} · Desconto −R$ {{ totals.discount }} · Líquido R$ {{ totals.total_after_discount }}{% endif %}</p>
     <div class="d-flex gap-2">
       <a class="btn btn-ghost" href="{% url 'checkout:shipping' %}">Voltar</a>
       <button type="submit" class="btn btn-primary">Pagar e finalizar</button>

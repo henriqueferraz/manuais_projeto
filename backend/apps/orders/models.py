@@ -54,6 +54,8 @@ class Order(models.Model):
     shipping_eta_days = models.PositiveSmallIntegerField(null=True, blank=True)
 
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    discount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    coupon_code = models.CharField(max_length=40, blank=True)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default="BRL")
 
@@ -194,3 +196,70 @@ class Invoice(models.Model):
 
     def __str__(self) -> str:
         return f"NF-e {self.number or self.pk} [{self.status}]"
+
+
+class ReturnRequest(models.Model):
+    class Status(models.TextChoices):
+        REQUESTED = "requested", "Solicitado"
+        UNDER_REVIEW = "under_review", "Em análise"
+        APPROVED = "approved", "Aprovado"
+        REJECTED = "rejected", "Recusado"
+        REFUNDED = "refunded", "Reembolsado"
+        EXCHANGED = "exchanged", "Trocado"
+        CANCELLED = "cancelled", "Cancelado"
+
+    class Kind(models.TextChoices):
+        REFUND = "refund", "Reembolso (arrependimento)"
+        EXCHANGE = "exchange", "Troca por outra peça"
+
+    class Reason(models.TextChoices):
+        REGRET = "regret", "Arrependimento (CDC)"
+        DEFECT = "defect", "Defeito"
+        WRONG_ITEM = "wrong_item", "Item errado"
+        OTHER = "other", "Outro"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="return_requests")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="return_requests",
+    )
+    email = models.EmailField()
+    kind = models.CharField(max_length=16, choices=Kind.choices, default=Kind.REFUND)
+    reason = models.CharField(max_length=32, choices=Reason.choices, default=Reason.REGRET)
+    details = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=32,
+        choices=Status.choices,
+        default=Status.REQUESTED,
+        db_index=True,
+    )
+    delivered_at = models.DateTimeField()
+    deadline_at = models.DateTimeField()
+    refund_payment_id = models.CharField(max_length=64, blank=True)
+    staff_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = "solicitação de troca/devolução"
+        verbose_name_plural = "solicitações de troca/devolução"
+
+    def __str__(self) -> str:
+        return f"Return {self.order.number} [{self.status}]"
+
+    @staticmethod
+    def compute_deadline(delivered_at):
+        from datetime import timedelta
+
+        days = int(getattr(settings, "RETURN_CDC_DAYS", 7))
+        return delivered_at + timedelta(days=days)
+
+    @property
+    def within_cdc_window(self) -> bool:
+        return timezone.now() <= self.deadline_at

@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
+from apps.cart.coupons import COUPON_SESSION_KEY, apply_coupon_code, cart_totals_with_coupon
 from apps.cart.services import (
     add_to_cart,
     cart_totals,
@@ -18,10 +21,38 @@ from apps.cart.services import (
 from apps.products.models import Product
 
 
-def _cart_response(request: HttpRequest, *, partial: bool = False) -> HttpResponse:
+def _totals_for_request(request: HttpRequest) -> dict:
     cart = get_or_create_cart(request)
-    totals = cart_totals(cart)
-    context = {"cart": cart, **totals}
+    code = (request.session.get(COUPON_SESSION_KEY) or "").strip()
+    if not code:
+        base = cart_totals(cart)
+        return {
+            "cart": cart,
+            "coupon_code": "",
+            **base,
+            "discount": Decimal("0"),
+            "coupon": None,
+            "total_after_discount": base["subtotal"],
+        }
+    try:
+        totals = cart_totals_with_coupon(cart, code)
+        return {"cart": cart, "coupon_code": code, **totals}
+    except ValidationError as exc:
+        request.session.pop(COUPON_SESSION_KEY, None)
+        messages.error(request, "; ".join(exc.messages))
+        base = cart_totals(cart)
+        return {
+            "cart": cart,
+            "coupon_code": "",
+            **base,
+            "discount": Decimal("0"),
+            "coupon": None,
+            "total_after_discount": base["subtotal"],
+        }
+
+
+def _cart_response(request: HttpRequest, *, partial: bool = False) -> HttpResponse:
+    context = _totals_for_request(request)
     template = (
         "cart/partials/cart_panel.html"
         if partial or request.headers.get("HX-Request")
@@ -85,6 +116,34 @@ def cart_remove(request: HttpRequest) -> HttpResponse:
     except (TypeError, ValueError):
         messages.error(request, "Item inválido.")
 
+    if request.headers.get("HX-Request"):
+        return _cart_response(request, partial=True)
+    return redirect("cart:detail")
+
+
+@require_POST
+def cart_apply_coupon(request: HttpRequest) -> HttpResponse:
+    code = (request.POST.get("code") or "").strip()
+    cart = get_or_create_cart(request)
+    base = cart_totals(cart)
+    try:
+        apply_coupon_code(code, subtotal=base["subtotal"])
+        request.session[COUPON_SESSION_KEY] = code.upper()
+        request.session.modified = True
+        messages.success(request, f"Cupom {code.upper()} aplicado.")
+    except ValidationError as exc:
+        request.session.pop(COUPON_SESSION_KEY, None)
+        messages.error(request, "; ".join(exc.messages))
+
+    if request.headers.get("HX-Request"):
+        return _cart_response(request, partial=True)
+    return redirect("cart:detail")
+
+
+@require_POST
+def cart_remove_coupon(request: HttpRequest) -> HttpResponse:
+    request.session.pop(COUPON_SESSION_KEY, None)
+    messages.info(request, "Cupom removido.")
     if request.headers.get("HX-Request"):
         return _cart_response(request, partial=True)
     return redirect("cart:detail")

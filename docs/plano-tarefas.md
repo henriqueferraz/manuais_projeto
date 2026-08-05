@@ -505,9 +505,9 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P12
 
-- [ ] Model Cupom (código, tipo, validade, limites)
-- [ ] Aplicar no carrinho via htmx
-- [ ] Preço promocional por produto/categoria com vigência
+- [x] Model Cupom (código, tipo, validade, limites)
+- [x] Aplicar no carrinho via htmx
+- [x] Preço promocional por produto/categoria com vigência
 
 **Aceite:** cupom válido reduz total; inválido mostra erro claro.
 
@@ -515,10 +515,10 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P05, P15, P19
 
-- [ ] Fluxo CDC 7 dias a partir da entrega
-- [ ] Model de solicitação (motivo, status, reembolso/peça nova)
-- [ ] Painel operação + reembolso via gateway
-- [ ] Estados de UI claros em cada etapa
+- [x] Fluxo CDC 7 dias a partir da entrega
+- [x] Model de solicitação (motivo, status, reembolso/peça nova)
+- [x] Painel operação + reembolso via gateway
+- [x] Estados de UI claros em cada etapa
 
 **Aceite:** solicitação de arrependimento no prazo funciona até reembolso sandbox.
 
