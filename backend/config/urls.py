@@ -15,5 +15,6 @@ urlpatterns = [
     path("manuais/", include("apps.manuals.urls")),
     path("catalogo/", include("apps.catalog.urls")),
     path("carrinho/", include("apps.cart.urls")),
+    path("checkout/", include("apps.checkout.urls")),
     path("compatibilidade/", include("apps.compatibility.urls")),
 ]

@@ -21,6 +21,9 @@ EXTRACTION_LLM_MODE = "mock"
 MANUAL_AV_STUB_OK = True
 MANUAL_CLAMAV_ENABLED = False
 USE_R2_STORAGE = False
+PAYMENT_PROVIDER = "mock"
+NFE_PROVIDER = "mock"
+CELERY_TASK_ALWAYS_EAGER = True
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},

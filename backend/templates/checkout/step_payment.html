@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Checkout — pagamento{% endblock %}
+{% block content %}
+<section class="tp-section" style="max-width: 40rem">
+  {% include "checkout/partials/steps.html" %}
+  <h1 class="font-headline-lg">Pagamento</h1>
+  <p class="text-secondary">
+    O servidor recebe apenas o <strong>token</strong> do gateway — nunca o número do cartão.
+  </p>
+  <div class="alert alert-info small">
+    Sandbox mock: use <code>tok_sandbox_4242</code> para sucesso ou <code>tok_fail</code> para recusa.
+  </div>
+  <form method="post" class="vstack gap-3 mt-3" autocomplete="off">
+    {% csrf_token %}
+    <div>
+      <label class="form-label" for="{{ form.payment_token.id_for_label }}">{{ form.payment_token.label }}</label>
+      {{ form.payment_token }}
+      <div class="form-text">{{ form.payment_token.help_text }}</div>
+      {% if form.payment_token.errors %}<div class="text-danger small">{{ form.payment_token.errors }}</div>{% endif %}
+    </div>
+    <p class="font-technical">Itens R$ {{ totals.subtotal }}</p>
+    <div class="d-flex gap-2">
+      <a class="btn btn-ghost" href="{% url 'checkout:shipping' %}">Voltar</a>
+      <button type="submit" class="btn btn-primary">Pagar e finalizar</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
