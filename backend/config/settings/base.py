@@ -252,6 +252,7 @@ SHIPPING_FREE_FROM = env("SHIPPING_FREE_FROM", default="299.00")
 NFE_PROVIDER = env("NFE_PROVIDER", default="mock")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@techparts.local")
 TICKET_SLA_HOURS = env.int("TICKET_SLA_HOURS", default=24)
+RETURN_CDC_DAYS = env.int("RETURN_CDC_DAYS", default=7)
 
 CELERY_BEAT_SCHEDULE = {
     "tickets-check-sla": {

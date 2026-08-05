@@ -57,14 +57,60 @@
     </tbody>
   </table>
 </div>
+
+<div class="row g-3 mt-2 align-items-start">
+  <div class="col-md-6">
+    <form
+      method="post"
+      action="{% url 'cart:apply_coupon' %}"
+      hx-post="{% url 'cart:apply_coupon' %}"
+      hx-target="#cart-root"
+      hx-swap="innerHTML"
+      class="d-flex gap-2"
+    >
+      {% csrf_token %}
+      <input
+        type="text"
+        name="code"
+        value="{{ coupon_code }}"
+        class="form-control"
+        placeholder="Cupom de desconto"
+        aria-label="Código do cupom"
+      />
+      <button type="submit" class="btn btn-outline-primary">Aplicar</button>
+    </form>
+    {% if coupon %}
+    <form
+      method="post"
+      action="{% url 'cart:remove_coupon' %}"
+      hx-post="{% url 'cart:remove_coupon' %}"
+      hx-target="#cart-root"
+      hx-swap="innerHTML"
+      class="mt-2"
+    >
+      {% csrf_token %}
+      <button type="submit" class="btn btn-ghost btn-sm">Remover cupom {{ coupon.code }}</button>
+    </form>
+    {% endif %}
+  </div>
+  <div class="col-md-6 text-md-end">
+    <p class="mb-1">Subtotal · <strong class="font-technical">R$ {{ subtotal }}</strong></p>
+    {% if discount %}
+    <p class="mb-1 text-success">Desconto · <strong class="font-technical">− R$ {{ discount }}</strong></p>
+    <p class="mb-1">Total · <strong class="font-technical">R$ {{ total_after_discount }}</strong> · {{ count }} item{{ count|pluralize }}</p>
+    {% else %}
+    <p class="mb-1">{{ count }} item{{ count|pluralize }}</p>
+    {% endif %}
+  </div>
+</div>
+
 <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-  <p class="mb-0">Subtotal · <strong class="font-technical">R$ {{ subtotal }}</strong> · {{ count }} item{{ count|pluralize }}</p>
+  <p class="mb-0 small text-secondary">Estoque reservado por tempo limitado para evitar overselling.</p>
   <div class="d-flex gap-2">
     <a class="btn btn-ghost" href="{% url 'catalog:list' %}">Continuar comprando</a>
     <a class="btn btn-primary" href="{% url 'checkout:start' %}">Finalizar compra</a>
   </div>
 </div>
-<p class="small text-secondary mt-3 mb-0">Estoque reservado por tempo limitado para evitar overselling.</p>
 {% else %}
 <div class="tp-empty">
   <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">shopping_cart</span>

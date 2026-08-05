@@ -56,12 +56,16 @@ def add_to_cart(request, product: Product, quantity: int = 1) -> CartItem:
     if stock is None or stock.sellable < quantity:
         raise ValidationError("Sem estoque suficiente para este item.")
 
+    from apps.cart.coupons import effective_price
+
+    price = effective_price(product)
+
     item, created = CartItem.objects.select_for_update().get_or_create(
         cart=cart,
         product=product,
         defaults={
             "quantity": quantity,
-            "unit_price": product.price,
+            "unit_price": price,
         },
     )
     if not created:
@@ -79,7 +83,7 @@ def add_to_cart(request, product: Product, quantity: int = 1) -> CartItem:
             item.reservation_expires_at = timezone.now() + reservation_ttl()
         else:
             item.quantity = new_qty
-        item.unit_price = product.price
+        item.unit_price = price
         item.save()
     else:
         # Reserva imediata ao adicionar (evita overselling)
@@ -122,7 +126,9 @@ def update_cart_item(request, product_id: int, quantity: int) -> CartItem | None
         item.reservation_expires_at = timezone.now() + reservation_ttl()
 
     item.quantity = quantity
-    item.unit_price = item.product.price
+    from apps.cart.coupons import effective_price
+
+    item.unit_price = effective_price(item.product)
     item.save()
     return item
 

@@ -17,5 +17,6 @@ urlpatterns = [
     path("carrinho/", include("apps.cart.urls")),
     path("checkout/", include("apps.checkout.urls")),
     path("chamados/", include("apps.tickets.urls")),
+    path("devolucoes/", include("apps.orders.urls_returns")),
     path("compatibilidade/", include("apps.compatibility.urls")),
 ]

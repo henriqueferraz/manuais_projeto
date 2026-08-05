@@ -26,8 +26,17 @@ def build_order_from_cart(
     shipping: dict,
     shipping_option_id: str,
     user=None,
+    coupon_code: str = "",
 ) -> Order:
-    totals = cart_totals(cart)
+    from apps.cart.coupons import cart_totals_with_coupon
+
+    if coupon_code:
+        totals = cart_totals_with_coupon(cart, coupon_code)
+    else:
+        totals = cart_totals(cart)
+        totals["discount"] = Decimal("0")
+        totals["total_after_discount"] = totals["subtotal"]
+
     if not totals["items"]:
         raise ValidationError("Carrinho vazio.")
 
@@ -36,9 +45,10 @@ def build_order_from_cart(
         w = item.product.weight_kg or Decimal("0.5")
         weight += w * item.quantity
 
+    taxable = totals["total_after_discount"]
     options = calculate_shipping(
         cep=shipping["shipping_cep"],
-        subtotal=totals["subtotal"],
+        subtotal=taxable,
         weight_kg=weight,
     )
     option = pick_option(options, shipping_option_id)
@@ -64,7 +74,9 @@ def build_order_from_cart(
             shipping_cost=option.price,
             shipping_eta_days=option.eta_days,
             subtotal=totals["subtotal"],
-            total=totals["subtotal"] + option.price,
+            discount=totals["discount"],
+            coupon_code=(coupon_code or "").upper(),
+            total=taxable + option.price,
             cart=cart,
         )
         for item in totals["items"]:
@@ -77,6 +89,10 @@ def build_order_from_cart(
                 unit_price=item.unit_price,
                 line_total=item.line_total,
             )
+        if totals.get("coupon"):
+            coupon = totals["coupon"]
+            coupon.used_count += 1
+            coupon.save(update_fields=["used_count"])
     return order
 
 

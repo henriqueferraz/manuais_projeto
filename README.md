@@ -6,9 +6,9 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Fase 4b — Checkout, pagamento, frete e NF-e.**
+**Fase 4d — Cupons, trocas e devoluções (CDC).** Fase 4 completa (4a–4d).
 
-Rotas: `/checkout/` · webhook `/checkout/webhooks/pagamento/` · catálogo/carrinho da F4a.
+Rotas: `/carrinho/` (cupom) · `/devolucoes/` · `/devolucoes/operacao/` · checkout com desconto.
 
 ## Bootstrap rápido (local sem Docker)
 

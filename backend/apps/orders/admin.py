@@ -1,7 +1,7 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
-from apps.orders.models import Invoice, Order, OrderItem, Payment
+from apps.orders.models import Invoice, Order, OrderItem, Payment, ReturnRequest
 
 
 class OrderItemInline(admin.TabularInline):
@@ -26,7 +26,7 @@ class PaymentInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(SimpleHistoryAdmin):
-    list_display = ("number", "email", "status", "total", "created_at")
+    list_display = ("number", "email", "status", "subtotal", "discount", "total", "created_at")
     list_filter = ("status",)
     search_fields = ("number", "email")
     inlines = [OrderItemInline, PaymentInline]
@@ -54,3 +54,11 @@ class InvoiceAdmin(SimpleHistoryAdmin):
         for inv in queryset:
             emit_invoice_task.delay(str(inv.order_id))
         self.message_user(request, f"{queryset.count()} NF-e reenfileirada(s).")
+
+
+@admin.register(ReturnRequest)
+class ReturnRequestAdmin(SimpleHistoryAdmin):
+    list_display = ("order", "email", "kind", "reason", "status", "deadline_at", "created_at")
+    list_filter = ("status", "kind", "reason")
+    search_fields = ("order__number", "email")
+    readonly_fields = ("created_at", "updated_at", "deadline_at")

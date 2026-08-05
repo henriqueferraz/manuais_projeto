@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 
+from apps.cart.coupons import COUPON_SESSION_KEY, cart_totals_with_coupon
 from apps.cart.services import cart_totals, get_or_create_cart
 from apps.checkout.forms import CheckoutAddressForm, CheckoutPaymentForm, CheckoutShippingForm
 from apps.checkout.payments import parse_webhook_event, verify_webhook_signature
@@ -19,6 +20,23 @@ from apps.checkout.shipping import calculate_shipping
 from apps.orders.models import Order
 
 SESSION_CHECKOUT = "checkout_draft"
+
+
+def _cart_checkout_totals(request: HttpRequest):
+    from decimal import Decimal
+
+    cart = get_or_create_cart(request)
+    code = (request.session.get(COUPON_SESSION_KEY) or "").strip()
+    if code:
+        try:
+            return cart, cart_totals_with_coupon(cart, code), code
+        except ValidationError:
+            request.session.pop(COUPON_SESSION_KEY, None)
+    base = cart_totals(cart)
+    base["discount"] = Decimal("0")
+    base["coupon"] = None
+    base["total_after_discount"] = base["subtotal"]
+    return cart, base, ""
 
 
 def _draft(request: HttpRequest) -> dict:
@@ -34,8 +52,7 @@ def _save_draft(request: HttpRequest, data: dict) -> None:
 
 @require_http_methods(["GET", "POST"])
 def checkout_start(request: HttpRequest) -> HttpResponse:
-    cart = get_or_create_cart(request)
-    totals = cart_totals(cart)
+    cart, totals, _coupon = _cart_checkout_totals(request)
     if not totals["items"]:
         messages.warning(request, "Seu carrinho está vazio.")
         return redirect("cart:detail")
@@ -58,10 +75,12 @@ def checkout_shipping(request: HttpRequest) -> HttpResponse:
     if not draft.get("shipping_cep"):
         return redirect("checkout:start")
 
-    cart = get_or_create_cart(request)
-    totals = cart_totals(cart)
+    cart, totals, _coupon = _cart_checkout_totals(request)
     try:
-        options = calculate_shipping(cep=draft["shipping_cep"], subtotal=totals["subtotal"])
+        options = calculate_shipping(
+            cep=draft["shipping_cep"],
+            subtotal=totals["total_after_discount"],
+        )
     except ValueError as exc:
         messages.error(request, str(exc))
         return redirect("checkout:start")
@@ -94,8 +113,7 @@ def checkout_payment(request: HttpRequest) -> HttpResponse:
     if not draft.get("shipping_option_id"):
         return redirect("checkout:shipping")
 
-    cart = get_or_create_cart(request)
-    totals = cart_totals(cart)
+    cart, totals, coupon_code = _cart_checkout_totals(request)
     form = CheckoutPaymentForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -106,9 +124,11 @@ def checkout_payment(request: HttpRequest) -> HttpResponse:
                 shipping=draft,
                 shipping_option_id=draft["shipping_option_id"],
                 user=request.user,
+                coupon_code=coupon_code,
             )
             pay_order(order=order, payment_token=form.cleaned_data["payment_token"])
             request.session.pop(SESSION_CHECKOUT, None)
+            request.session.pop(COUPON_SESSION_KEY, None)
             messages.success(request, f"Pedido {order.number} pago com sucesso.")
             return redirect("checkout:success", order_id=order.id)
         except ValidationError as exc:
