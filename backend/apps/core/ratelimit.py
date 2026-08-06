@@ -1,4 +1,4 @@
-"""Stub de rate limit para endpoints de IA (F5+)."""
+"""Rate limit para endpoints de IA (por IP e, se autenticado, por usuário)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from django.http import JsonResponse
 
 
 def ai_rate_limit(view):
-    """Rate limit simples por IP — placeholder até F5."""
+    """Rate limit configurável via AI_RATE_LIMIT (ex.: 30/m)."""
 
     @wraps(view)
     def _wrapped(request, *args, **kwargs):
@@ -23,7 +23,10 @@ def ai_rate_limit(view):
             max_count, window = 30, 60
 
         ip = request.META.get("REMOTE_ADDR", "unknown")
-        key = f"ai-rate:{ip}"
+        user = getattr(request, "user", None)
+        authenticated = user is not None and getattr(user, "is_authenticated", False)
+        user_part = f"u{user.pk}" if authenticated else "anon"
+        key = f"ai-rate:{user_part}:{ip}"
         current = cache.get(key, 0)
         if current >= max_count:
             return JsonResponse(

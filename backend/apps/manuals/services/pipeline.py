@@ -222,6 +222,11 @@ def approve_extraction(
             "status": product.status,
         },
     )
+
+    # F5: indexar manual para RAG após aprovação HITL
+    from apps.ai.tasks import index_manual_task
+
+    index_manual_task.delay(log.manual_id)
     return product
 
 
