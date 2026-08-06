@@ -1,0 +1,26 @@
+<div class="tp-diagnostic-card" role="region" aria-label="Card de diagnóstico">
+  <div class="tp-diagnostic-card__header">
+    <span class="material-symbols-outlined" aria-hidden="true">health_and_safety</span>
+    <strong>{{ card.title|default:"Diagnóstico assistido" }}</strong>
+    {% if card.confidence %}
+    <span class="tp-diagnostic-card__conf font-mono">
+      {{ card.confidence|floatformat:2 }}
+    </span>
+    {% endif %}
+  </div>
+  {% if card.refManual %}
+  <p class="tp-chat__source mb-2">
+    <span class="tp-chat__source-tag">Fonte técnica: {{ card.refManual }}</span>
+  </p>
+  {% endif %}
+  {% if card.description %}
+  <p class="font-body-sm mb-2">{{ card.description }}</p>
+  {% endif %}
+  {% if card.recommendedSkus %}
+  <ul class="tp-diagnostic-card__skus list-unstyled mb-0">
+    {% for sku in card.recommendedSkus %}
+    <li><span class="font-mono">{{ sku }}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>

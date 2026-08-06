@@ -1,0 +1,7 @@
+{
+  "fixture": "vte02_capacitor.txt",
+  "brand": "Mondial",
+  "model": "VTE-02",
+  "question": "Qual o capacitor de partida do VTE-02?",
+  "expect_any": ["capacitor", "3.5", "cap-35"]
+}

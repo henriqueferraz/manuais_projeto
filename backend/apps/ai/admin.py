@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.ai.models import ChatFeedback, ChatMessage, ChatSession, ManualChunk
+from apps.ai.models import ChatFeedback, ChatMessage, ChatSession, ManualChunk, PhotoSearch
 
 
 @admin.register(ManualChunk)
@@ -20,6 +20,7 @@ class ChatMessageInline(admin.TabularInline):
         "sources",
         "confidence",
         "found_in_manual",
+        "diagnosis_card",
         "cost_estimate",
         "latency_ms",
         "created_at",
@@ -47,3 +48,17 @@ class ChatFeedbackAdmin(admin.ModelAdmin):
     list_display = ("id", "message", "vote", "created_ticket", "created_at")
     list_filter = ("vote",)
     raw_id_fields = ("message", "created_ticket")
+
+
+@admin.register(PhotoSearch)
+class PhotoSearchAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "status",
+        "original_filename",
+        "user",
+        "latency_ms",
+        "created_at",
+    )
+    list_filter = ("status",)
+    raw_id_fields = ("user", "product")

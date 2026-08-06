@@ -11,4 +11,4 @@ DJANGO_SETTINGS_MODULE=config.settings.test ../.venv/bin/python manage.py run_go
 ```
 
 Critério mínimo padrão: ≥ 66% dos casos OK (ajustável com `--min-score`).
-CI completo do golden set entra na F6.
+No CI (F6): step `Golden set (extração + RAG)` em `.github/workflows/ci.yml`.

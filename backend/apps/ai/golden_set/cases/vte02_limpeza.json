@@ -1,0 +1,7 @@
+{
+  "fixture": "vte02_capacitor.txt",
+  "brand": "Mondial",
+  "model": "VTE-02",
+  "question": "Como limpar as pás do ventilador?",
+  "expect_any": ["pás", "pas", "pano", "limpe"]
+}

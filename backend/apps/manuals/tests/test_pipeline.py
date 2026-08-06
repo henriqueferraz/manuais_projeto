@@ -97,7 +97,7 @@ def test_pipeline_upload_extract_approve(staff_user, monkeypatch, settings):
         tables = []
 
     monkeypatch.setattr(
-        "apps.manuals.services.pipeline.extract_pdf_text",
+        "apps.manuals.graphs.extraction.extract_pdf_text",
         lambda content, **kwargs: FakePdf(),
     )
 
@@ -137,7 +137,7 @@ def test_reject_keeps_draft_unpublished(staff_user, monkeypatch, settings):
         tables = []
 
     monkeypatch.setattr(
-        "apps.manuals.services.pipeline.extract_pdf_text",
+        "apps.manuals.graphs.extraction.extract_pdf_text",
         lambda content, **kwargs: FakePdf(),
     )
 
@@ -183,7 +183,7 @@ def test_extraction_failure_insufficient_text(staff_user, monkeypatch):
         tables = []
 
     monkeypatch.setattr(
-        "apps.manuals.services.pipeline.extract_pdf_text",
+        "apps.manuals.graphs.extraction.extract_pdf_text",
         lambda content, **kwargs: FakePdf(),
     )
     _, log = create_manual_from_upload(

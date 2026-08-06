@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Assistente técnico — {{ brand_name }}{% endblock %}
+{% block title %}Assistente de diagnóstico — {{ brand_name }}{% endblock %}
 
 {% block extra_css %}
 <link href="{% static 'ai/chat.css' %}" rel="stylesheet" />
@@ -11,9 +11,9 @@
 <section class="tp-chat-page" aria-labelledby="chat-heading">
   <header class="mb-3">
     <p class="font-label-caps text-tech-gray mb-1">Suporte com IA</p>
-    <h1 id="chat-heading" class="font-headline-md mb-2">Assistente técnico</h1>
+    <h1 id="chat-heading" class="font-headline-md mb-2">Assistente de diagnóstico</h1>
     <p class="font-body-md text-tech-gray mb-0">
-      Dúvidas com base no manual indexado. Toda resposta técnica cita a fonte.
+      Relate o sintoma: o motor LangGraph busca no manual, cita a fonte e sugere SKUs.
       {% if product %}
       Filtrado para <strong class="font-mono">{{ product.sku }}</strong>
       ({{ product.brand }} {{ product.model_code }}).
@@ -26,6 +26,7 @@
     id="tp-chat"
     data-stream-url="{% url 'ai:chat_stream' %}"
     data-feedback-url="{% url 'ai:chat_feedback' %}"
+    data-photo-url="{% url 'ai:photo_upload' %}"
     data-product-id="{% if product %}{{ product.pk }}{% endif %}"
     data-csrf="{{ csrf_token }}"
   >
@@ -33,14 +34,14 @@
       <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
       <div>
         <strong>TechParts AI</strong>
-        <div class="small">Respostas com citação do manual</div>
+        <div class="small">Motor de diagnóstico · citação obrigatória</div>
       </div>
     </div>
 
     <div class="tp-chat__body" id="tp-chat-body" role="log" aria-live="polite" aria-relevant="additions">
       <div class="tp-chat__bubble tp-chat__bubble--ai">
-        Olá. Pergunte sobre instalação, manutenção ou peças — eu busco no manual
-        indexado e cito a seção/página.
+        Descreva o sintoma (ex.: “ventilador VTE-02 faz barulho e não gira”) ou
+        analise uma foto da peça.
       </div>
     </div>
 
@@ -51,8 +52,10 @@
       <span class="visually-hidden">IA está digitando</span>
     </div>
 
+    <div id="tp-photo-results" class="tp-photo-results px-3" aria-live="polite"></div>
+
     <form class="tp-chat__footer" id="tp-chat-form" autocomplete="off">
-      <label class="visually-hidden" for="tp-chat-input">Sua pergunta</label>
+      <label class="visually-hidden" for="tp-chat-input">Seu relato</label>
       <input
         id="tp-chat-input"
         class="form-control"
@@ -60,9 +63,19 @@
         name="question"
         maxlength="2000"
         required
-        placeholder="Ex.: Qual o capacitor de partida do modelo?"
+        placeholder="Ex.: VTE-02 faz barulho no capacitor de partida"
         enterkeyhint="send"
         autocomplete="off"
+      />
+      <label class="btn btn-outline-secondary mb-0" for="tp-photo-input" title="Analisar foto">
+        <span class="visually-hidden">Analisar foto</span>
+        <span aria-hidden="true">📷</span>
+      </label>
+      <input
+        id="tp-photo-input"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        class="d-none"
       />
       <button type="submit" class="btn btn-ai" id="tp-chat-send">
         Enviar
@@ -71,8 +84,7 @@
   </div>
 
   <p class="font-body-sm text-tech-gray mt-3 mb-0">
-    Feedback negativo (👎) duas vezes seguidas abre um chamado com o histórico —
-    você não precisa repetir o relato.
+    Feedback negativo (👎) duas vezes seguidas abre um chamado com o histórico.
   </p>
 </section>
 {% endblock %}

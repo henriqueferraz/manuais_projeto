@@ -1,0 +1,27 @@
+{% if search.status == "pending" or search.status == "running" %}
+<div class="tp-photo-skeleton" aria-busy="true" aria-live="polite">
+  <div class="tp-skeleton-line"></div>
+  <div class="tp-skeleton-line"></div>
+  <div class="tp-skeleton-line tp-skeleton-line--short"></div>
+  <span class="visually-hidden">Analisando foto…</span>
+</div>
+{% elif search.status == "failed" %}
+<p class="text-danger font-body-sm mb-0" role="alert">
+  {{ search.error_message|default:"Não foi possível analisar a foto." }}
+</p>
+{% else %}
+<ul class="tp-photo-candidates list-unstyled mb-0" aria-label="Peças candidatas">
+  {% for c in search.candidates %}
+  <li class="tp-photo-candidate">
+    <div>
+      <strong class="font-mono">{{ c.sku }}</strong>
+      <div class="font-body-sm text-tech-gray">{{ c.label|default:c.sku }}</div>
+      {% if c.reason %}<div class="font-body-sm">{{ c.reason }}</div>{% endif %}
+    </div>
+    <span class="badge text-bg-light font-mono">{{ c.score }}</span>
+  </li>
+  {% empty %}
+  <li class="font-body-sm text-tech-gray">Nenhum candidato encontrado.</li>
+  {% endfor %}
+</ul>
+{% endif %}

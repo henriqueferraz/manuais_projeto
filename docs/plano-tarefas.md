@@ -587,42 +587,42 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P03, P10
 
-- [ ] LangGraph: entender relato → decidir busca (manual / pedidos / pedir detalhes) → sugerir causa/peça
-- [ ] Sempre citar trecho do manual
-- [ ] Card de diagnóstico (confiança, ref. manual, SKUs recomendados) — ver `DiagnosticCardData`
-- [ ] UI alinhada a `DiagnosticChatView` / `code.html`
-- [ ] Tracking de pedidos vindos do diagnóstico
+- [x] LangGraph: entender relato → decidir busca (manual / pedidos / pedir detalhes) → sugerir causa/peça
+- [x] Sempre citar trecho do manual
+- [x] Card de diagnóstico (confiança, ref. manual, SKUs recomendados) — ver `DiagnosticCardData`
+- [x] UI alinhada a `DiagnosticChatView` / `code.html`
+- [x] Tracking de pedidos vindos do diagnóstico
 
-**Aceite:** sintoma de teste sugere peça correta com fonte; card renderiza.
+**Aceite:** sintoma de teste sugere peça correta com fonte; card renderiza. ✅ → `/assistente/chat/`
 
 ### T-6.2 — HITL no grafo de extração
 
 **Pilares:** P09
 
-- [ ] Nó de interrupção LangGraph até aprovação no admin/tela de revisão
-- [ ] Retomar de onde parou (não reiniciar o processo)
+- [x] Nó de interrupção LangGraph até aprovação no admin/tela de revisão
+- [x] Retomar de onde parou (não reiniciar o processo)
 
-**Aceite:** pausa/retomada funciona em staging.
+**Aceite:** pausa/retomada funciona em staging. ✅
 
 ### T-6.3 — Busca de peça por foto
 
 **Pilares:** P03, P15, P23
 
-- [ ] Upload de imagem → R2 → Claude vision (Celery)
-- [ ] Validação MIME/tamanho + rate limit
-- [ ] Candidatos ranqueados na UI com loading/skeleton
+- [x] Upload de imagem → R2 → Claude vision (Celery)
+- [x] Validação MIME/tamanho + rate limit
+- [x] Candidatos ranqueados na UI com loading/skeleton
 
-**Aceite:** foto de peça de teste retorna candidatos; upload inválido rejeitado.
+**Aceite:** foto de peça de teste retorna candidatos; upload inválido rejeitado. ✅ → `/assistente/foto/`
 
 ### T-6.4 — Golden set no CI e regressão de prompts
 
 **Pilares:** P06, P14
 
-- [ ] Golden set de extração no pipeline CI
-- [ ] Dataset de perguntas/respostas esperadas do RAG (amostra)
-- [ ] Bloquear merge se regressão piorar casos conhecidos
+- [x] Golden set de extração no pipeline CI
+- [x] Dataset de perguntas/respostas esperadas do RAG (amostra)
+- [x] Bloquear merge se regressão piorar casos conhecidos
 
-**Aceite:** CI falha ao quebrar caso golden propositalmente.
+**Aceite:** CI falha ao quebrar caso golden propositalmente. ✅ (`make golden` / `make golden-rag`)
 
 ---
 

@@ -127,6 +127,16 @@ class ExtractionLog(models.Model):
     )
     reviewed_at = models.DateTimeField(null=True, blank=True)
     review_notes = models.TextField(blank=True)
+    langgraph_thread_id = models.CharField(
+        max_length=64,
+        blank=True,
+        db_index=True,
+        help_text="Thread LangGraph para pausa/retomada HITL (F6).",
+    )
+    langgraph_interrupted = models.BooleanField(
+        default=False,
+        help_text="True quando o grafo pausou aguardando revisão humana.",
+    )
     started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

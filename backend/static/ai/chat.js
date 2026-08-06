@@ -6,8 +6,11 @@
   const form = document.getElementById("tp-chat-form");
   const input = document.getElementById("tp-chat-input");
   const typing = document.getElementById("tp-chat-typing");
+  const photoInput = document.getElementById("tp-photo-input");
+  const photoResults = document.getElementById("tp-photo-results");
   const streamUrl = root.dataset.streamUrl;
   const feedbackUrl = root.dataset.feedbackUrl;
+  const photoUrl = root.dataset.photoUrl;
   const csrf = root.dataset.csrf;
   const productId = root.dataset.productId || "";
   let sessionId = null;
@@ -44,6 +47,34 @@
       wrap.appendChild(tag);
     });
     bubble.appendChild(wrap);
+  }
+
+  function renderDiagnosisCard(bubble, card) {
+    if (!card || !card.refManual) return;
+    const cardEl = el("div", "tp-diagnostic-card");
+    const header = el("div", "tp-diagnostic-card__header");
+    header.appendChild(el("strong", "", card.title || "Diagnóstico assistido"));
+    if (card.confidence != null) {
+      header.appendChild(
+        el("span", "tp-diagnostic-card__conf font-mono", String(card.confidence))
+      );
+    }
+    cardEl.appendChild(header);
+    const src = el("div", "tp-chat__source");
+    src.appendChild(
+      el("span", "tp-chat__source-tag", `Fonte técnica: ${card.refManual}`)
+    );
+    cardEl.appendChild(src);
+    if (card.recommendedSkus && card.recommendedSkus.length) {
+      const ul = el("ul", "tp-diagnostic-card__skus list-unstyled mb-0");
+      card.recommendedSkus.forEach((sku) => {
+        const li = el("li", "");
+        li.appendChild(el("span", "font-mono", sku));
+        ul.appendChild(li);
+      });
+      cardEl.appendChild(ul);
+    }
+    bubble.appendChild(cardEl);
   }
 
   function renderFeedback(bubble, messageId) {
@@ -108,6 +139,7 @@
     let full = "";
     let messageId = null;
     let sources = [];
+    let diagnosisCard = null;
 
     try {
       const res = await fetch(streamUrl, {
@@ -121,6 +153,7 @@
           question,
           session_id: sessionId,
           product_id: productId || null,
+          mode: "diagnosis",
         }),
       });
 
@@ -159,6 +192,7 @@
             sessionId = data.session_id || sessionId;
             messageId = data.message_id;
             sources = data.sources || [];
+            diagnosisCard = data.diagnosis_card || null;
           } else if (event === "token") {
             full += data.text || "";
             aiBubble.textContent = full;
@@ -168,7 +202,9 @@
             aiBubble.textContent = full;
             messageId = data.message_id || messageId;
             sources = data.sources || sources;
+            diagnosisCard = data.diagnosis_card || diagnosisCard;
             setTyping(false);
+            renderDiagnosisCard(aiBubble, diagnosisCard);
             renderSources(aiBubble, sources);
             if (messageId) renderFeedback(aiBubble, messageId);
           }
@@ -192,7 +228,38 @@
     streamAnswer(q);
   });
 
-  // Evita zoom iOS em focus; garante input visível
+  if (photoInput && photoUrl) {
+    photoInput.addEventListener("change", async () => {
+      const file = photoInput.files && photoInput.files[0];
+      if (!file) return;
+      photoResults.innerHTML =
+        '<div class="tp-photo-skeleton" aria-busy="true"><div class="tp-skeleton-line"></div><div class="tp-skeleton-line"></div></div>';
+      const fd = new FormData();
+      fd.append("photo", file);
+      if (productId) fd.append("product_id", productId);
+      try {
+        const res = await fetch(photoUrl, {
+          method: "POST",
+          headers: { "X-CSRFToken": csrf, "HX-Request": "true" },
+          body: fd,
+        });
+        const html = await res.text();
+        photoResults.innerHTML = html;
+        if (!res.ok) {
+          addBubble("ai", "Upload inválido ou falha na análise da foto.");
+        } else {
+          addBubble("user", `[Foto] ${file.name}`);
+          addBubble("ai", "Candidatos da análise por foto atualizados abaixo.");
+        }
+      } catch (_) {
+        photoResults.innerHTML =
+          '<p class="text-danger font-body-sm">Falha ao enviar a foto.</p>';
+      } finally {
+        photoInput.value = "";
+      }
+    });
+  }
+
   input.addEventListener("focus", () => {
     setTimeout(scrollBottom, 300);
   });

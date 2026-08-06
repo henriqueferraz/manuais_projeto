@@ -27,6 +27,8 @@ def build_order_from_cart(
     shipping_option_id: str,
     user=None,
     coupon_code: str = "",
+    attribution_source: str = "",
+    chat_session_id: str | None = None,
 ) -> Order:
     from apps.cart.coupons import cart_totals_with_coupon
 
@@ -54,6 +56,9 @@ def build_order_from_cart(
     option = pick_option(options, shipping_option_id)
 
     with transaction.atomic():
+        source = attribution_source or Order.AttributionSource.DIRECT
+        if source not in Order.AttributionSource.values:
+            source = Order.AttributionSource.DIRECT
         order = Order.objects.create(
             number=Order.next_number(),
             user=user if getattr(user, "is_authenticated", False) else None,
@@ -78,6 +83,8 @@ def build_order_from_cart(
             coupon_code=(coupon_code or "").upper(),
             total=taxable + option.price,
             cart=cart,
+            attribution_source=source,
+            chat_session_id=chat_session_id or None,
         )
         for item in totals["items"]:
             OrderItem.objects.create(

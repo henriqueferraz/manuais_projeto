@@ -6,9 +6,9 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Fase 4d — Cupons, trocas e devoluções (CDC).** Fase 4 completa (4a–4d).
+**Fase 6 — Diagnóstico assistido e LangGraph.** Chat RAG (F5) + grafo de diagnóstico, HITL interrupt, busca por foto e golden no CI.
 
-Rotas: `/carrinho/` (cupom) · `/devolucoes/` · `/devolucoes/operacao/` · checkout com desconto.
+Rotas: `/assistente/chat/` · `/assistente/foto/` · `/manuais/revisao/`
 
 ## Bootstrap rápido (local sem Docker)
 

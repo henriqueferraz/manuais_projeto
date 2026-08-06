@@ -47,6 +47,11 @@ env = environ.Env(
     USE_PGVECTOR=(bool, True),
     AI_COST_ALERT_USD=(float, 5.0),
     AI_LATENCY_ALERT_MS=(int, 8000),
+    PHOTO_MAX_UPLOAD_BYTES=(int, 5 * 1024 * 1024),
+    PHOTO_LLM_MODE=(str, "mock"),
+    DIAGNOSIS_LLM_MODE=(str, "mock"),
+    GOLDEN_MIN_SCORE=(float, 0.66),
+    RAG_GOLDEN_MIN_SCORE=(float, 0.66),
 )
 
 environ.Env.read_env(REPO_ROOT / ".env")
@@ -263,6 +268,11 @@ RAG_MIN_SCORE = env("RAG_MIN_SCORE")
 USE_PGVECTOR = env("USE_PGVECTOR")
 AI_COST_ALERT_USD = env("AI_COST_ALERT_USD")
 AI_LATENCY_ALERT_MS = env("AI_LATENCY_ALERT_MS")
+PHOTO_MAX_UPLOAD_BYTES = env("PHOTO_MAX_UPLOAD_BYTES")
+PHOTO_LLM_MODE = env("PHOTO_LLM_MODE")
+DIAGNOSIS_LLM_MODE = env("DIAGNOSIS_LLM_MODE")
+GOLDEN_MIN_SCORE = env("GOLDEN_MIN_SCORE")
+RAG_GOLDEN_MIN_SCORE = env("RAG_GOLDEN_MIN_SCORE")
 
 # --- F4b: checkout / pagamento / frete / NF-e ---
 PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="mock")
