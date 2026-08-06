@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Assistente técnico — {{ brand_name }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'ai/chat.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<section class="tp-chat-page" aria-labelledby="chat-heading">
+  <header class="mb-3">
+    <p class="font-label-caps text-tech-gray mb-1">Suporte com IA</p>
+    <h1 id="chat-heading" class="font-headline-md mb-2">Assistente técnico</h1>
+    <p class="font-body-md text-tech-gray mb-0">
+      Dúvidas com base no manual indexado. Toda resposta técnica cita a fonte.
+      {% if product %}
+      Filtrado para <strong class="font-mono">{{ product.sku }}</strong>
+      ({{ product.brand }} {{ product.model_code }}).
+      {% endif %}
+    </p>
+  </header>
+
+  <div
+    class="tp-chat tp-chat--page"
+    id="tp-chat"
+    data-stream-url="{% url 'ai:chat_stream' %}"
+    data-feedback-url="{% url 'ai:chat_feedback' %}"
+    data-product-id="{% if product %}{{ product.pk }}{% endif %}"
+    data-csrf="{{ csrf_token }}"
+  >
+    <div class="tp-chat__header">
+      <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
+      <div>
+        <strong>TechParts AI</strong>
+        <div class="small">Respostas com citação do manual</div>
+      </div>
+    </div>
+
+    <div class="tp-chat__body" id="tp-chat-body" role="log" aria-live="polite" aria-relevant="additions">
+      <div class="tp-chat__bubble tp-chat__bubble--ai">
+        Olá. Pergunte sobre instalação, manutenção ou peças — eu busco no manual
+        indexado e cito a seção/página.
+      </div>
+    </div>
+
+    <div class="tp-chat__typing d-none" id="tp-chat-typing" aria-hidden="true">
+      <span class="tp-chat__typing-dot"></span>
+      <span class="tp-chat__typing-dot"></span>
+      <span class="tp-chat__typing-dot"></span>
+      <span class="visually-hidden">IA está digitando</span>
+    </div>
+
+    <form class="tp-chat__footer" id="tp-chat-form" autocomplete="off">
+      <label class="visually-hidden" for="tp-chat-input">Sua pergunta</label>
+      <input
+        id="tp-chat-input"
+        class="form-control"
+        type="text"
+        name="question"
+        maxlength="2000"
+        required
+        placeholder="Ex.: Qual o capacitor de partida do modelo?"
+        enterkeyhint="send"
+        autocomplete="off"
+      />
+      <button type="submit" class="btn btn-ai" id="tp-chat-send">
+        Enviar
+      </button>
+    </form>
+  </div>
+
+  <p class="font-body-sm text-tech-gray mt-3 mb-0">
+    Feedback negativo (👎) duas vezes seguidas abre um chamado com o histórico —
+    você não precisa repetir o relato.
+  </p>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'ai/chat.js' %}" defer></script>
+{% endblock %}

@@ -18,12 +18,17 @@ CELERY_TASK_ALWAYS_EAGER = True
 AXES_ENABLED = False
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 EXTRACTION_LLM_MODE = "mock"
+CHAT_LLM_MODE = "mock"
+EMBEDDING_MODE = "mock"
+EMBEDDING_DIMS = 64
+USE_PGVECTOR = False
 MANUAL_AV_STUB_OK = True
 MANUAL_CLAMAV_ENABLED = False
 USE_R2_STORAGE = False
 PAYMENT_PROVIDER = "mock"
 NFE_PROVIDER = "mock"
 CELERY_TASK_ALWAYS_EAGER = True
+AI_RATE_LIMIT = "100/m"
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},

@@ -527,53 +527,54 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 ## Fase 5 — Chat de suporte com RAG
 
 > Objetivo: dúvidas técnicas com base no manual real, com UX de IA de primeira classe.  
-> Pilares: **P02, P03, P07, P08, P10, P12, P13, P15** (+ P16/P19/P20/P21/P22)
+> Pilares: **P02, P03, P07, P08, P10, P12, P13, P15** (+ P16/P19/P20/P21/P22)  
+> **Git:** após merge da F4d; branch `fase/5-chat-rag`.
 
 ### T-5.1 — Indexação e retrieval
 
 **Pilares:** P02, P10, P11
 
-- [ ] Chunking semântico (seção/parágrafo); preservar tabelas; metadados (produto, seção, página)
-- [ ] Embeddings → `ManualChunk` + pgvector (índice HNSW/IVFFlat)
-- [ ] Filtro por produto/categoria antes da busca semântica
-- [ ] Task Celery de indexação pós-aprovação do manual
+- [x] Chunking semântico (seção/parágrafo); preservar tabelas; metadados (produto, seção, página)
+- [x] Embeddings → `ManualChunk` + pgvector (índice HNSW/IVFFlat)
+- [x] Filtro por produto/categoria antes da busca semântica
+- [x] Task Celery de indexação pós-aprovação do manual
 
-**Aceite:** pergunta de teste recupera o chunk correto do manual indexado.
+**Aceite:** pergunta de teste recupera o chunk correto do manual indexado. ✅ (mock hybrid + pgvector em Postgres)
 
 ### T-5.2 — Endpoint de chat + streaming SSE
 
 **Pilares:** P03, P08, P10, P12
 
-- [ ] View/DRF + htmx/JS: pergunta → retrieval → Claude → resposta
-- [ ] Streaming via SSE (`StreamingHttpResponse`)
-- [ ] Citação de fonte (página/seção) em toda resposta técnica
-- [ ] Fallback explícito: “não encontrei isso no manual”
-- [ ] Indicador “IA está digitando”; shell visual cyan; tag Technical Source
-- [ ] Chat usável no mobile (input não coberto pelo teclado)
-- [ ] Acessibilidade: teclado no chat; contraste
+- [x] View/DRF + htmx/JS: pergunta → retrieval → Claude → resposta
+- [x] Streaming via SSE (`StreamingHttpResponse`)
+- [x] Citação de fonte (página/seção) em toda resposta técnica
+- [x] Fallback explícito: “não encontrei isso no manual”
+- [x] Indicador “IA está digitando”; shell visual cyan; tag Technical Source
+- [x] Chat usável no mobile (input não coberto pelo teclado)
+- [x] Acessibilidade: teclado no chat; contraste
 
-**Aceite:** resposta streama; fonte clicável/visível; mobile OK; DoD visual.
+**Aceite:** resposta streama; fonte clicável/visível; mobile OK; DoD visual. ✅ → `/assistente/chat/`
 
 ### T-5.3 — Feedback, rate limit e observabilidade do chat
 
 **Pilares:** P03, P06, P07, P13, P15
 
-- [ ] 👍/👎 (+ motivo opcional) por resposta; persistir com trechos usados
-- [ ] Rate limiting por IP/usuário nos endpoints de IA
-- [ ] Isolar system prompt; guardrails (conteúdo do manual ≠ instrução)
-- [ ] LangSmith desde o dia 1; correlacionar `request_id` ↔ `trace_id`
-- [ ] Alertas de custo e latência básicos
+- [x] 👍/👎 (+ motivo opcional) por resposta; persistir com trechos usados
+- [x] Rate limiting por IP/usuário nos endpoints de IA
+- [x] Isolar system prompt; guardrails (conteúdo do manual ≠ instrução)
+- [x] LangSmith desde o dia 1; correlacionar `request_id` ↔ `trace_id`
+- [x] Alertas de custo e latência básicos
 
-**Aceite:** feedback salvo; abuso rate-limited; trace LangSmith por conversa.
+**Aceite:** feedback salvo; abuso rate-limited; trace LangSmith por conversa. ✅
 
 ### T-5.4 — Escalonamento inicial para humano
 
 **Pilares:** P03, P08
 
-- [ ] 👎 (ou dois seguidos) / baixa confiança → abrir `Ticket` com histórico anexado
-- [ ] Cliente não precisa repetir o relato
+- [x] 👎 (ou dois seguidos) / baixa confiança → abrir `Ticket` com histórico anexado
+- [x] Cliente não precisa repetir o relato
 
-**Aceite:** feedback negativo gera chamado com histórico completo.
+**Aceite:** feedback negativo gera chamado com histórico completo. ✅
 
 ---
 

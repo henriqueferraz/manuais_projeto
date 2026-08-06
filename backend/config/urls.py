@@ -19,4 +19,5 @@ urlpatterns = [
     path("chamados/", include("apps.tickets.urls")),
     path("devolucoes/", include("apps.orders.urls_returns")),
     path("compatibilidade/", include("apps.compatibility.urls")),
+    path("assistente/", include("apps.ai.urls")),
 ]

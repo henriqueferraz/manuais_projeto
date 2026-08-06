@@ -45,12 +45,14 @@ def test_mask_pii_redacts_email_and_sensitive_keys():
 
 @pytest.mark.django_db
 def test_ai_rate_limit_stub(settings):
+    from django.core.cache import cache
     from django.http import HttpResponse
     from django.test import RequestFactory
 
     from apps.core.ratelimit import ai_rate_limit
 
     settings.AI_RATE_LIMIT = "2/m"
+    cache.clear()
 
     @ai_rate_limit
     def view(request):

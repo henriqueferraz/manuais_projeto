@@ -35,6 +35,18 @@ env = environ.Env(
     LANGSMITH_TRACING=(bool, False),
     LANGSMITH_API_KEY=(str, ""),
     LANGSMITH_PROJECT=(str, "techparts-ai"),
+    CHAT_LLM_MODE=(str, "mock"),
+    EMBEDDING_MODE=(str, "mock"),
+    EMBEDDING_DIMS=(int, 64),
+    OPENAI_API_KEY=(str, ""),
+    OPENAI_EMBEDDING_MODEL=(str, "text-embedding-3-small"),
+    RAG_CHUNK_SIZE=(int, 900),
+    RAG_CHUNK_OVERLAP=(int, 120),
+    RAG_TOP_K=(int, 4),
+    RAG_MIN_SCORE=(float, 0.12),
+    USE_PGVECTOR=(bool, True),
+    AI_COST_ALERT_USD=(float, 5.0),
+    AI_LATENCY_ALERT_MS=(int, 8000),
 )
 
 environ.Env.read_env(REPO_ROOT / ".env")
@@ -237,6 +249,20 @@ LANGSMITH_API_KEY = env("LANGSMITH_API_KEY")
 LANGSMITH_PROJECT = env("LANGSMITH_PROJECT")
 CART_RESERVATION_MINUTES = env.int("CART_RESERVATION_MINUTES", default=30)
 CATALOG_CACHE_TTL = env.int("CATALOG_CACHE_TTL", default=60)
+
+# --- F5: chat RAG ---
+CHAT_LLM_MODE = env("CHAT_LLM_MODE")
+EMBEDDING_MODE = env("EMBEDDING_MODE")
+EMBEDDING_DIMS = env("EMBEDDING_DIMS")
+OPENAI_API_KEY = env("OPENAI_API_KEY")
+OPENAI_EMBEDDING_MODEL = env("OPENAI_EMBEDDING_MODEL")
+RAG_CHUNK_SIZE = env("RAG_CHUNK_SIZE")
+RAG_CHUNK_OVERLAP = env("RAG_CHUNK_OVERLAP")
+RAG_TOP_K = env("RAG_TOP_K")
+RAG_MIN_SCORE = env("RAG_MIN_SCORE")
+USE_PGVECTOR = env("USE_PGVECTOR")
+AI_COST_ALERT_USD = env("AI_COST_ALERT_USD")
+AI_LATENCY_ALERT_MS = env("AI_LATENCY_ALERT_MS")
 
 # --- F4b: checkout / pagamento / frete / NF-e ---
 PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="mock")
