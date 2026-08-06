@@ -53,6 +53,14 @@ jobs:
           export PYTHONPATH="${GITHUB_WORKSPACE}/backend:${PYTHONPATH}"
           pytest --cov=apps --cov-report=term-missing
 
+      - name: Golden set (extração + RAG)
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+        run: |
+          export PYTHONPATH="${GITHUB_WORKSPACE}/backend:${PYTHONPATH}"
+          python backend/manage.py run_golden_set --min-score 0.66
+          python backend/manage.py run_rag_golden_set --min-score 0.66
+
       - name: Check migrations
         env:
           DJANGO_SETTINGS_MODULE: config.settings.test

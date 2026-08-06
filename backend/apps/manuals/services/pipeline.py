@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
-
 import structlog
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.files.base import ContentFile
@@ -15,9 +13,7 @@ from apps.accounts.models import SensitiveActionLog
 from apps.catalog.models import Category
 from apps.manuals.models import ExtractionLog, Manual
 from apps.manuals.schemas import ExtractedProduct
-from apps.manuals.services.pdf_extract import extract_pdf_text
-from apps.manuals.services.sanitize import sanitize_manual_text
-from apps.manuals.services.structure import dump_product_json, structure_manual_text
+from apps.manuals.services.structure import dump_product_json
 from apps.manuals.validators import validate_manual_upload
 from apps.products.models import Product, ProductTranslation
 
@@ -70,63 +66,48 @@ def create_manual_from_upload(
 
 
 def run_extraction(extraction_id: int) -> ExtractionLog:
-    """Pipeline: ler PDF → sanitizar → estruturar → awaiting_review."""
-    log = ExtractionLog.objects.select_related("manual").get(pk=extraction_id)
-    log.mark_running()
-    manual = log.manual
+    """Pipeline LangGraph: PDF → estrutura → interrupt HITL (awaiting_review)."""
+    from apps.manuals.graphs.extraction import run_extraction_graph
 
     try:
-        content = manual.file.read()
-        if hasattr(manual.file, "seek"):
-            manual.file.seek(0)
-
-        pdf = extract_pdf_text(content)
-        cleaned = sanitize_manual_text(pdf.text)
-        log.raw_text_preview = cleaned[:4000]
-
-        if len(cleaned) < 40:
-            raise ValueError(
-                "Texto insuficiente no PDF (possível scan sem OCR). "
-                "Habilite MANUAL_OCR_ENABLED ou envie PDF com texto."
-            )
-
-        result = structure_manual_text(
-            cleaned,
-            manufacturer_hint=manual.manufacturer,
-            filename=manual.original_filename,
-        )
-        product_data = dump_product_json(result.product)
-
-        log.raw_json = product_data
-        log.model_name = result.model_name
-        log.tokens_in = result.tokens_in
-        log.tokens_out = result.tokens_out
-        log.cost_estimate = Decimal(str(result.cost_estimate))
-        log.confidence = result.product.confidence
-        log.langsmith_trace_id = result.langsmith_trace_id
-        log.prompt_version = result.prompt_version
-        log.status = ExtractionLog.Status.AWAITING_REVIEW
-        log.finished_at = timezone.now()
-        log.error_message = ""
-        log.save()
-
-        if not manual.manufacturer and result.product.manufacturer:
-            manual.manufacturer = result.product.manufacturer
-            manual.save(update_fields=["manufacturer", "updated_at"])
-
-        logger.info(
-            "extraction_ok",
-            extraction_id=log.pk,
-            confidence=log.confidence,
-            cost=float(log.cost_estimate),
-            tokens_in=log.tokens_in,
-            tokens_out=log.tokens_out,
-        )
-        return log
+        return run_extraction_graph(extraction_id)
     except Exception as exc:  # noqa: BLE001
-        logger.exception("extraction_failed", extraction_id=log.pk)
-        log.mark_failed(str(exc))
+        log = ExtractionLog.objects.filter(pk=extraction_id).first()
+        if log is None:
+            raise
+        if log.status == ExtractionLog.Status.AWAITING_REVIEW:
+            return log
+        logger.exception("extraction_failed", extraction_id=extraction_id)
+        if log.status != ExtractionLog.Status.FAILED:
+            log.mark_failed(str(exc))
         return log
+
+
+def apply_review_decision(
+    log: ExtractionLog,
+    *,
+    action: str,
+    reviewer_id: int | None,
+    corrected: dict | None = None,
+    notes: str = "",
+):
+    """Aplica approve/reject após retomada do grafo (ou fallback sem checkpoint)."""
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    reviewer = User.objects.filter(pk=reviewer_id).first() if reviewer_id else None
+    if reviewer is None:
+        raise ValueError("Revisor obrigatório para finalizar a extração.")
+
+    if action == "reject":
+        return reject_extraction(log, reviewer=reviewer, notes=notes, skip_graph_resume=True)
+    return approve_extraction(
+        log,
+        reviewer=reviewer,
+        corrected=corrected,
+        notes=notes,
+        skip_graph_resume=True,
+    )
 
 
 @transaction.atomic
@@ -136,6 +117,7 @@ def approve_extraction(
     reviewer: AbstractBaseUser,
     corrected: dict | None = None,
     notes: str = "",
+    skip_graph_resume: bool = False,
 ) -> Product:
     """HITL: cria/atualiza Product como rascunho — nunca publica automaticamente."""
     if log.status not in {
@@ -143,6 +125,21 @@ def approve_extraction(
         ExtractionLog.Status.REJECTED,
     }:
         raise ValueError(f"Extração em status inválido para aprovação: {log.status}")
+
+    # Retoma grafo LangGraph se pausado (não reinicia extract/structure)
+    if not skip_graph_resume and log.langgraph_interrupted and log.langgraph_thread_id:
+        from apps.manuals.graphs.extraction import resume_extraction_graph
+
+        resume_extraction_graph(
+            log.pk,
+            action="approve",
+            reviewer_id=getattr(reviewer, "pk", None),
+            corrected=corrected,
+            notes=notes,
+        )
+        log.refresh_from_db()
+        if log.draft_product_id:
+            return log.draft_product
 
     data = corrected if corrected is not None else (log.corrected_json or log.raw_json)
     product_schema = ExtractedProduct.model_validate(data)
@@ -207,6 +204,7 @@ def approve_extraction(
     log.reviewed_at = timezone.now()
     log.review_notes = notes
     log.draft_product = product
+    log.langgraph_interrupted = False
     log.save()
 
     log.manual.linked_product = product
@@ -236,6 +234,7 @@ def reject_extraction(
     *,
     reviewer: AbstractBaseUser,
     notes: str = "",
+    skip_graph_resume: bool = False,
 ) -> ExtractionLog:
     if log.status not in {
         ExtractionLog.Status.AWAITING_REVIEW,
@@ -243,10 +242,27 @@ def reject_extraction(
     }:
         raise ValueError(f"Extração em status inválido para rejeição: {log.status}")
 
+    if not skip_graph_resume and log.langgraph_interrupted and log.langgraph_thread_id:
+        from apps.manuals.graphs.extraction import resume_extraction_graph
+
+        try:
+            resume_extraction_graph(
+                log.pk,
+                action="reject",
+                reviewer_id=getattr(reviewer, "pk", None),
+                notes=notes,
+            )
+            log.refresh_from_db()
+            if log.status == ExtractionLog.Status.REJECTED:
+                return log
+        except Exception:  # noqa: BLE001
+            logger.exception("extraction_graph_resume_reject_fallback", extraction_id=log.pk)
+
     log.status = ExtractionLog.Status.REJECTED
     log.reviewed_by = reviewer
     log.reviewed_at = timezone.now()
     log.review_notes = notes
+    log.langgraph_interrupted = False
     log.save()
 
     if log.draft_product_id:

@@ -1,4 +1,4 @@
-"""Views do chat RAG com streaming SSE."""
+"""Views do chat RAG, diagnóstico e busca por foto (F5–F6)."""
 
 from __future__ import annotations
 
@@ -10,15 +10,36 @@ from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpRe
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from apps.ai.models import ChatMessage, ChatSession
+from apps.ai.models import ChatMessage, ChatSession, PhotoSearch
 from apps.ai.services.chat import answer_question, format_sse
+from apps.ai.services.diagnosis import diagnose_question
 from apps.ai.services.escalate import register_feedback
+from apps.ai.services.photo_search import create_photo_search
 from apps.core.ratelimit import ai_rate_limit
 from apps.products.models import Product
 
 logger = structlog.get_logger(__name__)
 
 SESSION_COOKIE = "tp_chat_key"
+
+_DIAGNOSIS_HINTS = (
+    "barulho",
+    "ruído",
+    "ruido",
+    "não liga",
+    "nao liga",
+    "não gira",
+    "nao gira",
+    "vibra",
+    "capacitor",
+    "diagnóstico",
+    "diagnostico",
+    "sintoma",
+    "quebra",
+    "parou",
+    "esquenta",
+    "cheiro",
+)
 
 
 def _anonymous_key(request: HttpRequest) -> str:
@@ -67,6 +88,15 @@ def _get_or_create_session(
     )
 
 
+def _wants_diagnosis(question: str, mode: str | None) -> bool:
+    if mode == "diagnosis":
+        return True
+    if mode == "chat":
+        return False
+    q = question.lower()
+    return any(h in q for h in _DIAGNOSIS_HINTS)
+
+
 @require_GET
 def chat_page(request: HttpRequest) -> HttpResponse:
     product_id = request.GET.get("produto") or request.GET.get("product")
@@ -78,7 +108,7 @@ def chat_page(request: HttpRequest) -> HttpResponse:
         "ai/chat.html",
         {
             "product": product,
-            "page_title": "Assistente técnico",
+            "page_title": "Assistente de diagnóstico",
         },
     )
 
@@ -98,6 +128,7 @@ def chat_stream(request: HttpRequest) -> HttpResponse:
     session_id = payload.get("session_id")
     product_id = payload.get("product_id")
     category_id = payload.get("category_id")
+    mode = (payload.get("mode") or "").strip().lower() or None
     try:
         session = _get_or_create_session(
             request,
@@ -109,30 +140,41 @@ def chat_stream(request: HttpRequest) -> HttpResponse:
         return JsonResponse({"detail": "Filtros inválidos."}, status=400)
 
     request_id = getattr(request, "request_id", "") or ""
+    use_diagnosis = _wants_diagnosis(question, mode)
+    diagnosis_meta: dict = {}
     try:
-        assistant, token_stream = answer_question(
-            session,
-            question,
-            request_id=request_id,
-        )
+        if use_diagnosis:
+            user_id = request.user.pk if request.user.is_authenticated else None
+            assistant, token_stream, diagnosis_meta = diagnose_question(
+                session,
+                question,
+                request_id=request_id,
+                user_id=user_id,
+            )
+        else:
+            assistant, token_stream = answer_question(
+                session,
+                question,
+                request_id=request_id,
+            )
     except ValueError as exc:
         return JsonResponse({"detail": str(exc)}, status=400)
 
     def event_stream():
-        yield format_sse(
-            "meta",
-            {
-                "session_id": str(session.pk),
-                "message_id": str(assistant.pk),
-                "request_id": request_id,
-                "sources": assistant.sources,
-                "found_in_manual": assistant.found_in_manual,
-                "confidence": assistant.confidence,
-            },
-        )
+        meta = {
+            "session_id": str(session.pk),
+            "message_id": str(assistant.pk),
+            "request_id": request_id,
+            "sources": assistant.sources,
+            "found_in_manual": assistant.found_in_manual,
+            "confidence": assistant.confidence,
+            "mode": "diagnosis" if use_diagnosis else "chat",
+            "diagnosis_card": assistant.diagnosis_card or None,
+        }
+        meta.update({k: v for k, v in diagnosis_meta.items() if k not in meta})
+        yield format_sse("meta", meta)
         for piece in token_stream:
             yield format_sse("token", {"text": piece})
-        # recarrega conteúdo final / custos
         assistant.refresh_from_db()
         yield format_sse(
             "done",
@@ -146,6 +188,9 @@ def chat_stream(request: HttpRequest) -> HttpResponse:
                 "latency_ms": assistant.latency_ms,
                 "langsmith_trace_id": assistant.langsmith_trace_id,
                 "request_id": request_id,
+                "mode": "diagnosis" if use_diagnosis else "chat",
+                "diagnosis_card": assistant.diagnosis_card or None,
+                "recommended_skus": (assistant.diagnosis_card or {}).get("recommendedSkus") or [],
             },
         )
 
@@ -174,7 +219,6 @@ def chat_feedback(request: HttpRequest) -> JsonResponse:
         return JsonResponse({"detail": "vote deve ser up ou down."}, status=400)
 
     message = get_object_or_404(ChatMessage, pk=message_id, role=ChatMessage.Role.ASSISTANT)
-    # Autorização leve: dono da sessão
     session = message.session
     if request.user.is_authenticated:
         if session.user_id and session.user_id != request.user.id:
@@ -198,5 +242,82 @@ def chat_feedback(request: HttpRequest) -> JsonResponse:
             "vote": feedback.vote,
             "ticket_code": ticket_code,
             "consecutive_downvotes": session.consecutive_downvotes,
+        }
+    )
+
+
+@ai_rate_limit
+@require_POST
+def photo_upload(request: HttpRequest) -> HttpResponse:
+    upload = request.FILES.get("photo") or request.FILES.get("image")
+    if not upload:
+        return JsonResponse({"detail": "Envie o campo photo."}, status=400)
+
+    product_id = request.POST.get("product_id") or None
+    try:
+        pid = int(product_id) if product_id else None
+    except (TypeError, ValueError):
+        return JsonResponse({"detail": "product_id inválido."}, status=400)
+
+    try:
+        search = create_photo_search(
+            content=upload.read(),
+            filename=getattr(upload, "name", "photo.jpg"),
+            user=request.user if request.user.is_authenticated else None,
+            anonymous_key=_anonymous_key(request),
+            product_id=pid,
+            enqueue=True,
+        )
+    except Exception as exc:  # ValidationError etc.
+        from django.core.exceptions import ValidationError
+
+        if isinstance(exc, ValidationError):
+            msg = "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
+            return JsonResponse({"detail": msg}, status=400)
+        raise
+
+    # Em Celery eager o resultado já está pronto
+    search.refresh_from_db()
+    if request.headers.get("HX-Request"):
+        return render(
+            request,
+            "ai/partials/photo_candidates.html",
+            {"search": search},
+        )
+    return JsonResponse(
+        {
+            "id": str(search.pk),
+            "status": search.status,
+            "candidates": search.candidates,
+            "error": search.error_message,
+            "latency_ms": search.latency_ms,
+        }
+    )
+
+
+@require_GET
+def photo_status(request: HttpRequest, search_id: uuid.UUID) -> HttpResponse:
+    search = get_object_or_404(PhotoSearch, pk=search_id)
+    if request.user.is_authenticated:
+        if search.user_id and search.user_id != request.user.id:
+            return JsonResponse({"detail": "Não autorizado."}, status=403)
+    else:
+        anon = _anonymous_key(request)
+        if search.anonymous_key and search.anonymous_key != anon:
+            return JsonResponse({"detail": "Não autorizado."}, status=403)
+
+    if request.headers.get("HX-Request") or request.GET.get("partial"):
+        return render(
+            request,
+            "ai/partials/photo_candidates.html",
+            {"search": search},
+        )
+    return JsonResponse(
+        {
+            "id": str(search.pk),
+            "status": search.status,
+            "candidates": search.candidates,
+            "error": search.error_message,
+            "latency_ms": search.latency_ms,
         }
     )

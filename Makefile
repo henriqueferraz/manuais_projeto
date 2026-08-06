@@ -1,4 +1,4 @@
-.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden
+.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden golden-rag
 
 help:
 	@echo "Targets:"
@@ -9,10 +9,11 @@ help:
 	@echo "  make bootstrap    - RBAC groups"
 	@echo "  make runserver    - Django local (venv)"
 	@echo "  make test         - pytest"
-	@echo "  make golden       - regressão golden set de extração (F3)"
+	@echo "  make golden       - regressão golden set de extração"
+	@echo "  make golden-rag   - regressão golden set RAG"
 	@echo "  make lint         - ruff + black --check + bandit"
 	@echo "  make fmt          - black + ruff --fix"
-	@echo "  make ci           - lint + test + check migrations"
+	@echo "  make ci           - lint + test + golden + check migrations"
 
 up:
 	docker compose up --build -d
@@ -47,6 +48,10 @@ golden:
 	cd backend && DJANGO_SETTINGS_MODULE=config.settings.test \
 		../.venv/bin/python manage.py run_golden_set
 
+golden-rag:
+	cd backend && DJANGO_SETTINGS_MODULE=config.settings.test \
+		../.venv/bin/python manage.py run_rag_golden_set
+
 lint:
 	.venv/bin/ruff check backend
 	.venv/bin/black --check backend
@@ -56,6 +61,6 @@ fmt:
 	.venv/bin/black backend
 	.venv/bin/ruff check --fix backend
 
-ci: lint test
+ci: lint test golden golden-rag
 	cd backend && DJANGO_SETTINGS_MODULE=config.settings.test \
 		../.venv/bin/python manage.py makemigrations --check --dry-run

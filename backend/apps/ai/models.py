@@ -1,4 +1,4 @@
-"""Models de RAG / chat de suporte (F5)."""
+"""Models de RAG / chat / diagnóstico / foto (F5–F6)."""
 
 from __future__ import annotations
 
@@ -6,6 +6,11 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+
+
+def photo_upload_to(instance: PhotoSearch, filename: str) -> str:
+    safe = filename.replace(" ", "_")
+    return f"photos/{instance.pk}/{safe}"
 
 
 class ManualChunk(models.Model):
@@ -127,6 +132,11 @@ class ChatMessage(models.Model):
     latency_ms = models.PositiveIntegerField(default=0)
     langsmith_trace_id = models.CharField(max_length=128, blank=True)
     model_name = models.CharField(max_length=120, blank=True)
+    diagnosis_card = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Card DiagnosticCardData (title, confidence, refManual, recommendedSkus).",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -167,3 +177,56 @@ class ChatFeedback(models.Model):
 
     def __str__(self) -> str:
         return f"{self.vote} em {self.message_id}"
+
+
+class PhotoSearch(models.Model):
+    """Busca de peça por foto (F6 / T-6.3)."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pendente"
+        RUNNING = "running", "Em execução"
+        DONE = "done", "Concluído"
+        FAILED = "failed", "Falhou"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="photo_searches",
+    )
+    anonymous_key = models.CharField(max_length=64, blank=True, db_index=True)
+    product = models.ForeignKey(
+        "products.Product",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="photo_searches",
+    )
+    image = models.FileField(upload_to=photo_upload_to, max_length=512)
+    original_filename = models.CharField(max_length=255, blank=True)
+    mime_type = models.CharField(max_length=64, blank=True)
+    size_bytes = models.PositiveIntegerField(default=0)
+    status = models.CharField(
+        max_length=16,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    candidates = models.JSONField(default=list, blank=True)
+    error_message = models.TextField(blank=True)
+    model_name = models.CharField(max_length=120, blank=True)
+    latency_ms = models.PositiveIntegerField(default=0)
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = "busca por foto"
+        verbose_name_plural = "buscas por foto"
+
+    def __str__(self) -> str:
+        return f"PhotoSearch {self.pk} [{self.status}]"

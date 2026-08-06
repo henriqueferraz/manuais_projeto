@@ -29,6 +29,9 @@ PAYMENT_PROVIDER = "mock"
 NFE_PROVIDER = "mock"
 CELERY_TASK_ALWAYS_EAGER = True
 AI_RATE_LIMIT = "100/m"
+PHOTO_LLM_MODE = "mock"
+DIAGNOSIS_LLM_MODE = "mock"
+PHOTO_MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},

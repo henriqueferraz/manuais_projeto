@@ -98,7 +98,7 @@ def test_retrieve_filters_by_product(indexed_manual, db):
 def test_chat_page_ok(client: Client):
     response = client.get(reverse("ai:chat"))
     assert response.status_code == 200
-    assert b"Assistente t" in response.content
+    assert b"Assistente de diagn" in response.content or b"diagn" in response.content.lower()
     assert b"tp-chat" in response.content
 
 

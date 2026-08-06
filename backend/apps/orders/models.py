@@ -67,6 +67,26 @@ class Order(models.Model):
         related_name="orders",
     )
     notes = models.TextField(blank=True)
+
+    class AttributionSource(models.TextChoices):
+        DIRECT = "direct", "Direto"
+        CHAT = "chat", "Chat RAG"
+        DIAGNOSIS = "diagnosis", "Diagnóstico IA"
+        PHOTO = "photo", "Busca por foto"
+
+    attribution_source = models.CharField(
+        max_length=16,
+        choices=AttributionSource.choices,
+        default=AttributionSource.DIRECT,
+        db_index=True,
+    )
+    chat_session = models.ForeignKey(
+        "ai.ChatSession",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="orders",
+    )
     paid_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

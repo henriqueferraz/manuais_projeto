@@ -1,0 +1,15 @@
+# Instalação
+Página 3
+Antes de instalar o ventilador Mondial VTE-02, desligue a energia no disjuntor.
+
+# Manutenção
+Página 12
+A cada 6 meses limpe as pás com pano seco.
+O capacitor de partida do modelo VTE-02 é de 3.5 uF e fica no compartimento superior.
+Código da peça: CAP-35.
+
+# Tabela de peças
+Página 18
+| Código | Peça | Compatível |
+| CAP-35 | Capacitor 3.5uF | VTE-02 |
+| PAL-01 | Pá plástica | VTE-02 |
