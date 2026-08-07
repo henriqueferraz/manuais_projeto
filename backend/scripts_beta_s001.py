@@ -53,7 +53,14 @@ def main() -> int:
     cat = s.get(f"{BASE}/catalogo/", params={"q": "CAP-35"}, timeout=30)
     ok(
         "1-cadastro",
-        bool(equipment and part and manuals and chunks >= 1 and cat.status_code == 200 and "CAP-35" in cat.text),
+        bool(
+            equipment
+            and part
+            and manuals
+            and chunks >= 1
+            and cat.status_code == 200
+            and "CAP-35" in cat.text
+        ),
         f"VTE-02={bool(equipment)} CAP-35={bool(part)} manuals={manuals} chunks={chunks} "
         f"catalog={cat.status_code} sku_in_html={'CAP-35' in cat.text}",
     )
@@ -149,7 +156,9 @@ def main() -> int:
         timeout=60,
     )
     body = stream.text
-    msg = ChatMessage.objects.filter(role=ChatMessage.Role.ASSISTANT).order_by("-created_at").first()
+    msg = (
+        ChatMessage.objects.filter(role=ChatMessage.Role.ASSISTANT).order_by("-created_at").first()
+    )
     has_cite = bool(
         msg
         and (
