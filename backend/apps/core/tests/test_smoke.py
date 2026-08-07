@@ -21,7 +21,20 @@ def test_home_renders_brand():
     response = client.get(reverse("core:home"))
     assert response.status_code == 200
     assert b"TechParts AI" in response.content
-    assert b"Industrial Precision" in response.content or b"precis" in response.content.lower()
+    assert b"tp-home-hero" in response.content
+    assert b"Diagn" in response.content  # CTA diagnóstico
+    assert b"catalogo" in response.content.lower() or b"Cat" in response.content
+
+
+@pytest.mark.django_db
+def test_service_worker_served_at_root():
+    client = Client()
+    response = client.get(reverse("core:service_worker"))
+    assert response.status_code == 200
+    assert "javascript" in response["Content-Type"]
+    assert response.get("Service-Worker-Allowed") == "/"
+    body = b"".join(response.streaming_content) if hasattr(response, "streaming_content") else response.content
+    assert b"tp-shell" in body or b"CACHE" in body
 
 
 @pytest.mark.django_db

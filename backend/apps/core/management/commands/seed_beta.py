@@ -28,7 +28,7 @@ from apps.ai.services.retrieval import index_manual
 from apps.catalog.models import Category
 from apps.compatibility.models import Compatibility
 from apps.manuals.models import Manual
-from apps.products.models import Product, ProductTranslation, Stock
+from apps.products.models import Product, ProductImage, ProductTranslation, Stock
 
 User = get_user_model()
 
@@ -141,6 +141,18 @@ class Command(BaseCommand):
             part_product=part,
             defaults={"notes": "Capacitor de partida oficial VTE-02 (beta)."},
         )
+        self._ensure_product_image(
+            equipment,
+            label="VTE-02",
+            subtitle="Ventilador de teto",
+            alt="Ventilador de teto Mondial VTE-02 — foto técnica de referência",
+        )
+        self._ensure_product_image(
+            part,
+            label="CAP-35",
+            subtitle="Capacitor 3.5 µF",
+            alt="Capacitor de partida CAP-35 3.5uF — foto técnica de referência",
+        )
 
         manual, created_manual = self._ensure_manual(equipment, uploaded_by=staff)
         chunks = ManualChunk.objects.filter(manual=manual).count()
@@ -248,6 +260,51 @@ class Command(BaseCommand):
             defaults={"quantity_available": qty, "quantity_reserved": 0, "minimum_alert": 2},
         )
         return product
+
+    def _ensure_product_image(
+        self,
+        product: Product,
+        *,
+        label: str,
+        subtitle: str,
+        alt: str,
+    ) -> None:
+        if product.images.filter(is_primary=True).exists():
+            self.stdout.write(f"Imagem já existe: {product.sku}")
+            return
+        png = self._placeholder_png(label=label, subtitle=subtitle)
+        image = ProductImage(
+            product=product,
+            alt_text=alt,
+            sort_order=0,
+            is_primary=True,
+        )
+        image.image.save(f"{product.sku.lower()}-beta.png", ContentFile(png), save=True)
+        self.stdout.write(self.style.SUCCESS(f"Imagem criada: {product.sku}"))
+
+    @staticmethod
+    def _placeholder_png(*, label: str, subtitle: str) -> bytes:
+        """PNG técnico neutro (P18) — gerado no seed, sem asset externo."""
+        from io import BytesIO
+
+        from PIL import Image, ImageDraw, ImageFont
+
+        width, height = 640, 640
+        img = Image.new("RGB", (width, height), "#F4F6F8")
+        draw = ImageDraw.Draw(img)
+        # moldura industrial
+        draw.rectangle((32, 32, width - 33, height - 33), outline="#0B1F33", width=3)
+        draw.rectangle((48, 48, width - 49, height - 49), outline="#DEE2E6", width=1)
+        # bloco geométrico central (silhueta de peça)
+        draw.rounded_rectangle((190, 180, 450, 380), radius=8, fill="#1A2B3C")
+        draw.rectangle((250, 220, 390, 340), fill="#00E5FF")
+        font = ImageFont.load_default()
+        draw.text((width // 2, 420), label, fill="#0B1F33", anchor="mt", font=font)
+        draw.text((width // 2, 450), subtitle, fill="#5B6B7C", anchor="mt", font=font)
+        draw.text((width // 2, 580), "TechParts AI · seed beta", fill="#8A97A5", anchor="mt", font=font)
+        buf = BytesIO()
+        img.save(buf, format="PNG", optimize=True)
+        return buf.getvalue()
 
     def _ensure_manual(self, equipment: Product, *, uploaded_by) -> tuple[Manual, bool]:
         existing = Manual.objects.filter(

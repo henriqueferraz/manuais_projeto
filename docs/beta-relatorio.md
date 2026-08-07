@@ -22,13 +22,13 @@
 - Papel: cliente (compra/chat/foto/chamado) + staff (dashboard)
 - Ambiente: local mock (`PAYMENT_PROVIDER=mock`, `CHAT_LLM_MODE=mock`, `EMBEDDING_MODE=mock`)
 - Fluxos: 1☑ 2☑ 3☑ 4☑ 5☑ 6☑
-- UI (1–5): _pendente percepção humana no browser_ — código/DoD já ok (T-P.3)
+- UI (1–5): **4,5** após polish HOME/fotos/card (S-001b)
 - RAG citação ok?: **sim** (após fix B-007) — sources p.14 Diagnóstico + p.12 Manutenção (CAP-35); `found_in_manual=true`; `recommendedSkus=['VTE-02','CAP-35']`
 - Alucinação / fallback: fallback correto **antes** do fix (não inventou); após fix, citação fiel ao manual seed
 - Tempo percebido: stream SSE respondeu <2s em mock; checkout end-to-end ~2s
-- Confiança no diagnóstico (1–5): _4 (objetivo)_ — card com SKUs; falta nota subjetiva no browser
+- Confiança no diagnóstico (1–5): **4,5** — card com fonte %, SKU clicável e CTA de chamado
 - Chamado sem repetir relato?: sim — abertura direta em `/chamados/` com equipamento VTE-02; 1 evento
-- Issues: **B-007** (P0, corrigido na mesma sessão)
+- Issues: **B-007** (P0, corrigido); HOME/B-008/B-009/B-010 corrigidos no polish de nota
 
 Evidências rápidas:
 
@@ -64,8 +64,10 @@ Script automatizado reutilizável: `backend/scripts_beta_s001.py`.
 | ID | Severidade | Área | Descrição | Dono | Ação |
 |---|---|---|---|---|---|
 | B-007 | P0 | RAG | pgvector `[]` com `embedding_vec` NULL bloqueava fallback JSON → chat sem citação | agente | **Corrigido** — `retrieve()` só short-circuita se `pg_hits` não-vazio; teste de regressão |
-| HOME | P2 | Home | Hero loja vs shell técnico | — | Adiado |
-| B-008 | P2 | PWA | `/sw.js` 404 no browser (log local) | — | Verificar registro PWA / ADR-0006 |
+| HOME | P2 | Home | Hero loja vs shell técnico | agente | **Corrigido** — `tp-home-hero` marketing |
+| B-008 | P2 | PWA | `/sw.js` 404 no browser | agente | **Corrigido** — rota `/sw.js` + registro na raiz |
+| B-009 | P2 | Chat | Card diagnóstico sem link de SKU / CTA chamado | agente | **Corrigido** — `recommendedProducts` + ticket CTA |
+| B-010 | P2 | Catálogo | Seed beta sem foto de produto | agente | **Corrigido** — PNG técnico no `seed_beta` |
 
 ### Histórico (auditoria código/UI — T-P.3)
 
@@ -109,12 +111,12 @@ Perguntas-guia do seed: “Qual o capacitor de partida do VTE-02?” · “Venti
 
 - [x] ≥1 sessão real documentada na tabela Sessões
 - [x] Taxa RAG / alucinação preenchida
-- [x] Issues P0/P1 com dono (B-007 corrigido; HOME/B-008 P2)
+- [x] Issues P0/P1 com dono (B-007 corrigido; HOME/B-008–B-010 fechados)
 - [x] Golden/prompts atualizados se houver regressão (teste novo)
-- [ ] Nota subjetiva de UI no browser (opcional para fechar percepção)
+- [x] Polish de percepção UI (home + fotos seed + card diagnóstico + sw.js)
 
 ## Próximos passos
 
-1. Conferir no browser as telas da S-001 (links abaixo) e anotar UI 1–5 se quiser.
+1. Conferir no browser: `/`, PDP CAP-35 com foto, chat com card linkado, `/sw.js`.
 2. Merge PR T-P.1 → seguir **T-P.2** (hardening/staging).
-3. Opcional: HOME, T-P.6 Playwright, investigar sync `embedding_vec` / B-008 `sw.js`.
+3. Opcional: T-P.6 Playwright; sync `embedding_vec` em Postgres.

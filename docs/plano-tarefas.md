@@ -703,7 +703,7 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 ### P0 — Validação humana e go-live
 
-#### T-P.1 — Beta humana _(em andamento — branch `fase/pos-f8-tp1-beta-humana`)_
+#### T-P.1 — Beta humana _(pronto para merge — branch `fase/pos-f8-tp1-beta-humana`)_
 
 - [x] Preparar ambiente local de sessão (`seed_beta`: staff/tester + VTE-02/CAP-35 + manual indexado)
 - [x] Atualizar [`beta-script.md`](beta-script.md) e template de sessões em [`beta-relatorio.md`](beta-relatorio.md)
@@ -711,8 +711,9 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 - [x] Preencher taxa de citação/alucinação RAG e issues reais em [`beta-relatorio.md`](beta-relatorio.md)
 - [x] Validar critérios specify com evidência humana (compra, chat, chamado, dashboard) _(proxy S-001)_
 - [x] Atualizar golden set / prompts se o beta revelar regressões _(teste regressão B-007)_
+- [x] Polish de nota UI: home marketing, fotos seed, card diagnóstico, `/sw.js`
 
-**Aceite:** relatório com ≥1 sessão real documentada; issues P0/P1 priorizadas com dono. ✅ (nota subjetiva UI no browser opcional)
+**Aceite:** relatório com ≥1 sessão real documentada; issues P0/P1 priorizadas com dono. ✅
 
 #### T-P.2 — Hardening e produção
 
@@ -733,7 +734,7 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 - [x] Empty de candidatos de foto com `tp-empty` + CTA (B-004)
 - [x] Confronto formal tela × protótipo `docs/design/` (B-006 / item Protótipo do DoD) → [`PROTOTYPE-CONFRONTATION.md`](design/PROTOTYPE-CONFRONTATION.md)
 
-**Aceite:** DoD visual “sim” (sem parcial) nas telas acima; B-001/B-003–B-006 fechados ou adiados com nota. ✅ (home marketing adiada como HOME)
+**Aceite:** DoD visual “sim” (sem parcial) nas telas acima; B-001/B-003–B-006 fechados ou adiados com nota. ✅ (home marketing fechada no polish T-P.1)
 
 #### T-P.4 — Integrações “live” (hoje mock/stub)
 
@@ -812,7 +813,7 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 Usar em **toda** tarefa que entregue UI. Marcar só quando todos aplicáveis passarem:
 
-- [x] **Marca:** parece TechParts AI (navy + cyan só em IA); não parece Bootstrap genérico _(home marketing = HOME)_
+- [x] **Marca:** parece TechParts AI (navy + cyan só em IA); não parece Bootstrap genérico _(home `tp-home-hero`)_
 - [x] **Hierarquia:** título > preço/ação > specs > corpo; JetBrains Mono em dados técnicos
 - [x] **Whitespace:** seções com respiro; página não “cheia”
 - [x] **Estados:** loading (skeleton), vazio e erro com próximo passo claro
@@ -873,6 +874,6 @@ O plano de fases F0–F8 está **entregue em código**. O sistema está “cumpr
 3. [ ] Cliente descobre a peça por sintoma, modelo ou foto. _(beta humana)_
 4. [ ] Operação acompanha vendas, chamados, custo de IA e qualidade sem ferramentas cruas. _(dashboard ok; beta ops)_
 5. [ ] Loja vende no Brasil com NF-e, arrependimento e LGPD desde o primeiro pedido. _(mock/sandbox → live em T-P.4 / T-P.2)_
-6. [x] UI/UX respeitam os pilares P16–P24 em todas as superfícies críticas. _(T-P.3 fechado; home marketing = débito HOME; beta humana T-P.1)_
+6. [x] UI/UX respeitam os pilares P16–P24 em todas as superfícies críticas. _(T-P.3 + polish HOME T-P.1)_
 
 Rastreio: [`beta-relatorio.md`](beta-relatorio.md) · backlog: [Pós-F8](#pós-f8--o-que-ainda-falta).

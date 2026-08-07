@@ -32,11 +32,15 @@ def test_seed_beta_creates_users_products_and_chunks(settings):
         part_product=part,
     ).exists()
     assert ManualChunk.objects.filter(product=equipment).count() >= 1
+    assert equipment.images.filter(is_primary=True).exists()
+    assert part.images.filter(is_primary=True).exists()
 
     # idempotente
     call_command("seed_beta")
     assert Product.objects.filter(sku="VTE-02").count() == 1
     assert Product.objects.filter(sku="CAP-35").count() == 1
+    assert equipment.images.count() == 1
+    assert part.images.count() == 1
 
 
 @pytest.mark.django_db

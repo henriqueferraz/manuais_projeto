@@ -87,6 +87,11 @@
   background: rgba(0, 229, 255, 0.08);
 }
 
+.tp-diagnostic-card--fallback {
+  border-color: var(--tp-border-subtle, #d9dee5);
+  background: #fff;
+}
+
 .tp-diagnostic-card__header {
   display: flex;
   align-items: center;
@@ -102,7 +107,7 @@
 
 .tp-diagnostic-card__skus {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.35rem;
 }
 
@@ -110,8 +115,33 @@
   background: #fff;
   border: 1px solid var(--tp-border-subtle, #d9dee5);
   border-radius: 0.25rem;
-  padding: 0.15rem 0.45rem;
+  padding: 0.35rem 0.55rem;
   font-size: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.tp-diagnostic-card__sku-link {
+  color: var(--tp-industrial-navy, #0b1f33);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tp-diagnostic-card__sku-link:hover {
+  color: var(--tp-ai-cyan-ink, #007a8a);
+}
+
+.tp-diagnostic-card__ticket {
+  display: inline-flex;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--tp-industrial-navy, #0b1f33);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .tp-photo-results {
