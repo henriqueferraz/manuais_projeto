@@ -17,10 +17,18 @@
         <span class="badge text-bg-secondary ms-1">{{ opt.source }}</span>
       </span>
     </label>
+    {% empty %}
+    <div class="tp-empty" role="status">
+      <span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>
+      <p class="mb-2">Nenhuma opção de frete disponível para este CEP.</p>
+      <a class="btn btn-ghost btn-sm" href="{% url 'checkout:start' %}">Voltar e ajustar endereço</a>
+    </div>
     {% endfor %}
     <div class="d-flex gap-2">
       <a class="btn btn-ghost" href="{% url 'checkout:start' %}">Voltar</a>
+      {% if options %}
       <button type="submit" class="btn btn-primary">Continuar para pagamento</button>
+      {% endif %}
     </div>
   </form>
 </section>

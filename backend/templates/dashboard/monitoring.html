@@ -3,14 +3,14 @@
 {% block content %}
 <section class="mb-4">
   <div class="p-4 rounded border bg-dark text-white">
-    <p class="text-uppercase small mb-1" style="letter-spacing: 0.08em; color: var(--tp-ai-cyan, #22d3ee)">
-      <span class="material-symbols-outlined align-middle" style="font-size: 1rem">health_and_safety</span>
+    <p class="font-label-caps mb-1" style="color: rgba(255, 255, 255, 0.72)">
+      <span class="material-symbols-outlined align-middle" style="font-size: 1rem" aria-hidden="true">health_and_safety</span>
       Operação · Monitoramento
     </p>
     <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
       <div>
         <h1 class="h3 mb-1">Monitoramento consolidado</h1>
-        <p class="small text-secondary mb-0">{{ snap.uptime_note }}</p>
+        <p class="small mb-0" style="color: rgba(255, 255, 255, 0.72)">{{ snap.uptime_note }}</p>
       </div>
       <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:insights' %}">Insights</a>

@@ -32,7 +32,11 @@
     {% endfor %}
   </div>
   {% else %}
-  <p class="text-secondary">Nenhum plano ativo. Cadastre em Admin → Planos de assinatura.</p>
+  <div class="tp-empty" role="status">
+    <span class="material-symbols-outlined" aria-hidden="true">event_repeat</span>
+    <p class="mb-2">Nenhum plano ativo no momento.</p>
+    <p class="small text-secondary mb-0">Cadastre planos em Admin → Planos de assinatura.</p>
+  </div>
   {% endif %}
 </section>
 {% endblock %}
