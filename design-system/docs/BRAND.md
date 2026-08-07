@@ -47,6 +47,6 @@ Meta visual (não stack de produção):
 
 - [`docs/design/`](../../docs/design/) — HTML e screens
 - [`docs/design/DESIGN.md`](../../docs/design/DESIGN.md) — tokens fonte
-- [`docs/src/`](../../docs/src/) — protótipo React de telas
+- [`docs/design/PROTOTYPE-CONFRONTATION.md`](../../docs/design/PROTOTYPE-CONFRONTATION.md) — confronto tela × protótipo (T-P.3 / B-006)
 
 Produção alvo: **Django Templates + htmx + este design system**.

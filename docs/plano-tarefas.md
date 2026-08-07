@@ -725,13 +725,13 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 #### T-P.3 — Design system nas superfícies restantes (B-001 / B-005)
 
-- [ ] Dashboard insights/monitoramento com componentes `tp-*` (menos `card`/`table` genéricos)
-- [ ] Cards F8 (assinaturas / assistências) alinhados ao DS
-- [ ] Skeleton nas etapas de checkout (B-003)
-- [ ] Empty de candidatos de foto com `tp-empty` + CTA (B-004)
-- [ ] Confronto formal tela × protótipo `docs/design/` (B-006 / item Protótipo do DoD)
+- [x] Dashboard insights/monitoramento com componentes `tp-*` (menos `card`/`table` genéricos)
+- [x] Cards F8 (assinaturas / assistências) alinhados ao DS
+- [x] Skeleton nas etapas de checkout (B-003)
+- [x] Empty de candidatos de foto com `tp-empty` + CTA (B-004)
+- [x] Confronto formal tela × protótipo `docs/design/` (B-006 / item Protótipo do DoD) → [`PROTOTYPE-CONFRONTATION.md`](design/PROTOTYPE-CONFRONTATION.md)
 
-**Aceite:** DoD visual “sim” (sem parcial) nas telas acima; B-001/B-003–B-006 fechados ou adiados com nota.
+**Aceite:** DoD visual “sim” (sem parcial) nas telas acima; B-001/B-003–B-006 fechados ou adiados com nota. ✅ (home marketing adiada como HOME)
 
 #### T-P.4 — Integrações “live” (hoje mock/stub)
 
@@ -810,15 +810,15 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 Usar em **toda** tarefa que entregue UI. Marcar só quando todos aplicáveis passarem:
 
-- [ ] **Marca:** parece TechParts AI (navy + cyan só em IA); não parece Bootstrap genérico
-- [ ] **Hierarquia:** título > preço/ação > specs > corpo; JetBrains Mono em dados técnicos
-- [ ] **Whitespace:** seções com respiro; página não “cheia”
-- [ ] **Estados:** loading (skeleton), vazio e erro com próximo passo claro
-- [ ] **Feedback:** ação do usuário tem resposta visual imediata (~200ms)
-- [ ] **Mobile:** usável em viewport estreito; chat com input acessível
-- [ ] **A11y:** contraste AA; foco teclado; `alt` onde couber
-- [ ] **IA (se houver):** rótulo de IA, fonte citada, fallback sem inventar, indicador de digitação
-- [ ] **Protótipo:** confrontado com `docs/code*.html` / `DESIGN.md` quando existir tela equivalente
+- [x] **Marca:** parece TechParts AI (navy + cyan só em IA); não parece Bootstrap genérico _(home marketing = HOME)_
+- [x] **Hierarquia:** título > preço/ação > specs > corpo; JetBrains Mono em dados técnicos
+- [x] **Whitespace:** seções com respiro; página não “cheia”
+- [x] **Estados:** loading (skeleton), vazio e erro com próximo passo claro
+- [x] **Feedback:** ação do usuário tem resposta visual imediata (~200ms)
+- [x] **Mobile:** usável em viewport estreito; chat com input acessível
+- [x] **A11y:** contraste AA; foco teclado; `alt` onde couber
+- [x] **IA (se houver):** rótulo de IA, fonte citada, fallback sem inventar, indicador de digitação
+- [x] **Protótipo:** confrontado com `docs/design/` — ver [`PROTOTYPE-CONFRONTATION.md`](design/PROTOTYPE-CONFRONTATION.md)
 
 ---
 
@@ -871,6 +871,6 @@ O plano de fases F0–F8 está **entregue em código**. O sistema está “cumpr
 3. [ ] Cliente descobre a peça por sintoma, modelo ou foto. _(beta humana)_
 4. [ ] Operação acompanha vendas, chamados, custo de IA e qualidade sem ferramentas cruas. _(dashboard ok; beta ops)_
 5. [ ] Loja vende no Brasil com NF-e, arrependimento e LGPD desde o primeiro pedido. _(mock/sandbox → live em T-P.4 / T-P.2)_
-6. [ ] UI/UX respeitam os pilares P16–P24 em todas as superfícies críticas. _(DoD parcial; fechar T-P.3)_
+6. [x] UI/UX respeitam os pilares P16–P24 em todas as superfícies críticas. _(T-P.3 fechado; home marketing = débito HOME; beta humana T-P.1)_
 
 Rastreio: [`beta-relatorio.md`](beta-relatorio.md) · backlog: [Pós-F8](#pós-f8--o-que-ainda-falta).

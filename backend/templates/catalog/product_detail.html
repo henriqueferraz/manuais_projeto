@@ -40,24 +40,12 @@
   <div class="col-lg-6">
     <p class="font-label-caps text-secondary mb-1">{{ product.brand }}</p>
     <h1 class="font-headline-lg mb-2">{{ product|name_for_locale:locale }}</h1>
-    <p class="font-technical text-secondary mb-3">
-      SKU {{ product.sku }}
-      {% if product.model_code %} · {{ product.model_code }}{% endif %}
-      {% if product.voltage %} · {{ product.voltage }}{% endif %}
-    </p>
-    <p class="fs-3 fw-bold text-primary mb-3">R$ {{ product.price }}</p>
+    <p class="fs-3 fw-bold text-primary mb-2">R$ {{ product.price }}</p>
 
     {% if product.in_stock %}
     <span class="tp-badge tp-badge--stock mb-3">{{ product.quantity_sellable }} disponível</span>
     {% else %}
     <span class="tp-badge tp-badge--draft mb-3">Sem estoque</span>
-    {% endif %}
-
-    {% if compat_labels %}
-    <div class="mb-4">
-      <span class="tp-badge tp-badge--compat">Compatível</span>
-      <p class="font-technical mt-2 mb-0">{{ compat_labels|join:", " }}</p>
-    </div>
     {% endif %}
 
     <form
@@ -80,6 +68,19 @@
       <a class="btn btn-ai" href="{% url 'compatibility:checker' %}?model={{ product.model_code }}">Diagnóstico / compatibilidade</a>
     </form>
     <div id="cart-toast" aria-live="polite"></div>
+
+    <p class="font-technical text-secondary mb-3">
+      SKU {{ product.sku }}
+      {% if product.model_code %} · {{ product.model_code }}{% endif %}
+      {% if product.voltage %} · {{ product.voltage }}{% endif %}
+    </p>
+
+    {% if compat_labels %}
+    <div class="mb-4">
+      <span class="tp-badge tp-badge--compat">Compatível</span>
+      <p class="font-technical mt-2 mb-0">{{ compat_labels|join:", " }}</p>
+    </div>
+    {% endif %}
 
     {% if product.specs %}
     <h2 class="font-headline-sm mt-4">Especificações</h2>

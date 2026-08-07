@@ -287,3 +287,192 @@
 .tp-table td.font-technical {
   color: var(--tp-on-surface);
 }
+
+/* —— Ops / dashboard panels —— */
+.tp-ops-hero {
+  background: var(--tp-industrial-navy);
+  color: #fff;
+  border: 1px solid var(--tp-industrial-navy-deep);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-6);
+  margin-bottom: var(--tp-space-6);
+}
+
+.tp-ops-hero__eyebrow {
+  margin: 0 0 var(--tp-space-2);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.tp-ops-hero__eyebrow--ai {
+  color: var(--tp-ai-cyan);
+}
+
+.tp-ops-hero h1 {
+  color: #fff;
+  margin: 0 0 var(--tp-space-2);
+}
+
+.tp-ops-hero__lead {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 40rem;
+}
+
+.tp-ops-hero__metrics {
+  margin-top: var(--tp-space-6);
+  padding-top: var(--tp-space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tp-ops-metric {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--tp-radius);
+  padding: var(--tp-space-3);
+}
+
+.tp-ops-metric__label {
+  display: block;
+  font-size: var(--tp-label);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: var(--tp-space-1);
+}
+
+.tp-ops-metric__value {
+  font-size: var(--tp-headline-sm);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tp-panel {
+  background: var(--tp-surface-lowest);
+  border: 1px solid var(--tp-border-subtle);
+  border-radius: var(--tp-radius-lg);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-panel__header {
+  padding: var(--tp-space-3) var(--tp-space-4);
+  border-bottom: 1px solid var(--tp-border-subtle);
+  background: var(--tp-surface-low);
+}
+
+.tp-panel__header h2 {
+  margin: 0;
+  font-size: var(--tp-headline-sm);
+  font-weight: 600;
+  color: var(--tp-industrial-navy);
+}
+
+.tp-panel__body {
+  padding: var(--tp-space-4);
+  flex: 1;
+}
+
+.tp-panel__body--flush {
+  padding: 0;
+}
+
+.tp-stat {
+  background: var(--tp-surface-lowest);
+  border: 1px solid var(--tp-border-subtle);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-4);
+  height: 100%;
+}
+
+.tp-stat__label {
+  display: block;
+  margin-bottom: var(--tp-space-2);
+  color: var(--tp-tech-gray);
+}
+
+.tp-stat__value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--tp-industrial-navy);
+  line-height: 1.2;
+}
+
+.tp-stat__meta {
+  margin: var(--tp-space-2) 0 0;
+  color: var(--tp-on-surface-variant);
+  font-size: var(--tp-body-md);
+}
+
+/* —— F8 plan / partner cards —— */
+.tp-plan-card,
+.tp-partner-card {
+  background: var(--tp-surface-lowest);
+  border: 1px solid var(--tp-border-subtle);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-6);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  transition: box-shadow var(--tp-transition);
+}
+
+.tp-plan-card:hover,
+.tp-partner-card:hover {
+  box-shadow: var(--tp-shadow-hover);
+}
+
+.tp-plan-card__price {
+  font-family: var(--tp-font-mono);
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--tp-industrial-navy);
+}
+
+.tp-plan-card__actions {
+  margin-top: auto;
+  padding-top: var(--tp-space-4);
+}
+
+.tp-partner-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+}
+
+.tp-partner-card__header h2 {
+  margin: 0;
+}
+
+/* —— Checkout option —— */
+.tp-checkout-option {
+  display: flex;
+  gap: var(--tp-space-3);
+  align-items: flex-start;
+  background: var(--tp-surface-lowest);
+  border: 1px solid var(--tp-border-subtle);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-4);
+  cursor: pointer;
+  transition: border-color var(--tp-transition), box-shadow var(--tp-transition);
+}
+
+.tp-checkout-option:hover,
+.tp-checkout-option:has(input:checked) {
+  border-color: var(--tp-industrial-navy);
+  box-shadow: var(--tp-shadow-hover);
+}
+
+.tp-checkout-skeleton.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .tp-checkout-skeleton.htmx-indicator,
+.tp-checkout-skeleton.htmx-indicator.htmx-request {
+  display: block;
+  margin-top: var(--tp-space-4);
+}

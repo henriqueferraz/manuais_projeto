@@ -1,24 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Meus chamados — {{ brand_name }}{% endblock %}
 {% block content %}
-<section class="tp-section">
-  <div class="p-4 rounded border bg-dark text-white mb-4">
-    <p class="font-label-caps mb-1" style="color: rgba(255, 255, 255, 0.72)">Área do Cliente &amp; Manutenção</p>
-    <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
-      <div>
-        <h1 class="h3 mb-1">Chamados Técnicos</h1>
-        <p class="small mb-0" style="color: rgba(255, 255, 255, 0.72)">
-          Abra e acompanhe diagnósticos, peças e histórico de atendimento.
-        </p>
-      </div>
-    </div>
-  </div>
+<section class="tp-section" style="margin-block-start: 0">
+  <header class="tp-ops-hero mb-4">
+    <p class="font-label-caps tp-ops-hero__eyebrow">Área do Cliente &amp; Manutenção</p>
+    <h1 class="font-headline-md">Chamados Técnicos</h1>
+    <p class="tp-ops-hero__lead">
+      Abra e acompanhe diagnósticos, peças e histórico de atendimento.
+    </p>
+  </header>
 
   <div class="row g-4">
     <div class="col-lg-5">
-      <div class="card border">
-        <div class="card-body">
-          <h2 class="h5">Abrir novo chamado</h2>
+      <section class="tp-panel">
+        <div class="tp-panel__header"><h2>Abrir novo chamado</h2></div>
+        <div class="tp-panel__body">
           <form method="post" class="vstack gap-3">
             {% csrf_token %}
             {% for field in form %}
@@ -30,13 +26,13 @@
             <button type="submit" class="btn btn-primary">Abrir chamado</button>
           </form>
         </div>
-      </div>
+      </section>
     </div>
     <div class="col-lg-7">
       {% if not user.is_authenticated %}
       <form method="get" class="mb-3 d-flex gap-2">
         <input type="email" name="email" value="{{ email }}" class="form-control" placeholder="Seu e-mail para listar chamados" />
-        <button class="btn btn-outline-primary" type="submit">Buscar</button>
+        <button class="btn btn-ghost" type="submit">Buscar</button>
       </form>
       {% endif %}
       <div id="ticket-list">

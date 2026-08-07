@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% block title %}Dashboard de insights — {{ brand_name }}{% endblock %}
 {% block content %}
-<section class="mb-4">
-  <div class="p-4 rounded border bg-dark text-white">
-    <p class="font-label-caps mb-1" style="color: var(--tp-ai-cyan, #22d3ee)">
+<section class="tp-section" style="margin-block-start: 0">
+  <header class="tp-ops-hero">
+    <p class="font-label-caps tp-ops-hero__eyebrow tp-ops-hero__eyebrow--ai">
       <span class="material-symbols-outlined align-middle" style="font-size: 1rem" aria-hidden="true">monitoring</span>
       Operação · Insights IA
     </p>
     <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start">
       <div>
-        <h1 class="h3 mb-1">Dashboard de insights</h1>
-        <p class="small mb-0" style="color: rgba(255, 255, 255, 0.72)">
+        <h1 class="font-headline-md">Dashboard de insights</h1>
+        <p class="tp-ops-hero__lead">
           Chat/RAG, chamados, vendas influenciadas por IA e custo — últimos {{ days }} dias.
         </p>
       </div>
@@ -25,152 +25,142 @@
     <div class="mt-3">
       <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:monitoring' %}">Monitoramento</a>
     </div>
-  </div>
-</section>
+  </header>
 
-<div class="row g-3 mb-4">
-  <div class="col-md-3">
-    <div class="card border h-100">
-      <div class="card-body">
-        <span class="font-label-caps text-tech-gray">Resolução s/ humano</span>
-        <div class="fs-3 fw-bold">{{ insights.chat.resolution_rate_pct }}%</div>
-        <p class="font-body-sm text-tech-gray mb-0">
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <article class="tp-stat">
+        <span class="font-label-caps tp-stat__label">Resolução s/ humano</span>
+        <div class="tp-stat__value">{{ insights.chat.resolution_rate_pct }}%</div>
+        <p class="tp-stat__meta">
           {{ insights.chat.resolved_without_human }}/{{ insights.chat.sessions }} sessões
         </p>
-      </div>
+      </article>
     </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card border h-100">
-      <div class="card-body">
-        <span class="font-label-caps text-tech-gray">Feedback 👍</span>
-        <div class="fs-3 fw-bold">{{ insights.chat.upvote_rate_pct }}%</div>
-        <p class="font-body-sm text-tech-gray mb-0">
+    <div class="col-md-3">
+      <article class="tp-stat">
+        <span class="font-label-caps tp-stat__label">Feedback 👍</span>
+        <div class="tp-stat__value">{{ insights.chat.upvote_rate_pct }}%</div>
+        <p class="tp-stat__meta">
           {{ insights.chat.feedback_up }} up · {{ insights.chat.feedback_down }} down
         </p>
-      </div>
+      </article>
     </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card border h-100">
-      <div class="card-body">
-        <span class="font-label-caps text-tech-gray">Pedidos via IA</span>
-        <div class="fs-3 fw-bold">{{ insights.sales_ai.ai_influenced_orders }}</div>
-        <p class="font-body-sm text-tech-gray mb-0">
-          R$ {{ insights.sales_ai.ai_revenue|floatformat:2 }}
-        </p>
-      </div>
+    <div class="col-md-3">
+      <article class="tp-stat">
+        <span class="font-label-caps tp-stat__label">Pedidos via IA</span>
+        <div class="tp-stat__value">{{ insights.sales_ai.ai_influenced_orders }}</div>
+        <p class="tp-stat__meta">R$ {{ insights.sales_ai.ai_revenue|floatformat:2 }}</p>
+      </article>
     </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card border h-100">
-      <div class="card-body">
-        <span class="font-label-caps text-tech-gray">Custo IA</span>
-        <div class="fs-3 fw-bold">US$ {{ insights.ai_cost.total_usd|floatformat:3 }}</div>
-        <p class="font-body-sm text-tech-gray mb-0">
+    <div class="col-md-3">
+      <article class="tp-stat">
+        <span class="font-label-caps tp-stat__label">Custo IA</span>
+        <div class="tp-stat__value">US$ {{ insights.ai_cost.total_usd|floatformat:3 }}</div>
+        <p class="tp-stat__meta">
           chat {{ insights.ai_cost.chat_usd|floatformat:3 }} · ext {{ insights.ai_cost.extraction_usd|floatformat:3 }}
         </p>
-      </div>
+      </article>
     </div>
   </div>
-</div>
 
-<div class="row g-4">
-  <div class="col-lg-6">
-    <section class="card border h-100" aria-labelledby="chat-metrics">
-      <div class="card-header"><h2 id="chat-metrics" class="h5 mb-0">Chat / RAG</h2></div>
-      <div class="card-body">
-        <ul class="list-unstyled font-body-sm mb-3">
-          <li>Encontrado no manual: <strong>{{ insights.chat.found_in_manual_pct }}%</strong></li>
-          <li>Escalonados: <strong>{{ insights.chat.escalated }}</strong></li>
-        </ul>
-        <h3 class="h6">Perguntas frequentes</h3>
-        {% if insights.chat.top_questions %}
-        <ol class="mb-0">
-          {% for q in insights.chat.top_questions %}
-          <li class="font-body-sm mb-1">
-            <span class="font-mono">{{ q.count }}×</span> {{ q.question }}
-          </li>
-          {% endfor %}
-        </ol>
-        {% else %}
-        <p class="text-tech-gray font-body-sm mb-0">Sem perguntas no período.</p>
-        {% endif %}
-      </div>
-    </section>
-  </div>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <section class="tp-panel" aria-labelledby="chat-metrics">
+        <div class="tp-panel__header"><h2 id="chat-metrics">Chat / RAG</h2></div>
+        <div class="tp-panel__body">
+          <ul class="list-unstyled font-body-md mb-3">
+            <li>Encontrado no manual: <strong>{{ insights.chat.found_in_manual_pct }}%</strong></li>
+            <li>Escalonados: <strong>{{ insights.chat.escalated }}</strong></li>
+          </ul>
+          <h3 class="font-headline-sm">Perguntas frequentes</h3>
+          {% if insights.chat.top_questions %}
+          <ol class="mb-0">
+            {% for q in insights.chat.top_questions %}
+            <li class="font-body-md mb-1">
+              <span class="font-technical">{{ q.count }}×</span> {{ q.question }}
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p class="text-secondary font-body-md mb-0">Sem perguntas no período.</p>
+          {% endif %}
+        </div>
+      </section>
+    </div>
 
-  <div class="col-lg-6">
-    <section class="card border h-100" aria-labelledby="ticket-metrics">
-      <div class="card-header"><h2 id="ticket-metrics" class="h5 mb-0">Chamados</h2></div>
-      <div class="card-body">
-        <ul class="list-unstyled font-body-sm mb-3">
-          <li>Total: <strong>{{ insights.tickets.total }}</strong> · Abertos: <strong>{{ insights.tickets.openish }}</strong></li>
-          <li>SLA estourado: <strong class="{% if insights.tickets.sla_breached %}text-danger{% endif %}">{{ insights.tickets.sla_breached }}</strong></li>
-          <li>TMR médio:
-            <strong>{% if insights.tickets.tmr_hours != None %}{{ insights.tickets.tmr_hours }} h{% else %}—{% endif %}</strong>
-          </li>
-        </ul>
-        <div class="row">
-          <div class="col-6">
-            <h3 class="h6">Por status</h3>
-            <ul class="list-unstyled font-body-sm mb-0">
-              {% for row in insights.tickets.by_status %}
-              <li>{{ row.status }}: {{ row.n }}</li>
-              {% empty %}<li class="text-tech-gray">—</li>{% endfor %}
-            </ul>
-          </div>
-          <div class="col-6">
-            <h3 class="h6">Por origem</h3>
-            <ul class="list-unstyled font-body-sm mb-0">
-              {% for row in insights.tickets.by_origin %}
-              <li>{{ row.origin }}: {{ row.n }}</li>
-              {% empty %}<li class="text-tech-gray">—</li>{% endfor %}
-            </ul>
+    <div class="col-lg-6">
+      <section class="tp-panel" aria-labelledby="ticket-metrics">
+        <div class="tp-panel__header"><h2 id="ticket-metrics">Chamados</h2></div>
+        <div class="tp-panel__body">
+          <ul class="list-unstyled font-body-md mb-3">
+            <li>Total: <strong>{{ insights.tickets.total }}</strong> · Abertos: <strong>{{ insights.tickets.openish }}</strong></li>
+            <li>SLA estourado: <strong class="{% if insights.tickets.sla_breached %}text-danger{% endif %}">{{ insights.tickets.sla_breached }}</strong></li>
+            <li>TMR médio:
+              <strong>{% if insights.tickets.tmr_hours != None %}{{ insights.tickets.tmr_hours }} h{% else %}—{% endif %}</strong>
+            </li>
+          </ul>
+          <div class="row">
+            <div class="col-6">
+              <h3 class="font-headline-sm">Por status</h3>
+              <ul class="list-unstyled font-body-md mb-0">
+                {% for row in insights.tickets.by_status %}
+                <li>{{ row.status }}: {{ row.n }}</li>
+                {% empty %}<li class="text-secondary">—</li>{% endfor %}
+              </ul>
+            </div>
+            <div class="col-6">
+              <h3 class="font-headline-sm">Por origem</h3>
+              <ul class="list-unstyled font-body-md mb-0">
+                {% for row in insights.tickets.by_origin %}
+                <li>{{ row.origin }}: {{ row.n }}</li>
+                {% empty %}<li class="text-secondary">—</li>{% endfor %}
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
+      </section>
+    </div>
 
-  <div class="col-lg-6">
-    <section class="card border h-100" aria-labelledby="sales-metrics">
-      <div class="card-header"><h2 id="sales-metrics" class="h5 mb-0">Vendas influenciadas por IA</h2></div>
-      <div class="card-body">
-        <p class="font-body-sm">Pedidos no período: {{ insights.sales_ai.total_orders }}</p>
-        <ul class="list-unstyled font-body-sm mb-3">
-          {% for row in insights.sales_ai.by_attribution %}
-          <li>
-            <span class="font-mono">{{ row.attribution_source }}</span>:
-            {{ row.n }} · R$ {{ row.revenue|floatformat:2 }}
-          </li>
-          {% empty %}
-          <li class="text-tech-gray">Nenhuma atribuição chat/diagnóstico/foto.</li>
-          {% endfor %}
-        </ul>
-        <h3 class="h6">Cross-sell</h3>
-        <p class="font-body-sm mb-0">
-          {{ insights.sales_ai.cross_sell_count }} atribuições
-          {% for row in insights.sales_ai.cross_sell_by_source %}
-          · {{ row.source }}={{ row.n }}
-          {% endfor %}
-        </p>
-      </div>
-    </section>
-  </div>
+    <div class="col-lg-6">
+      <section class="tp-panel" aria-labelledby="sales-metrics">
+        <div class="tp-panel__header"><h2 id="sales-metrics">Vendas influenciadas por IA</h2></div>
+        <div class="tp-panel__body">
+          <p class="font-body-md">Pedidos no período: {{ insights.sales_ai.total_orders }}</p>
+          <ul class="list-unstyled font-body-md mb-3">
+            {% for row in insights.sales_ai.by_attribution %}
+            <li>
+              <span class="font-technical">{{ row.attribution_source }}</span>:
+              {{ row.n }} · R$ {{ row.revenue|floatformat:2 }}
+            </li>
+            {% empty %}
+            <li class="text-secondary">Nenhuma atribuição chat/diagnóstico/foto.</li>
+            {% endfor %}
+          </ul>
+          <h3 class="font-headline-sm">Cross-sell</h3>
+          <p class="font-body-md mb-0">
+            {{ insights.sales_ai.cross_sell_count }} atribuições
+            {% for row in insights.sales_ai.cross_sell_by_source %}
+            · {{ row.source }}={{ row.n }}
+            {% endfor %}
+          </p>
+        </div>
+      </section>
+    </div>
 
-  <div class="col-lg-6">
-    <section class="card border h-100" aria-labelledby="cost-metrics">
-      <div class="card-header"><h2 id="cost-metrics" class="h5 mb-0">Custo de IA</h2></div>
-      <div class="card-body">
-        <ul class="list-unstyled font-body-sm mb-0">
-          <li>Chat/diagnóstico: <strong>US$ {{ insights.ai_cost.chat_usd|floatformat:4 }}</strong></li>
-          <li>Extração de manuais: <strong>US$ {{ insights.ai_cost.extraction_usd|floatformat:4 }}</strong></li>
-          <li>Tokens in/out: {{ insights.ai_cost.chat_tokens_in }} / {{ insights.ai_cost.chat_tokens_out }}</li>
-          <li>Extrações no período: {{ insights.ai_cost.extractions }}</li>
-        </ul>
-      </div>
-    </section>
+    <div class="col-lg-6">
+      <section class="tp-panel" aria-labelledby="cost-metrics">
+        <div class="tp-panel__header"><h2 id="cost-metrics">Custo de IA</h2></div>
+        <div class="tp-panel__body">
+          <ul class="list-unstyled font-body-md mb-0">
+            <li>Chat/diagnóstico: <strong>US$ {{ insights.ai_cost.chat_usd|floatformat:4 }}</strong></li>
+            <li>Extração de manuais: <strong>US$ {{ insights.ai_cost.extraction_usd|floatformat:4 }}</strong></li>
+            <li>Tokens in/out: <span class="font-technical">{{ insights.ai_cost.chat_tokens_in }} / {{ insights.ai_cost.chat_tokens_out }}</span></li>
+            <li>Extrações no período: {{ insights.ai_cost.extractions }}</li>
+          </ul>
+        </div>
+      </section>
+    </div>
   </div>
-</div>
+</section>
 {% endblock %}

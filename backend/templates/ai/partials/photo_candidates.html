@@ -1,27 +1,43 @@
 {% if search.status == "pending" or search.status == "running" %}
 <div class="tp-photo-skeleton" aria-busy="true" aria-live="polite">
-  <div class="tp-skeleton-line"></div>
-  <div class="tp-skeleton-line"></div>
-  <div class="tp-skeleton-line tp-skeleton-line--short"></div>
+  <div class="tp-skeleton tp-skeleton--line"></div>
+  <div class="tp-skeleton tp-skeleton--line"></div>
+  <div class="tp-skeleton tp-skeleton--line" style="width: 55%"></div>
   <span class="visually-hidden">Analisando foto…</span>
 </div>
 {% elif search.status == "failed" %}
-<p class="text-danger font-body-sm mb-0" role="alert">
-  {{ search.error_message|default:"Não foi possível analisar a foto." }}
-</p>
+<div class="tp-error border-0 bg-transparent px-0 py-3" role="alert">
+  <span class="material-symbols-outlined tp-error__icon" aria-hidden="true">error</span>
+  <p class="tp-error__text mb-2">
+    {{ search.error_message|default:"Não foi possível analisar a foto." }}
+  </p>
+  <p class="small text-secondary mb-0">Tente outra imagem ou descreva o sintoma no chat.</p>
+</div>
 {% else %}
+{% if search.candidates %}
 <ul class="tp-photo-candidates list-unstyled mb-0" aria-label="Peças candidatas">
   {% for c in search.candidates %}
   <li class="tp-photo-candidate">
     <div>
-      <strong class="font-mono">{{ c.sku }}</strong>
-      <div class="font-body-sm text-tech-gray">{{ c.label|default:c.sku }}</div>
-      {% if c.reason %}<div class="font-body-sm">{{ c.reason }}</div>{% endif %}
+      <strong class="font-technical">{{ c.sku }}</strong>
+      <div class="font-body-md text-secondary">{{ c.label|default:c.sku }}</div>
+      {% if c.reason %}<div class="font-body-md">{{ c.reason }}</div>{% endif %}
     </div>
-    <span class="badge text-bg-light font-mono">{{ c.score }}</span>
+    <span class="tp-badge tp-badge--draft font-technical">{{ c.score }}</span>
   </li>
-  {% empty %}
-  <li class="font-body-sm text-tech-gray">Nenhum candidato encontrado.</li>
   {% endfor %}
 </ul>
+{% else %}
+<div class="tp-empty py-4" role="status">
+  <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">image_search</span>
+  <h2 class="tp-empty__title">Nenhum candidato encontrado</h2>
+  <p class="tp-empty__text">
+    A foto não bateu com SKUs indexados. Descreva o sintoma no chat ou busque no catálogo.
+  </p>
+  <div class="d-flex flex-wrap gap-2 justify-content-center">
+    <a class="btn btn-ai btn-sm" href="{% url 'ai:chat' %}">Continuar no assistente</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'catalog:list' %}">Ver catálogo</a>
+  </div>
+</div>
+{% endif %}
 {% endif %}

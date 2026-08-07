@@ -1,12 +1,27 @@
 {% extends "base.html" %}
 {% block title %}Checkout — pagamento{% endblock %}
 {% block content %}
-<section class="tp-section" style="max-width: 40rem">
+<section
+  class="tp-section"
+  style="max-width: 40rem"
+  hx-boost="true"
+  hx-target="main#conteudo"
+  hx-select="main#conteudo > *"
+  hx-swap="innerHTML"
+  hx-indicator="#checkout-skeleton"
+>
   {% include "checkout/partials/steps.html" %}
   <h1 class="font-headline-lg">Pagamento</h1>
   <p class="text-secondary">
     O servidor recebe apenas o <strong>token</strong> do gateway — nunca o número do cartão.
   </p>
+
+  <div id="checkout-skeleton" class="tp-checkout-skeleton htmx-indicator" aria-hidden="true">
+    <div class="tp-skeleton tp-skeleton--title"></div>
+    <div class="tp-skeleton tp-skeleton--line"></div>
+    <div class="tp-skeleton tp-skeleton--card" style="height: 6rem"></div>
+  </div>
+
   <div class="alert alert-secondary small border" role="status">
     Sandbox mock: use <code class="font-technical">tok_sandbox_4242</code> para sucesso ou
     <code class="font-technical">tok_fail</code> para recusa.
