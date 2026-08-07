@@ -77,7 +77,9 @@ def product_detail(request: HttpRequest, slug: str) -> HttpResponse:
             "product": product,
             "locale": locale,
             "compat_labels": compat_labels_for_product(product),
-            "images": list(product.images.all()),
+            "images": list(
+                product.images.exclude(image="").order_by("-is_primary", "sort_order", "id")
+            ),
             "cross_sell": cross_sell_for_product(product),
         },
     )

@@ -109,7 +109,10 @@ class Product(models.Model):
 
     @property
     def primary_image(self):
-        return self.images.order_by("sort_order", "id").first()
+        """Primeira imagem com arquivo; prioriza `is_primary`."""
+        with_file = self.images.exclude(image="").order_by("sort_order", "id")
+        primary = with_file.filter(is_primary=True).first()
+        return primary or with_file.first()
 
     @property
     def quantity_sellable(self) -> int:

@@ -269,9 +269,20 @@ class Command(BaseCommand):
         subtitle: str,
         alt: str,
     ) -> None:
-        if product.images.filter(is_primary=True).exists():
+        usable = product.images.exclude(image="").filter(is_primary=True).first()
+        if usable is None:
+            usable = product.images.exclude(image="").order_by("sort_order", "id").first()
+        if usable is not None:
+            if not usable.is_primary:
+                product.images.filter(is_primary=True).update(is_primary=False)
+                usable.is_primary = True
+                usable.save(update_fields=["is_primary"])
             self.stdout.write(f"Imagem já existe: {product.sku}")
             return
+
+        # Remove placeholders vazios (primary sem arquivo) que bloqueiam o seed.
+        product.images.filter(image="").delete()
+
         png = self._placeholder_png(label=label, subtitle=subtitle)
         image = ProductImage(
             product=product,
