@@ -1,0 +1,55 @@
+# Overlay staging — DEBUG=false, settings.staging, budget/Axes (T-P.2)
+# Uso: docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up -d
+
+services:
+  web:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.staging
+      DEBUG: "false"
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-false}
+      SESSION_COOKIE_SECURE: "true"
+      CSRF_COOKIE_SECURE: "true"
+      AXES_ENABLED: "true"
+      AI_TOKEN_BUDGET_DAILY: ${AI_TOKEN_BUDGET_DAILY:-500000}
+      MANUAL_CLAMAV_ENABLED: ${MANUAL_CLAMAV_ENABLED:-false}
+      SENTRY_ENVIRONMENT: staging
+    command:
+      [
+        "gunicorn",
+        "config.wsgi:application",
+        "--bind",
+        "0.0.0.0:8000",
+        "--workers",
+        "2",
+      ]
+
+  worker:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.staging
+      DEBUG: "false"
+      AXES_ENABLED: "true"
+      AI_TOKEN_BUDGET_DAILY: ${AI_TOKEN_BUDGET_DAILY:-500000}
+      SENTRY_ENVIRONMENT: staging
+
+  beat:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.staging
+      DEBUG: "false"
+      SENTRY_ENVIRONMENT: staging
+
+  clamav:
+    profiles: ["clamav"]
+    image: clamav/clamav:1.4
+    ports:
+      - "3310:3310"
+    volumes:
+      - clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+volumes:
+  clamav_data:

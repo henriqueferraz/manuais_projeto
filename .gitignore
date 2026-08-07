@@ -32,3 +32,4 @@ manuais/
 # Media / uploads locais
 media/
 staticfiles/
+backups/

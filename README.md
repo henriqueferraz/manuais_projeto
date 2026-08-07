@@ -6,10 +6,10 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Pós-F8 — T-P.1 (beta humana) em andamento.** Fases F0–F8 + T-P.3 (DoD) concluídas. Backlog: [`docs/plano-tarefas.md`](docs/plano-tarefas.md#pós-f8--o-que-ainda-falta).
+**Pós-F8 — backlog.** Fases F0–F8 + T-P.1/T-P.3 concluídas. Em curso: hardening (T-P.2), integrações live, E2E, escala. Ver [`docs/plano-tarefas.md`](docs/plano-tarefas.md#pós-f8--o-que-ainda-falta).
 
 Rotas F8: `/assinaturas/` · `/assistencias/` · `/garantia/<uuid>/` · `/canais/whatsapp/webhook/`  
-ADRs: [`docs/adr/`](docs/adr/) · Hardening: [`docs/security-hardening.md`](docs/security-hardening.md) · Beta: [`docs/beta-script.md`](docs/beta-script.md) · [`docs/beta-relatorio.md`](docs/beta-relatorio.md)
+ADRs: [`docs/adr/`](docs/adr/) · Hardening: [`docs/security-hardening.md`](docs/security-hardening.md) · Deploy: [`docs/deploy.md`](docs/deploy.md) · Beta: [`docs/beta-script.md`](docs/beta-script.md)
 
 ## Bootstrap rápido (local sem Docker)
 
@@ -45,6 +45,17 @@ make up
 | Flower | http://localhost:5555 |
 | Postgres | localhost:5432 |
 | Redis | localhost:6379 |
+
+### Staging / produção / backup (T-P.2)
+
+```bash
+cp .env.example .env.staging   # SECRET_KEY forte, ALLOWED_HOSTS, budget > 0
+make up-staging                # overlay DEBUG=false
+make backup                    # pg_dump → backups/ (RPO ≤ 24h)
+# make restore FILE=backups/techparts-....sql.gz
+```
+
+Detalhes: [`docs/deploy.md`](docs/deploy.md) · checklist: [`docs/security-hardening.md`](docs/security-hardening.md).
 
 ## Qualidade
 
