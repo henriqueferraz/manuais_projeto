@@ -690,7 +690,88 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 - [x] Revisar orçamento de tokens e rate limits
 
 **Aceite (fase):** cada item acima com escopo próprio e ADR antes de iniciar.  
-**ADRs:** `docs/adr/0001`–`0008` · Hardening: `docs/security-hardening.md`
+**ADRs:** `docs/adr/0001`–`0008` · Hardening: `docs/security-hardening.md`  
+**Status F0–F8:** concluídas e mergeadas na `main` (última fase de produto: F8 / PR `#15`; DoD visual pós-F8: PR `#16`).
+
+---
+
+## Pós-F8 — O que ainda falta
+
+> As fases F0–F8 do roadmap estão entregues. O que segue é **backlog pós-MVP** (go-live, qualidade operacional e débitos).  
+> Fonte viva de issues UX: [`beta-relatorio.md`](beta-relatorio.md). Hardening: [`security-hardening.md`](security-hardening.md).  
+> Cada bloco abaixo = branch + PR + merge na `main` (R2), com ADR se mudar arquitetura/contrato.
+
+### P0 — Validação humana e go-live
+
+#### T-P.1 — Beta humana (próximo passo recomendado)
+
+- [ ] Rodar sessões com testers reais pelo [`beta-script.md`](beta-script.md)
+- [ ] Preencher taxa de citação/alucinação RAG e issues reais em [`beta-relatorio.md`](beta-relatorio.md)
+- [ ] Validar critérios specify com evidência humana (compra, chat, chamado, dashboard)
+- [ ] Atualizar golden set / prompts se o beta revelar regressões
+
+**Aceite:** relatório com ≥1 sessão real documentada; issues P0/P1 priorizadas com dono.
+
+#### T-P.2 — Hardening e produção
+
+- [ ] Cumprir checklist [`security-hardening.md`](security-hardening.md) (secrets, HSTS, Axes, ClamAV, backups)
+- [ ] Staging/produção: `DEBUG=false`, SSL cookies, `ALLOWED_HOSTS` / CSRF
+- [ ] Ativar budget de tokens (`AI_TOKEN_BUDGET_DAILY` > 0) e alertas ops
+- [ ] Deploy documentado (Compose/Vercel/host) + RPO de backup Postgres
+
+**Aceite:** checklist de hardening marcado; app sobe em staging sem secrets no git.
+
+### P1 — Débitos de produto e UX
+
+#### T-P.3 — Design system nas superfícies restantes (B-001 / B-005)
+
+- [ ] Dashboard insights/monitoramento com componentes `tp-*` (menos `card`/`table` genéricos)
+- [ ] Cards F8 (assinaturas / assistências) alinhados ao DS
+- [ ] Skeleton nas etapas de checkout (B-003)
+- [ ] Empty de candidatos de foto com `tp-empty` + CTA (B-004)
+- [ ] Confronto formal tela × protótipo `docs/design/` (B-006 / item Protótipo do DoD)
+
+**Aceite:** DoD visual “sim” (sem parcial) nas telas acima; B-001/B-003–B-006 fechados ou adiados com nota.
+
+#### T-P.4 — Integrações “live” (hoje mock/stub)
+
+- [ ] Pagamento sandbox real (`stripe` ou `mercadopago`) em staging
+- [ ] NF-e / Melhor Envio com provedor real quando houver contrato
+- [ ] WhatsApp `WHATSAPP_MODE=live` + HMAC + BSP/Meta homologado (ADR-0002)
+- [ ] LLM/embeddings reais (`CHAT_LLM_MODE` / `EMBEDDING_MODE` / `DIAGNOSIS_LLM_MODE`) fora do CI
+- [ ] Assinatura com billing real (além do mock ADR-0004)
+
+**Aceite:** cada integração com ADR curto + smoke em staging; CI continua em mock.
+
+### P2 — Escala, offline e testes
+
+#### T-P.5 — Escala e PWA avançados
+
+- [ ] Avaliar / ativar `DATABASE_READ_REPLICA_URL` + router quando leitura justificar
+- [ ] PWA: Background Sync de chamados / cache seletivo de manuais (além do shell ADR-0006)
+- [ ] Catálogo multi-idioma completo (conteúdo EN/ES, não só estrutura)
+- [ ] Revisar índices com volume real pós-`seed_scale_catalog`
+
+**Aceite:** métricas de carga ou ADR “não necessário ainda”.
+
+#### T-P.6 — E2E Playwright (débito R3)
+
+- [ ] Instalar Playwright (versão estável — R1) e smoke CI opcional/nightly
+- [ ] Fluxos críticos: checkout → pagamento mock; abertura de chamado; chat stream básico
+- [ ] Documentar como rodar localmente no README
+
+**Aceite:** ≥3 specs E2E verdes localmente; gate no CI definido (obrigatório ou nightly).
+
+### Ordem sugerida pós-F8
+
+| Ordem | Bloco | Foco |
+|---|---|---|
+| 13 | T-P.1 | Beta humana + atualizar relatório |
+| 14 | T-P.3 | Fechar gaps DoD (dashboard/F8/checkout/foto) |
+| 15 | T-P.2 | Hardening + staging |
+| 16 | T-P.4 | Integrações live sob demanda |
+| 17 | T-P.6 | Playwright E2E |
+| 18 | T-P.5 | Escala/PWA avançado sob demanda |
 
 ---
 
@@ -774,19 +855,22 @@ Sequência de alto nível (ajustar duração à capacidade; ~1 unidade = bloco d
 | 9 | F5 | RAG, stream, feedback, rate limit, LangSmith |
 | 10 | F6 | Diagnóstico, foto, HITL grafo, golden no CI |
 | 11 | F7 | Dashboard, alertas, beta, ajustes |
-| 12 | F8 | Itens de escala sob demanda (ADR + PR por item) |
+| 12 | F8 | Itens de escala sob demanda (ADR + PR por item) — **feito** |
+| 13+ | Pós-F8 | Ver [Pós-F8 — O que ainda falta](#pós-f8--o-que-ainda-falta) |
 
-**Regra de ouro:** não iniciar F5 sem ao menos um conjunto de manuais aprovados e produtos publicados; não iniciar F7 sem feedback 👍/👎 e traces LangSmith fluindo; não iniciar fase seguinte sem merge da anterior na `main`.
+**Regra de ouro:** não iniciar F5 sem ao menos um conjunto de manuais aprovados e produtos publicados; não iniciar F7 sem feedback 👍/👎 e traces LangSmith fluindo; não iniciar fase seguinte sem merge da anterior na `main`. **Após F8:** priorizar T-P.1 (beta humana) antes de integrações live.
 
 ---
 
 ## Critérios de sucesso do sistema (visão specify)
 
-O plano está cumprido quando:
+O plano de fases F0–F8 está **entregue em código**. O sistema está “cumprido” operacionalmente quando (ainda pendente validação humana / produção):
 
-1. Produto novo entra via manual com pouco esforço humano e qualidade revisável.
-2. Chat resolve parcela relevante das dúvidas com fonte; ao escalar, histórico vai junto.
-3. Cliente descobre a peça por sintoma, modelo ou foto.
-4. Operação acompanha vendas, chamados, custo de IA e qualidade sem ferramentas cruas.
-5. Loja vende no Brasil com NF-e, arrependimento e LGPD desde o primeiro pedido.
-6. UI/UX respeitam os pilares P16–P24 em todas as superfícies críticas (catálogo, PDP, checkout, chat, chamados, revisão, dashboard).
+1. [ ] Produto novo entra via manual com pouco esforço humano e qualidade revisável. _(pipeline + HITL ok em código)_
+2. [ ] Chat resolve parcela relevante das dúvidas com fonte; ao escalar, histórico vai junto. _(beta humana)_
+3. [ ] Cliente descobre a peça por sintoma, modelo ou foto. _(beta humana)_
+4. [ ] Operação acompanha vendas, chamados, custo de IA e qualidade sem ferramentas cruas. _(dashboard ok; beta ops)_
+5. [ ] Loja vende no Brasil com NF-e, arrependimento e LGPD desde o primeiro pedido. _(mock/sandbox → live em T-P.4 / T-P.2)_
+6. [ ] UI/UX respeitam os pilares P16–P24 em todas as superfícies críticas. _(DoD parcial; fechar T-P.3)_
+
+Rastreio: [`beta-relatorio.md`](beta-relatorio.md) · backlog: [Pós-F8](#pós-f8--o-que-ainda-falta).
