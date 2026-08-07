@@ -16,11 +16,6 @@
         <div class="tp-product-card__body">
           <span class="tp-product-card__brand font-label-caps">{{ product.brand }}</span>
           <h2 class="tp-product-card__title">{{ product|name_for_locale:locale }}</h2>
-          <p class="tp-product-card__specs font-technical mb-0">
-            {{ product.sku }}
-            {% if product.voltage %} · {{ product.voltage }}{% endif %}
-            {% if product.model_code %} · {{ product.model_code }}{% endif %}
-          </p>
           <div class="d-flex justify-content-between align-items-center mt-2">
             <span class="tp-product-card__price">R$ {{ product.price }}</span>
             {% if product.in_stock %}
@@ -29,6 +24,11 @@
             <span class="tp-badge tp-badge--draft">Indisponível</span>
             {% endif %}
           </div>
+          <p class="tp-product-card__specs font-technical mb-0 mt-2">
+            {{ product.sku }}
+            {% if product.voltage %} · {{ product.voltage }}{% endif %}
+            {% if product.model_code %} · {{ product.model_code }}{% endif %}
+          </p>
         </div>
       </a>
     </article>

@@ -3,11 +3,13 @@
 {% block content %}
 <section class="tp-section">
   <div class="p-4 rounded border bg-dark text-white mb-4">
-    <p class="text-uppercase small mb-1" style="color: var(--tp-ai-cyan, #22d3ee)">Área do Cliente & Manutenção</p>
+    <p class="font-label-caps mb-1" style="color: rgba(255, 255, 255, 0.72)">Área do Cliente &amp; Manutenção</p>
     <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
       <div>
         <h1 class="h3 mb-1">Chamados Técnicos</h1>
-        <p class="small text-secondary mb-0">Abra e acompanhe diagnósticos, peças e histórico de atendimento.</p>
+        <p class="small mb-0" style="color: rgba(255, 255, 255, 0.72)">
+          Abra e acompanhe diagnósticos, peças e histórico de atendimento.
+        </p>
       </div>
     </div>
   </div>
@@ -25,7 +27,7 @@
               {{ field }}
             </div>
             {% endfor %}
-            <button type="submit" class="btn btn-ai">Abrir chamado</button>
+            <button type="submit" class="btn btn-primary">Abrir chamado</button>
           </form>
         </div>
       </div>

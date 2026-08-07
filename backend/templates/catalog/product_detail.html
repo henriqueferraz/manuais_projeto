@@ -30,7 +30,7 @@
     <div class="d-flex gap-2 mt-3 flex-wrap">
       {% for img in images %}
       {% if img.image %}
-      <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:'' }}" width="72" height="72" class="rounded border object-fit-cover" loading="lazy" />
+      <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:product.name_pt }}" width="72" height="72" class="rounded border object-fit-cover" loading="lazy" />
       {% endif %}
       {% endfor %}
     </div>

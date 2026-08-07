@@ -2,10 +2,11 @@
 {% block title %}Garantia digital — {{ brand_name }}{% endblock %}
 {% block content %}
 <section class="tp-section" style="max-width: 36rem">
+  <p class="font-label-caps text-secondary mb-1">Garantia digital</p>
   <h1 class="font-headline-lg">Garantia via QR</h1>
   <p class="tp-section__lead">
     Código {% if code.label %}<span class="font-technical">{{ code.label }}</span>{% else %}{{ code.id }}{% endif %}
-    {% if code.sku %} · SKU {{ code.sku }}{% endif %}
+    {% if code.sku %} · SKU <span class="font-technical">{{ code.sku }}</span>{% endif %}
   </p>
 
   <form method="post" class="d-flex flex-column gap-3">
