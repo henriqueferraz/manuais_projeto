@@ -52,6 +52,11 @@ env = environ.Env(
     DIAGNOSIS_LLM_MODE=(str, "mock"),
     GOLDEN_MIN_SCORE=(float, 0.66),
     RAG_GOLDEN_MIN_SCORE=(float, 0.66),
+    FLOWER_URL=(str, "http://localhost:5555"),
+    SENTRY_UI_URL=(str, ""),
+    GRAFANA_URL=(str, ""),
+    SLACK_WEBHOOK_URL=(str, ""),
+    OPS_ALERT_EMAILS=(list, []),
 )
 
 environ.Env.read_env(REPO_ROOT / ".env")
@@ -273,6 +278,11 @@ PHOTO_LLM_MODE = env("PHOTO_LLM_MODE")
 DIAGNOSIS_LLM_MODE = env("DIAGNOSIS_LLM_MODE")
 GOLDEN_MIN_SCORE = env("GOLDEN_MIN_SCORE")
 RAG_GOLDEN_MIN_SCORE = env("RAG_GOLDEN_MIN_SCORE")
+FLOWER_URL = env("FLOWER_URL")
+SENTRY_UI_URL = env("SENTRY_UI_URL")
+GRAFANA_URL = env("GRAFANA_URL")
+SLACK_WEBHOOK_URL = env("SLACK_WEBHOOK_URL")
+OPS_ALERT_EMAILS = env("OPS_ALERT_EMAILS")
 
 # --- F4b: checkout / pagamento / frete / NF-e ---
 PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="mock")
@@ -294,6 +304,10 @@ CELERY_BEAT_SCHEDULE = {
     "tickets-check-sla": {
         "task": "tickets.check_sla",
         "schedule": 15 * 60.0,  # segundos
+    },
+    "dashboard-scan-alerts": {
+        "task": "dashboard.scan_alerts",
+        "schedule": 10 * 60.0,
     },
 }
 

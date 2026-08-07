@@ -15,6 +15,8 @@
       </a>
       {% if user.is_authenticated %}
       {% if user.is_staff %}
+      <a href="{% url 'dashboard:insights' %}">Dashboard</a>
+      <a href="{% url 'dashboard:monitoring' %}">Monitoramento</a>
       <a href="{% url 'tickets:support' %}">Suporte</a>
       <a href="{% url 'returns:ops' %}">Trocas/ops</a>
       <a href="{% url 'manuals:review_queue' %}">Revisão de manuais</a>
