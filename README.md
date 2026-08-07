@@ -6,10 +6,10 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Fase 8 — Iteração e escala.** Multi-idioma, WhatsApp stub, assinaturas, assistências, PWA, garantia QR, índices e budget de tokens.
+**Pós-F8 — backlog.** Fases F0–F8 concluídas. Próximo: beta humana, DoD residual, hardening e integrações live — ver [`docs/plano-tarefas.md`](docs/plano-tarefas.md#pós-f8--o-que-ainda-falta).
 
-Rotas novas: `/assinaturas/` · `/assistencias/` · `/garantia/<uuid>/` · `/canais/whatsapp/webhook/`  
-ADRs: [`docs/adr/`](docs/adr/) · Hardening: [`docs/security-hardening.md`](docs/security-hardening.md)
+Rotas F8: `/assinaturas/` · `/assistencias/` · `/garantia/<uuid>/` · `/canais/whatsapp/webhook/`  
+ADRs: [`docs/adr/`](docs/adr/) · Hardening: [`docs/security-hardening.md`](docs/security-hardening.md) · Beta: [`docs/beta-relatorio.md`](docs/beta-relatorio.md)
 
 ## Bootstrap rápido (local sem Docker)
 
