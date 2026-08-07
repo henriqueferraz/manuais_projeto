@@ -33,3 +33,5 @@ manuais/
 media/
 staticfiles/
 backups/
+backend/e2e.sqlite3
+e2e/.auth/

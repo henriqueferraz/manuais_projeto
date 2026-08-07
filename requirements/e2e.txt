@@ -1,0 +1,4 @@
+# T-P.6 — Playwright E2E (R1: estáveis na instalação)
+-r ci.txt
+playwright==1.62.0
+pytest-playwright==0.8.0
