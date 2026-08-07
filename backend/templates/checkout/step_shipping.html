@@ -1,26 +1,41 @@
 {% extends "base.html" %}
 {% block title %}Checkout — frete{% endblock %}
 {% block content %}
-<section class="tp-section" style="max-width: 40rem">
+<section
+  class="tp-section"
+  style="max-width: 40rem"
+  hx-boost="true"
+  hx-target="main#conteudo"
+  hx-select="main#conteudo > *"
+  hx-swap="innerHTML"
+  hx-indicator="#checkout-skeleton"
+>
   {% include "checkout/partials/steps.html" %}
   <h1 class="font-headline-lg">Frete</h1>
   <p class="text-secondary">CEP {{ draft.shipping_cep }} · {{ draft.shipping_city }}/{{ draft.shipping_state }}</p>
 
+  <div id="checkout-skeleton" class="tp-checkout-skeleton htmx-indicator" aria-hidden="true">
+    <div class="tp-skeleton tp-skeleton--title"></div>
+    <div class="tp-skeleton tp-skeleton--card" style="height: 4.5rem"></div>
+    <div class="tp-skeleton tp-skeleton--card" style="height: 4.5rem; margin-top: 0.75rem"></div>
+  </div>
+
   <form method="post" class="vstack gap-3 mt-3">
     {% csrf_token %}
     {% for opt in options %}
-    <label class="border rounded p-3 d-flex gap-3 align-items-start bg-white">
+    <label class="tp-checkout-option">
       <input type="radio" name="shipping_option_id" value="{{ opt.id }}" required class="mt-1" />
       <span class="flex-grow-1">
         <strong>{{ opt.carrier }} — {{ opt.service }}</strong><br />
         <span class="font-technical">R$ {{ opt.price }} · {{ opt.eta_days }} dias úteis</span>
-        <span class="badge text-bg-secondary ms-1">{{ opt.source }}</span>
+        <span class="tp-badge tp-badge--draft ms-1">{{ opt.source }}</span>
       </span>
     </label>
     {% empty %}
     <div class="tp-empty" role="status">
-      <span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>
-      <p class="mb-2">Nenhuma opção de frete disponível para este CEP.</p>
+      <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">local_shipping</span>
+      <h2 class="tp-empty__title">Sem frete para este CEP</h2>
+      <p class="tp-empty__text">Nenhuma opção disponível. Ajuste o endereço e tente de novo.</p>
       <a class="btn btn-ghost btn-sm" href="{% url 'checkout:start' %}">Voltar e ajustar endereço</a>
     </div>
     {% endfor %}

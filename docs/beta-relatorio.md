@@ -2,27 +2,28 @@
 
 **Status:** auditoria DoD visual/UX por checklist (templates + design system); sessões com usuários reais ainda pendentes.  
 **Data:** 2026-08-07  
-**Participantes:** 0 testers externos · 1 revisão de código/UI ([checklist](../design-system/docs/VISUAL-REVIEW-CHECKLIST.md))  
-**Branch/base:** `main` @ F8 (`#15`) + correções DoD desta revisão
+**Participantes:** 0 testers externos · 2 revisões de código/UI ([checklist](../design-system/docs/VISUAL-REVIEW-CHECKLIST.md))  
+**Branch/base:** `main` @ F8 (`#15`) + T-P.3 (fechamento DoD residual)
 
 ## Resumo executivo
 
 - Escopo auditado: catálogo/PDP, checkout, chat/diagnóstico, chamados, dashboard, assinaturas, assistências, garantia QR.
-- Resultado geral: **aprovado com ressalvas** — telas de venda/IA alinhadas ao Industrial Precision; ops e F8 ainda mais “Bootstrap + tipografia DS”.
-- Correções aplicadas nesta passagem: cyan fora de IA (chamados/monitoramento), `alert-info` no pagamento, empty de frete, `alt` em thumbs, ícone Material na foto do chat, `tp-empty` nas telas F8.
+- Resultado geral: **aprovado** nas telas do T-P.3 — componentes `tp-*` em ops/F8; skeleton no checkout; empty de foto; confronto documentado.
+- Débito consciente: home marketing vs protótipo hero (fora do T-P.3); beta humana ainda pendente (T-P.1).
 
 ## Issues priorizadas
 
 | ID | Severidade | Área | Descrição | Ação |
 |---|---|---|---|---|
-| B-001 | P1 | Dashboard | Widgets ainda usam `card`/`table` Bootstrap; pouco uso de componentes `tp-*` | Iterar shell ops com tokens/layout DS |
+| B-001 | P1 | Dashboard | ~~Widgets `card`/`table` Bootstrap~~ | **Corrigido** — `tp-stat` / `tp-panel` / `tp-table` / `tp-ops-hero` |
 | B-002 | P2 | Catálogo | ~~Specs acima do preço no card~~ | **Corrigido** — título > preço > specs |
-| B-003 | P2 | Checkout | Sem skeleton nas etapas HTMX/navegação | Adicionar `tp-skeleton` nas steps |
-| B-004 | P2 | Chat | Empty de candidatos de foto sem `tp-empty` + CTA | Alinhar `photo_candidates.html` |
-| B-005 | P2 | F8 | Cards de plano/assistência ainda `border rounded` genéricos | Evoluir para componente DS dedicado |
-| B-006 | P2 | Geral | Confronto formal com `docs/design/code*.html` não documentado por tela | Checklist de confronto no próximo beta humano |
+| B-003 | P2 | Checkout | ~~Sem skeleton nas etapas~~ | **Corrigido** — `hx-boost` + `#checkout-skeleton` |
+| B-004 | P2 | Chat | ~~Empty foto sem `tp-empty`~~ | **Corrigido** — `tp-empty` + CTAs assistente/catálogo |
+| B-005 | P2 | F8 | ~~Cards genéricos~~ | **Corrigido** — `tp-plan-card` / `tp-partner-card` |
+| B-006 | P2 | Geral | ~~Confronto informal~~ | **Corrigido** — [`PROTOTYPE-CONFRONTATION.md`](design/PROTOTYPE-CONFRONTATION.md) |
+| HOME | P2 | Home | Hero loja vs shell técnico | Adiado — fora do aceite T-P.3 |
 
-~~B-000 P0~~ Cyan em chamados (`btn-ai` + eyebrow) e monitoramento — **corrigido** nesta revisão.
+~~B-000 P0~~ Cyan em chamados/monitoramento — **corrigido** em revisão anterior.
 
 ## Qualidade das respostas (RAG / diagnóstico)
 
@@ -36,26 +37,26 @@ Critério: [VISUAL-REVIEW-CHECKLIST.md](../design-system/docs/VISUAL-REVIEW-CHEC
 
 | Tela | Passou checklist? | Notas |
 |---|---|---|
-| Catálogo / PDP | [x] **sim** | `tp-product-card`, skeleton, empty+CTA; thumbs com `alt`; hierarquia título > preço > specs |
-| Chat / diagnóstico | [x] **sim** | Rótulo IA, fontes, typing, 👍/👎, `btn-ai`, foto com Material Symbols |
-| Checkout | [x] parcial | Steps + `font-technical`; aviso sandbox sem cyan; empty frete com CTA; falta skeleton (B-003) |
-| Chamados | [x] parcial → **sim c/ ressalvas** | Cyan removido do hero/CTA; empty `tp-empty`; layout ainda card Bootstrap |
-| Dashboard insights/monitoramento | [x] parcial | Cyan só em Insights IA; contraste do hero ajustado; widgets ainda genéricos (B-001) |
-| Assinaturas (F8) | [x] parcial | Tipografia DS + `tp-empty`; cards genéricos (B-005) |
-| Assistências (F8) | [x] parcial | Badge assistência + empty/CTA; lista simples |
-| Garantia QR (F8) | [x] parcial | Hierarquia + mono em SKU; formulário limpo |
+| Catálogo / PDP | [x] **sim** | Hierarquia título > preço > ação > specs |
+| Chat / diagnóstico | [x] **sim** | Empty foto com `tp-empty` + CTA |
+| Checkout | [x] **sim** | Skeleton HTMX nas steps; `tp-checkout-option` |
+| Chamados | [x] **sim** | `tp-ops-hero` + `tp-panel` (sem cyan) |
+| Dashboard insights/monitoramento | [x] **sim** | `tp-stat` / `tp-panel` / `tp-table` |
+| Assinaturas (F8) | [x] **sim** | `tp-plan-card` |
+| Assistências (F8) | [x] **sim** | `tp-partner-card` |
+| Garantia QR (F8) | [x] **sim** | Tipografia + mono em SKU |
 
-### Checklist global (pós-correção)
+### Checklist global (pós T-P.3)
 
-- [x] **Marca:** shell + catálogo/chat usam navy/Inter; cyan restrito a IA (insights + chat)
-- [x] **Hierarquia:** PDP/chat/card catálogo (título > preço > specs)
-- [x] **Whitespace:** `tp-section` nas superfícies cliente
-- [x] **Estados:** skeleton no catálogo; empties críticos presentes; erros de form ainda `text-danger`
+- [x] **Marca:** navy/Inter; cyan restrito a IA (home marketing ainda parcial — HOME)
+- [x] **Hierarquia:** PDP/chat/card catálogo
+- [x] **Whitespace:** `tp-section` / painéis DS
+- [x] **Estados:** skeleton catálogo + checkout; empties críticos com CTA
 - [x] **Feedback:** transitions DS (~200ms); chat stream + typing
-- [x] **Mobile:** grids Bootstrap responsivos; chat com `enterkeyhint`
-- [x] **A11y:** skip-link, `aria-hidden` em ícones corrigidos, `alt` PDP
+- [x] **Mobile:** grids responsivos; chat com `enterkeyhint`
+- [x] **A11y:** skip-link, `aria-hidden`, `alt` PDP
 - [x] **IA:** rótulo, citação, fallback, typing, feedback
-- [ ] **Protótipo:** confronto tela a tela ainda informal (B-006)
+- [x] **Protótipo:** [`PROTOTYPE-CONFRONTATION.md`](design/PROTOTYPE-CONFRONTATION.md)
 
 ## Critérios de sucesso (specify)
 
@@ -69,5 +70,4 @@ Critério: [VISUAL-REVIEW-CHECKLIST.md](../design-system/docs/VISUAL-REVIEW-CHEC
 ## Próximos passos
 
 1. Rodar **sessão de beta humana** (script em [`beta-script.md`](beta-script.md)) e atualizar taxa RAG / issues reais.
-2. Tratar B-001 (dashboard DS); B-002 (hierarquia do card) já corrigido.
-3. Opcional: E2E Playwright nos fluxos checkout → chat → chamado (débito R3).
+2. Opcional: reforçar home marketing (HOME) e E2E Playwright (T-P.6).

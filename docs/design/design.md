@@ -1,5 +1,8 @@
 # Design System: Industrial Precision
 
+> **Obsoleto como fonte de verdade.** Use [`DESIGN.md`](DESIGN.md) + [`../../design-system/docs/BRAND.md`](../../design-system/docs/BRAND.md).  
+> Este arquivo misturava cyan como primary button/CTA — a regra vigente é **navy = compra/nav**, **cyan só em IA**.
+
 **Brand:** TechParts AI  
 **Core Concept:** Efficiency through Automation. A high-fidelity industrial aesthetic that blends technical precision with modern AI assistance.
 
@@ -29,8 +32,8 @@ The palette uses a technical navy base with high-contrast AI-focused accents.
 - **Surface Container Highest:** `#d9dadb`
 
 ### Brand & Accents
-- **Industrial Navy (Primary):** `#1a2b3c` (Main brand color, headings, navigation)
-- **AI Cyan (Secondary/Action):** `#00e5ff` (AI features, primary buttons, call-to-actions)
+- **Industrial Navy (Primary):** `#1a2b3c` (Main brand color, headings, navigation, primary purchase buttons)
+- **AI Cyan (Secondary/Action):** `#00e5ff` (**somente** features de IA: chat, diagnóstico, badges de assistência)
 - **Tech Gray:** `#6c757d` (Secondary text, inactive states, icons)
 - **Status Success:** `#28a745` (Availability, resolved tickets)
 - **Status Alert/Danger:** `#dc3545` (Critical failures, complex diagnostics)
@@ -71,9 +74,9 @@ The palette uses a technical navy base with high-contrast AI-focused accents.
 - **Action:** Square-ish buttons with minimal radius.
 
 ### Buttons
-- **Primary:** Background AI Cyan (`#00e5ff`), Text Navy (`#1a2b3c`), Bold.
-- **Secondary:** Background Navy (`#1a2b3c`), Text White, Bold.
-- **Outline:** Transparent background, Navy border, Navy text.
+- **Primary:** Background Navy (`#1a2b3c`), Text White, Bold — compra e navegação.
+- **AI Action:** Background AI Cyan (`#00e5ff`), Text Navy (`#1a2b3c`), Bold — só IA.
+- **Outline / Ghost:** Transparent background, Tech Gray / Navy border.
 
 ### Feedback Mechanism
 - **Style:** Small, non-intrusive 👍/👎 icons next to AI responses to train the RAG model.

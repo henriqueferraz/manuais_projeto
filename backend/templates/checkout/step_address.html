@@ -1,10 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Checkout — endereço{% endblock %}
 {% block content %}
-<section class="tp-section" style="max-width: 40rem">
+<section
+  class="tp-section"
+  style="max-width: 40rem"
+  hx-boost="true"
+  hx-target="main#conteudo"
+  hx-select="main#conteudo > *"
+  hx-swap="innerHTML"
+  hx-indicator="#checkout-skeleton"
+>
   {% include "checkout/partials/steps.html" %}
   <h1 class="font-headline-lg">Endereço de entrega</h1>
   <p class="text-secondary">Passo 1 de 3 · Subtotal R$ {{ totals.subtotal }}</p>
+
+  <div id="checkout-skeleton" class="tp-checkout-skeleton htmx-indicator" aria-hidden="true">
+    <div class="tp-skeleton tp-skeleton--title"></div>
+    <div class="tp-skeleton tp-skeleton--line"></div>
+    <div class="tp-skeleton tp-skeleton--line"></div>
+    <div class="tp-skeleton tp-skeleton--card" style="height: 8rem"></div>
+  </div>
+
   <form method="post" class="vstack gap-3 mt-3">
     {% csrf_token %}
     {% for field in form %}
@@ -15,7 +31,7 @@
     </div>
     {% endfor %}
     <div class="d-flex gap-2">
-      <a class="btn btn-ghost" href="{% url 'cart:detail' %}">Voltar ao carrinho</a>
+      <a class="btn btn-ghost" href="{% url 'cart:detail' %}" hx-boost="false">Voltar ao carrinho</a>
       <button type="submit" class="btn btn-primary">Continuar para frete</button>
     </div>
   </form>

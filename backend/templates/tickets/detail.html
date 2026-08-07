@@ -33,9 +33,9 @@
   </div>
   <div class="col-lg-5">
     {% if is_support %}
-    <div class="card border">
-      <div class="card-body">
-        <h2 class="h5">Painel suporte</h2>
+    <section class="tp-panel">
+      <div class="tp-panel__header"><h2>Painel suporte</h2></div>
+      <div class="tp-panel__body">
         <form method="post" action="{% url 'tickets:update_status' ticket.code %}">
           {% csrf_token %}
           <div class="mb-2">
@@ -50,7 +50,7 @@
           <a class="btn btn-ghost" href="{% url 'tickets:support' %}">Fila suporte</a>
         </form>
       </div>
-    </div>
+    </section>
     {% endif %}
   </div>
 </article>

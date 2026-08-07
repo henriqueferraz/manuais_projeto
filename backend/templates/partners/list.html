@@ -15,27 +15,30 @@
       <input id="id_city" name="city" class="form-control" value="{{ city }}" placeholder="São Paulo" />
     </div>
     <div class="col-auto">
-      <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+      <button type="submit" class="btn btn-ghost">Filtrar</button>
     </div>
   </form>
 
   {% if partners %}
-  <ul class="list-unstyled d-flex flex-column gap-3">
+  <ul class="list-unstyled row g-3">
     {% for p in partners %}
-    <li class="border rounded p-3 bg-white">
-      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-        <h2 class="font-headline-sm mb-0">{{ p.name }}</h2>
-        <span class="tp-badge tp-badge--compat">Assistência</span>
-      </div>
-      <p class="mb-1 font-technical">{{ p.city }}/{{ p.state }}{% if p.phone %} · {{ p.phone }}{% endif %}</p>
-      {% if p.brands %}<p class="small text-secondary mb-0">Marcas: {{ p.brands }}</p>{% endif %}
+    <li class="col-md-6">
+      <article class="tp-partner-card">
+        <div class="tp-partner-card__header">
+          <h2 class="font-headline-sm">{{ p.name }}</h2>
+          <span class="tp-badge tp-badge--compat">Assistência</span>
+        </div>
+        <p class="mb-0 font-technical">{{ p.city }}/{{ p.state }}{% if p.phone %} · {{ p.phone }}{% endif %}</p>
+        {% if p.brands %}<p class="small text-secondary mb-0">Marcas: {{ p.brands }}</p>{% endif %}
+      </article>
     </li>
     {% endfor %}
   </ul>
   {% else %}
   <div class="tp-empty" role="status">
-    <span class="material-symbols-outlined" aria-hidden="true">home_repair_service</span>
-    <p class="mb-2">Nenhuma assistência encontrada para este filtro.</p>
+    <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">home_repair_service</span>
+    <h2 class="tp-empty__title">Nenhuma assistência encontrada</h2>
+    <p class="tp-empty__text">Ajuste UF/cidade ou limpe o filtro para ver a rede completa.</p>
     <a class="btn btn-ghost btn-sm" href="{% url 'partners:list' %}">Limpar filtros</a>
   </div>
   {% endif %}
