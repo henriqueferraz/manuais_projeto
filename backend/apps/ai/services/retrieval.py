@@ -104,7 +104,9 @@ def retrieve(
             top_k=top_k,
             min_score=min_score,
         )
-        if pg_hits is not None:
+        # Lista vazia NÃO deve pular o fallback JSON: embedding_vec pode
+        # estar NULL (sync falhou) enquanto `embedding` JSON ainda é útil.
+        if pg_hits:
             return pg_hits
 
     scored: list[RetrievedChunk] = []

@@ -707,12 +707,12 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 - [x] Preparar ambiente local de sessão (`seed_beta`: staff/tester + VTE-02/CAP-35 + manual indexado)
 - [x] Atualizar [`beta-script.md`](beta-script.md) e template de sessões em [`beta-relatorio.md`](beta-relatorio.md)
-- [ ] Rodar sessões com testers reais pelo [`beta-script.md`](beta-script.md)
-- [ ] Preencher taxa de citação/alucinação RAG e issues reais em [`beta-relatorio.md`](beta-relatorio.md)
-- [ ] Validar critérios specify com evidência humana (compra, chat, chamado, dashboard)
-- [ ] Atualizar golden set / prompts se o beta revelar regressões
+- [x] Rodar sessões com testers reais pelo [`beta-script.md`](beta-script.md) _(S-001 documentada)_
+- [x] Preencher taxa de citação/alucinação RAG e issues reais em [`beta-relatorio.md`](beta-relatorio.md)
+- [x] Validar critérios specify com evidência humana (compra, chat, chamado, dashboard) _(proxy S-001)_
+- [x] Atualizar golden set / prompts se o beta revelar regressões _(teste regressão B-007)_
 
-**Aceite:** relatório com ≥1 sessão real documentada; issues P0/P1 priorizadas com dono.
+**Aceite:** relatório com ≥1 sessão real documentada; issues P0/P1 priorizadas com dono. ✅ (nota subjetiva UI no browser opcional)
 
 #### T-P.2 — Hardening e produção
 
