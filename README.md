@@ -6,7 +6,7 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Pós-F8 — backlog.** Fases F0–F8 + T-P.1/T-P.3 concluídas. Em curso: hardening (T-P.2), integrações live, E2E, escala. Ver [`docs/plano-tarefas.md`](docs/plano-tarefas.md#pós-f8--o-que-ainda-falta).
+**Pós-F8 — backlog concluído em código** (T-P.1–T-P.6). Ver [`docs/plano-tarefas.md`](docs/plano-tarefas.md#pós-f8--o-que-ainda-falta).
 
 Rotas F8: `/assinaturas/` · `/assistencias/` · `/garantia/<uuid>/` · `/canais/whatsapp/webhook/`  
 ADRs: [`docs/adr/`](docs/adr/) · Hardening: [`docs/security-hardening.md`](docs/security-hardening.md) · Deploy: [`docs/deploy.md`](docs/deploy.md) · Beta: [`docs/beta-script.md`](docs/beta-script.md)

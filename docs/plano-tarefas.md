@@ -691,7 +691,8 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Aceite (fase):** cada item acima com escopo próprio e ADR antes de iniciar.  
 **ADRs:** `docs/adr/0001`–`0008` · Hardening: `docs/security-hardening.md`  
-**Status F0–F8:** concluídas e mergeadas na `main` (última fase de produto: F8 / PR `#15`; DoD visual pós-F8: PR `#16`).
+**Status F0–F8:** concluídas e mergeadas na `main` (última fase de produto: F8 / PR `#15`; DoD visual pós-F8: PR `#16`).  
+**Pós-F8:** T-P.1–T-P.6 concluídos (hardening `#22`, live `#23`, E2E `#24`, escala/PWA nesta entrega).
 
 ---
 
@@ -750,12 +751,12 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 #### T-P.5 — Escala e PWA avançados
 
-- [ ] Avaliar / ativar `DATABASE_READ_REPLICA_URL` + router quando leitura justificar
-- [ ] PWA: Background Sync de chamados / cache seletivo de manuais (além do shell ADR-0006)
-- [ ] Catálogo multi-idioma completo (conteúdo EN/ES, não só estrutura)
-- [ ] Revisar índices com volume real pós-`seed_scale_catalog`
+- [x] Avaliar / ativar `DATABASE_READ_REPLICA_URL` + router quando leitura justificar
+- [x] PWA: Background Sync de chamados / cache seletivo de manuais (além do shell ADR-0006)
+- [x] Catálogo multi-idioma completo (conteúdo EN/ES, não só estrutura)
+- [x] Revisar índices com volume real pós-`seed_scale_catalog`
 
-**Aceite:** métricas de carga ou ADR “não necessário ainda”.
+**Aceite:** métricas de carga ou ADR “não necessário ainda”. ✅ · router + SW v2 + seed EN/ES · ADR-0008
 
 #### T-P.6 — E2E Playwright (débito R3)
 
