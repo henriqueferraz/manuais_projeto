@@ -158,7 +158,7 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
 def _after_understand(state: DiagnosisState) -> str:
     decision = state.get("decision") or "manual"
     if decision == "ask_details":
-        return "end"
+        return "ask_details"
     if decision == "orders":
         return "orders"
     return "manual"

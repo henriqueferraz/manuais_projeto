@@ -21,4 +21,8 @@ urlpatterns = [
     path("compatibilidade/", include("apps.compatibility.urls")),
     path("assistente/", include("apps.ai.urls")),
     path("dashboard/", include("apps.dashboard.urls")),
+    path("assinaturas/", include("apps.subscriptions.urls")),
+    path("assistencias/", include("apps.partners.urls")),
+    path("canais/", include("apps.channels.urls")),
+    path("garantia/", include("apps.warranty.urls")),
 ]

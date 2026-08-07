@@ -6,9 +6,10 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Fase 7 — Beta, dashboard e monitoramento.** Insights + painel de ops + script de beta.
+**Fase 8 — Iteração e escala.** Multi-idioma, WhatsApp stub, assinaturas, assistências, PWA, garantia QR, índices e budget de tokens.
 
-Rotas staff: `/dashboard/` · `/dashboard/monitoramento/`
+Rotas novas: `/assinaturas/` · `/assistencias/` · `/garantia/<uuid>/` · `/canais/whatsapp/webhook/`  
+ADRs: [`docs/adr/`](docs/adr/) · Hardening: [`docs/security-hardening.md`](docs/security-hardening.md)
 
 ## Bootstrap rápido (local sem Docker)
 
@@ -21,6 +22,7 @@ cd backend
 python manage.py migrate
 python manage.py bootstrap_rbac
 python manage.py createsuperuser
+python manage.py seed_scale_catalog
 python manage.py runserver
 ```
 
@@ -60,10 +62,11 @@ pre-commit install
 
 ## Apps Django
 
-`accounts`, `catalog`, `products`, `cart`, `checkout`, `orders`, `tickets`, `ai`, `manuals`, `compatibility`, `dashboard`, `notifications`, `core`
+`accounts`, `catalog`, `products`, `cart`, `checkout`, `orders`, `tickets`, `ai`, `manuals`, `compatibility`, `dashboard`, `notifications`, `subscriptions`, `partners`, `channels`, `warranty`, `core`
 
 ## Docs
 
 - [`docs/plano-tarefas.md`](docs/plano-tarefas.md)
+- [`docs/adr/`](docs/adr/) — decisões F8
 - [`design-system/`](design-system/) — Industrial Precision
 - [`docs/fase-1-escopo-mvp.md`](docs/fase-1-escopo-mvp.md)

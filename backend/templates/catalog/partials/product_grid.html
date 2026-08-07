@@ -1,4 +1,5 @@
 {% if products %}
+{% load i18n_extras %}
 <p class="small text-secondary mb-3">{{ total }} produto{{ total|pluralize }}</p>
 <div class="row g-4">
   {% for product in products %}
@@ -14,7 +15,7 @@
         </div>
         <div class="tp-product-card__body">
           <span class="tp-product-card__brand font-label-caps">{{ product.brand }}</span>
-          <h2 class="tp-product-card__title">{{ product.name_pt }}</h2>
+          <h2 class="tp-product-card__title">{{ product|name_for_locale:locale }}</h2>
           <p class="tp-product-card__specs font-technical mb-0">
             {{ product.sku }}
             {% if product.voltage %} · {{ product.voltage }}{% endif %}

@@ -96,6 +96,10 @@ class Order(models.Model):
         ordering = ("-created_at",)
         verbose_name = "pedido"
         verbose_name_plural = "pedidos"
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["email", "created_at"]),
+        ]
 
     def __str__(self) -> str:
         return f"Pedido {self.number}"

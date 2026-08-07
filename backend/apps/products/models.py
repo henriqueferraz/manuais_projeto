@@ -70,6 +70,8 @@ class Product(models.Model):
             models.Index(fields=["status", "brand"]),
             models.Index(fields=["status", "voltage"]),
             models.Index(fields=["status", "model_code"]),
+            models.Index(fields=["brand", "status", "sku"]),
+            models.Index(fields=["status", "published_at"]),
         ]
 
     def __str__(self) -> str:
@@ -87,12 +89,22 @@ class Product(models.Model):
 
     @property
     def name_pt(self) -> str:
-        tr = self.translations.filter(locale="pt-BR").first()
-        return tr.name if tr else f"{self.brand} {self.model_code}"
+        return self.name_for("pt-BR")
 
     @property
     def description_pt(self) -> str:
-        tr = self.translations.filter(locale="pt-BR").first()
+        return self.description_for("pt-BR")
+
+    def name_for(self, locale: str = "pt-BR") -> str:
+        tr = self.translations.filter(locale=locale).first()
+        if tr is None and locale != "pt-BR":
+            tr = self.translations.filter(locale="pt-BR").first()
+        return tr.name if tr else f"{self.brand} {self.model_code}"
+
+    def description_for(self, locale: str = "pt-BR") -> str:
+        tr = self.translations.filter(locale=locale).first()
+        if tr is None and locale != "pt-BR":
+            tr = self.translations.filter(locale="pt-BR").first()
         return tr.description if tr else ""
 
     @property
