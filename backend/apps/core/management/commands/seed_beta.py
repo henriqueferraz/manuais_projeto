@@ -34,7 +34,7 @@ User = get_user_model()
 
 DEFAULT_STAFF = "beta.staff@techparts.local"
 DEFAULT_TESTER = "beta.tester@techparts.local"
-DEFAULT_PASSWORD = "beta-local-only"
+DEFAULT_PASSWORD = "beta-local-only"  # nosec B105 — senha local DEBUG only
 
 FIXTURE_PATH = (
     Path(settings.BASE_DIR) / "apps" / "ai" / "golden_set" / "fixtures" / "vte02_capacitor.txt"

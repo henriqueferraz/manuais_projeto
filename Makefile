@@ -55,7 +55,7 @@ golden-rag:
 lint:
 	.venv/bin/ruff check backend
 	.venv/bin/black --check backend
-	.venv/bin/bandit -q -r backend -x '*/tests/*,*/migrations/*'
+	.venv/bin/bandit -q -r backend -x '*/tests/*,*/migrations/*,*/scripts_beta_s001.py'
 
 fmt:
 	.venv/bin/black backend

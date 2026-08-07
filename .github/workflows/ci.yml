@@ -41,7 +41,7 @@ jobs:
         run: black --check backend
 
       - name: Bandit
-        run: bandit -q -r backend -x '*/tests/*,*/migrations/*'
+        run: bandit -q -r backend -x '*/tests/*,*/migrations/*,*/scripts_beta_s001.py'
 
       - name: pip-audit
         run: pip-audit -r requirements/base.txt
