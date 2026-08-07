@@ -301,7 +301,13 @@ class Command(BaseCommand):
         font = ImageFont.load_default()
         draw.text((width // 2, 420), label, fill="#0B1F33", anchor="mt", font=font)
         draw.text((width // 2, 450), subtitle, fill="#5B6B7C", anchor="mt", font=font)
-        draw.text((width // 2, 580), "TechParts AI · seed beta", fill="#8A97A5", anchor="mt", font=font)
+        draw.text(
+            (width // 2, 580),
+            "TechParts AI · seed beta",
+            fill="#8A97A5",
+            anchor="mt",
+            font=font,
+        )
         buf = BytesIO()
         img.save(buf, format="PNG", optimize=True)
         return buf.getvalue()
