@@ -84,5 +84,10 @@ def record_token_usage(tokens: int) -> None:
                     ),
                     payload={"used": new_used, "budget": daily_budget},
                 )
-            except Exception:  # noqa: BLE001
-                pass
+            except Exception as exc:  # noqa: BLE001
+                import structlog
+
+                structlog.get_logger(__name__).warning(
+                    "token_budget_alert_failed",
+                    error=str(exc)[:200],
+                )
