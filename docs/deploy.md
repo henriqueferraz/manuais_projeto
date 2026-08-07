@@ -10,7 +10,8 @@ Runbook mínimo para subir staging/produção com Compose e cumprir o checklist 
 | Staging | `config.settings.staging` | **false** | true | 1h |
 | Produção | `config.settings.production` | **false** | true | 1 ano + preload |
 
-Secrets **nunca** no git — só `.env` / secret manager.
+Secrets **nunca** no git — só `.env` / secret manager.  
+Template de variáveis: [`.env.example`](../.env.example) na **raiz** do repositório (fonte única).
 
 ## Staging com Compose
 

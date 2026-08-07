@@ -61,9 +61,10 @@ Cada arquivo reúne a **definição do pilar** e o **conteúdo extraído** de co
 | `plan.md` | 4, 9, 10, 11, 12, 13, 14 |
 | `plano-ecommerce-ia-pecas.md` | quase todos (plano mestre) |
 | `techparts_ai_project_brief.md` | 1, 16, 23, 24 |
-| `DESIGN.md` / `design.md` | 16–24 |
-| `code*.html` / `src/` / `screen*.png` | 3, 9, 10, 12, 16–24 (protótipos) |
+| `design/DESIGN.md` (canônico) | 16–24 |
+| `design/design.md` (**obsoleto**) | — não usar como tokens |
+| `code*.html` / `screen*.png` | 3, 9, 10, 12, 16–24 (protótipos) |
 
 ## O que não foi “partido” em pilares
 
-Arquivos de tooling do protótipo React (`package.json`, `tsconfig.json`, `index.html`, `.env.example`, `metadata.json`) permanecem em `docs/` — não são requisitos de pilar, são suporte ao mock visual.
+Protótipos HTML/PNG em `docs/design/` são suporte visual histórico. Variáveis de ambiente: **somente** [`.env.example`](../../.env.example) na raiz do repo (não há `.env.example` em `docs/`).

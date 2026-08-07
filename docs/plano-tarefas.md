@@ -4,7 +4,7 @@ Plano de tarefas e subtarefas para desenvolver o sistema completo, alinhado ao r
 
 **Stack:** Python + Django + htmx + Bootstrap + PostgreSQL/pgvector + Celery + LangChain/LangGraph + Cloudflare R2
 
-**Fontes:** [`plano-ecommerce-ia-pecas.md`](plano-ecommerce-ia-pecas.md) · [`pilares-app-ia-vendas-pecas.md`](pilares-app-ia-vendas-pecas.md) · [`pilares/`](pilares/) · [`constitution.md`](constitution.md) · [`specify.md`](specify.md) · [`DESIGN.md`](DESIGN.md) · [`plan.md`](plan.md)
+**Fontes:** [`plano-ecommerce-ia-pecas.md`](plano-ecommerce-ia-pecas.md) · [`pilares-app-ia-vendas-pecas.md`](pilares-app-ia-vendas-pecas.md) · [`pilares/`](pilares/) · [`constitution.md`](constitution.md) · [`specify.md`](specify.md) · [`design/DESIGN.md`](design/DESIGN.md) · [`plan.md`](plan.md)
 
 ---
 
