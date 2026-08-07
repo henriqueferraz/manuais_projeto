@@ -209,6 +209,26 @@ def test_feedback_up_persists(indexed_manual):
     assert fb.chunk_ids_snapshot == [1, 2]
 
 
+@pytest.mark.django_db
+def test_retrieve_falls_back_when_pgvector_vecs_null(indexed_manual, settings, monkeypatch):
+    """Regressão beta S-001: embedding_vec NULL não pode engolir o JSON hybrid."""
+    settings.USE_PGVECTOR = True
+    from apps.ai.services import retrieval as retrieval_mod
+
+    class _Conn:
+        vendor = "postgresql"
+
+    monkeypatch.setattr(retrieval_mod, "connection", _Conn())
+    monkeypatch.setattr(retrieval_mod, "_retrieve_pgvector", lambda *a, **k: [])
+
+    hits = retrieve(
+        "Qual o capacitor de partida do VTE-02?",
+        product_id=indexed_manual.linked_product_id,
+    )
+    assert hits, "esperado fallback JSON/hybrid com chunks indexados"
+    assert any("capacitor" in h.chunk.content.lower() for h in hits)
+
+
 def test_mock_embedding_stable():
     a = embed_query("capacitor de partida VTE-02")
     b = embed_query("capacitor de partida VTE-02")

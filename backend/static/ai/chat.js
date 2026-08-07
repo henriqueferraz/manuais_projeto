@@ -50,30 +50,72 @@
   }
 
   function renderDiagnosisCard(bubble, card) {
-    if (!card || !card.refManual) return;
-    const cardEl = el("div", "tp-diagnostic-card");
+    if (!card) return;
+    const cardEl = el(
+      "div",
+      `tp-diagnostic-card${card.fallback ? " tp-diagnostic-card--fallback" : ""}`
+    );
+    cardEl.setAttribute("role", "region");
+    cardEl.setAttribute("aria-label", "Card de diagnóstico");
+
     const header = el("div", "tp-diagnostic-card__header");
+    const icon = el("span", "material-symbols-outlined");
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = card.fallback ? "support_agent" : "health_and_safety";
+    header.appendChild(icon);
     header.appendChild(el("strong", "", card.title || "Diagnóstico assistido"));
-    if (card.confidence != null) {
-      header.appendChild(
-        el("span", "tp-diagnostic-card__conf font-mono", String(card.confidence))
-      );
+    const confLabel =
+      card.confidenceLabel ||
+      (card.confidence != null ? `${Math.round(Number(card.confidence) * 100)}%` : "");
+    if (confLabel) {
+      const conf = el("span", "tp-diagnostic-card__conf font-mono", confLabel);
+      conf.title = "Confiança do motor";
+      header.appendChild(conf);
     }
     cardEl.appendChild(header);
-    const src = el("div", "tp-chat__source");
-    src.appendChild(
-      el("span", "tp-chat__source-tag", `Fonte técnica: ${card.refManual}`)
-    );
-    cardEl.appendChild(src);
-    if (card.recommendedSkus && card.recommendedSkus.length) {
-      const ul = el("ul", "tp-diagnostic-card__skus list-unstyled mb-0");
-      card.recommendedSkus.forEach((sku) => {
+
+    if (card.refManual) {
+      const src = el("div", "tp-chat__source");
+      src.appendChild(
+        el("span", "tp-chat__source-tag", `Fonte técnica: ${card.refManual}`)
+      );
+      cardEl.appendChild(src);
+    }
+
+    const products =
+      card.recommendedProducts && card.recommendedProducts.length
+        ? card.recommendedProducts
+        : (card.recommendedSkus || []).map((sku) => ({ sku, name: sku, url: null }));
+    if (products.length) {
+      const ul = el("ul", "tp-diagnostic-card__skus list-unstyled mb-2");
+      products.forEach((item) => {
         const li = el("li", "");
-        li.appendChild(el("span", "font-mono", sku));
+        if (item.url) {
+          const a = el("a", "tp-diagnostic-card__sku-link font-mono", item.sku);
+          a.href = item.url;
+          li.appendChild(a);
+        } else {
+          li.appendChild(el("span", "font-mono", item.sku));
+        }
+        if (item.name && item.name !== item.sku) {
+          li.appendChild(document.createTextNode(" "));
+          li.appendChild(el("span", "font-body-sm text-tech-gray", item.name));
+        }
         ul.appendChild(li);
       });
       cardEl.appendChild(ul);
     }
+
+    if (card.ticketUrl) {
+      const ticket = el(
+        "a",
+        "tp-diagnostic-card__ticket",
+        card.ticketLabel || "Abrir chamado"
+      );
+      ticket.href = card.ticketUrl;
+      cardEl.appendChild(ticket);
+    }
+
     bubble.appendChild(cardEl);
   }
 

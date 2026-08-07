@@ -86,7 +86,11 @@ def test_diagnosis_suggests_capacitor_with_source(indexed_diagnosis_manual):
     assert assistant.found_in_manual
     assert assistant.diagnosis_card
     assert assistant.diagnosis_card.get("refManual")
+    assert assistant.diagnosis_card.get("confidenceLabel")
+    assert assistant.diagnosis_card.get("ticketUrl")
+    products = assistant.diagnosis_card.get("recommendedProducts") or []
     assert "CAP-35" in (assistant.diagnosis_card.get("recommendedSkus") or []) or spare.sku in text
+    assert any(p.get("sku") == "CAP-35" and p.get("url") for p in products) or spare.sku in text
     assert meta.get("mode") == "diagnosis"
 
 

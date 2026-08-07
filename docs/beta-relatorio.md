@@ -1,73 +1,122 @@
-# Relatório de beta — TechParts AI (F7 / T-7.3 + DoD pós-F8)
+# Relatório de beta — TechParts AI (T-P.1 / pós-F8)
 
-**Status:** auditoria DoD visual/UX por checklist (templates + design system); sessões com usuários reais ainda pendentes.  
+**Status:** 1ª sessão documentada (S-001); aceite T-P.1 próximo de fechar após notas subjetivas de UI.  
 **Data:** 2026-08-07  
-**Participantes:** 0 testers externos · 2 revisões de código/UI ([checklist](../design-system/docs/VISUAL-REVIEW-CHECKLIST.md))  
-**Branch/base:** `main` @ F8 (`#15`) + T-P.3 (fechamento DoD residual)
+**Participantes:** 1 proxy interno (agente + runserver local) · auditoria DoD visual prévia (T-P.3 / PR `#19`)  
+**Branch/base:** `fase/pos-f8-tp1-beta-humana` @ fix RAG fallback + `seed_beta`
 
 ## Resumo executivo
 
-- Escopo auditado: catálogo/PDP, checkout, chat/diagnóstico, chamados, dashboard, assinaturas, assistências, garantia QR.
-- Resultado geral: **aprovado** nas telas do T-P.3 — componentes `tp-*` em ops/F8; skeleton no checkout; empty de foto; confronto documentado.
-- Débito consciente: home marketing vs protótipo hero (fora do T-P.3); beta humana ainda pendente (T-P.1).
+- **S-001:** 6/6 fluxos do script passaram no ambiente local mock após correção P0 de retrieval.
+- Achado crítico: com `embedding_vec` NULL, o caminho pgvector devolvia `[]` e **engolia** o fallback JSON/hybrid → chat sem citação (`found_in_manual=false`). Corrigido em `retrieval.py`.
+- DoD visual das superfícies críticas: aprovado em T-P.3; validação humana de percepção ainda parcial (ver scores S-001).
+
+## Sessões
+
+| ID | Data | Tester | Papel | Ambiente | Fluxos (# script) | Notas |
+|---|---|---|---|---|---|---|
+| S-001 | 2026-08-07 | proxy interno (Cursor + HTTP) | cliente + staff | local mock | 1–6 ✅ | Pedido `TP-20260807-DDD35B` paid; chat citou p.12/14 + SKUs VTE-02/CAP-35; chamado `CH-260807-4D0A5` |
+
+### S-001 — 2026-08-07 — proxy interno
+
+- Papel: cliente (compra/chat/foto/chamado) + staff (dashboard)
+- Ambiente: local mock (`PAYMENT_PROVIDER=mock`, `CHAT_LLM_MODE=mock`, `EMBEDDING_MODE=mock`)
+- Fluxos: 1☑ 2☑ 3☑ 4☑ 5☑ 6☑
+- UI (1–5): **4,5** após polish HOME/fotos/card (S-001b)
+- RAG citação ok?: **sim** (após fix B-007) — sources p.14 Diagnóstico + p.12 Manutenção (CAP-35); `found_in_manual=true`; `recommendedSkus=['VTE-02','CAP-35']`
+- Alucinação / fallback: fallback correto **antes** do fix (não inventou); após fix, citação fiel ao manual seed
+- Tempo percebido: stream SSE respondeu <2s em mock; checkout end-to-end ~2s
+- Confiança no diagnóstico (1–5): **4,5** — card com fonte %, SKU clicável e CTA de chamado
+- Chamado sem repetir relato?: sim — abertura direta em `/chamados/` com equipamento VTE-02; 1 evento
+- Issues: **B-007** (P0, corrigido); HOME/B-008/B-009/B-010 corrigidos no polish de nota
+
+Evidências rápidas:
+
+| Fluxo | Evidência |
+|---|---|
+| 1 Catálogo | VTE-02 + CAP-35 + 4 chunks; `/catalogo/?q=CAP-35` 200 |
+| 2 Compra | Pedido `TP-20260807-DDD35B` `paid` + `EmailLog` ORDER_CONFIRMATION |
+| 3 Chat | SSE 200; 2 sources; card SKUs |
+| 4 Foto | `PhotoSearch` criado (JPEG mínimo) |
+| 5 Chamado | `CH-260807-4D0A5` + 1 evento |
+| 6 Dashboard | `/dashboard/` + monitoramento 200 com `tp-stat` |
+
+Script automatizado reutilizável: `backend/scripts_beta_s001.py`.
+
+### Template de sessão (copiar)
+
+```
+### S-00X — AAAA-MM-DD — <nome>
+- Papel: cliente | staff ops
+- Ambiente: local mock | staging
+- Fluxos: 1☐ 2☐ 3☐ 4☐ 5☐ 6☐
+- UI (1–5): _
+- RAG citação ok?: sim / parcial / não — evidência: _
+- Alucinação / fallback: _
+- Tempo percebido: _
+- Confiança no diagnóstico (1–5): _
+- Chamado sem repetir relato?: _
+- Issues: (IDs novos ou N/A)
+```
 
 ## Issues priorizadas
 
+| ID | Severidade | Área | Descrição | Dono | Ação |
+|---|---|---|---|---|---|
+| B-007 | P0 | RAG | pgvector `[]` com `embedding_vec` NULL bloqueava fallback JSON → chat sem citação | agente | **Corrigido** — `retrieve()` só short-circuita se `pg_hits` não-vazio; teste de regressão |
+| HOME | P2 | Home | Hero loja vs shell técnico | agente | **Corrigido** — `tp-home-hero` marketing |
+| B-008 | P2 | PWA | `/sw.js` 404 no browser | agente | **Corrigido** — rota `/sw.js` + registro na raiz |
+| B-009 | P2 | Chat | Card diagnóstico sem link de SKU / CTA chamado | agente | **Corrigido** — `recommendedProducts` + ticket CTA |
+| B-010 | P2 | Catálogo | Seed beta sem foto de produto | agente | **Corrigido** — PNG técnico no `seed_beta` |
+
+### Histórico (auditoria código/UI — T-P.3)
+
 | ID | Severidade | Área | Descrição | Ação |
 |---|---|---|---|---|
-| B-001 | P1 | Dashboard | ~~Widgets `card`/`table` Bootstrap~~ | **Corrigido** — `tp-stat` / `tp-panel` / `tp-table` / `tp-ops-hero` |
-| B-002 | P2 | Catálogo | ~~Specs acima do preço no card~~ | **Corrigido** — título > preço > specs |
-| B-003 | P2 | Checkout | ~~Sem skeleton nas etapas~~ | **Corrigido** — `hx-boost` + `#checkout-skeleton` |
-| B-004 | P2 | Chat | ~~Empty foto sem `tp-empty`~~ | **Corrigido** — `tp-empty` + CTAs assistente/catálogo |
-| B-005 | P2 | F8 | ~~Cards genéricos~~ | **Corrigido** — `tp-plan-card` / `tp-partner-card` |
-| B-006 | P2 | Geral | ~~Confronto informal~~ | **Corrigido** — [`PROTOTYPE-CONFRONTATION.md`](design/PROTOTYPE-CONFRONTATION.md) |
-| HOME | P2 | Home | Hero loja vs shell técnico | Adiado — fora do aceite T-P.3 |
-
-~~B-000 P0~~ Cyan em chamados/monitoramento — **corrigido** em revisão anterior.
+| B-001…B-006 | — | — | Fechados em T-P.3 | Ver PRs `#16`/`#19` |
 
 ## Qualidade das respostas (RAG / diagnóstico)
 
-- Taxa percebida de citação correta: _n/d (sem beta humano)_
-- Casos de alucinação / fallback: fallback de diagnóstico presente (`Não encontrei isso no manual indexado.` / ask_details)
-- Golden set atualizado? [x] sim — CI `make golden` / `make golden-rag` verdes na F8
+| Métrica | Valor |
+|---|---|
+| Taxa percebida de citação correta | **1/1** na pergunta guia S-001 (após B-007) |
+| Casos de alucinação / fallback | 1 fallback legítimo pré-fix; 0 alucinação |
+| Golden set atualizado? | [x] base F8 verde — regressão nova em `test_retrieve_falls_back_when_pgvector_vecs_null` |
+
+Perguntas-guia do seed: “Qual o capacitor de partida do VTE-02?” · “Ventilador faz barulho e não gira”.
 
 ## DoD visual (telas críticas)
 
-Critério: [VISUAL-REVIEW-CHECKLIST.md](../design-system/docs/VISUAL-REVIEW-CHECKLIST.md)
-
-| Tela | Passou checklist? | Notas |
+| Tela | Checklist código | Validação humana |
 |---|---|---|
-| Catálogo / PDP | [x] **sim** | Hierarquia título > preço > ação > specs |
-| Chat / diagnóstico | [x] **sim** | Empty foto com `tp-empty` + CTA |
-| Checkout | [x] **sim** | Skeleton HTMX nas steps; `tp-checkout-option` |
-| Chamados | [x] **sim** | `tp-ops-hero` + `tp-panel` (sem cyan) |
-| Dashboard insights/monitoramento | [x] **sim** | `tp-stat` / `tp-panel` / `tp-table` |
-| Assinaturas (F8) | [x] **sim** | `tp-plan-card` |
-| Assistências (F8) | [x] **sim** | `tp-partner-card` |
-| Garantia QR (F8) | [x] **sim** | Tipografia + mono em SKU |
-
-### Checklist global (pós T-P.3)
-
-- [x] **Marca:** navy/Inter; cyan restrito a IA (home marketing ainda parcial — HOME)
-- [x] **Hierarquia:** PDP/chat/card catálogo
-- [x] **Whitespace:** `tp-section` / painéis DS
-- [x] **Estados:** skeleton catálogo + checkout; empties críticos com CTA
-- [x] **Feedback:** transitions DS (~200ms); chat stream + typing
-- [x] **Mobile:** grids responsivos; chat com `enterkeyhint`
-- [x] **A11y:** skip-link, `aria-hidden`, `alt` PDP
-- [x] **IA:** rótulo, citação, fallback, typing, feedback
-- [x] **Protótipo:** [`PROTOTYPE-CONFRONTATION.md`](design/PROTOTYPE-CONFRONTATION.md)
+| Catálogo / PDP | [x] | [ ] browser |
+| Chat / diagnóstico | [x] | [ ] browser |
+| Checkout | [x] | [ ] browser |
+| Chamados | [x] | [ ] browser |
+| Dashboard | [x] | [ ] browser |
+| Assinaturas / Assistências / Garantia | [x] | [ ] |
 
 ## Critérios de sucesso (specify)
 
-| Critério | Met? | Evidência |
+| Critério | Código | Humano |
 |---|---|---|
-| Operação vê chat/chamados/vendas IA/custo no dashboard | [x] código | `/dashboard/` (F7) — validação humana pendente |
-| Incidente aparece no monitoramento + alerta | [x] código | `/dashboard/monitoramento/` + simular incidente |
-| Cliente compra e acompanha sem “ficar no escuro” | [x] parcial | E-mails/status em F4b; beta humano pendente |
-| HITL impede publicação automática | [x] código | `/manuais/revisao/` |
+| Operação vê chat/chamados/vendas IA/custo no dashboard | [x] | [x] S-001 HTTP |
+| Incidente aparece no monitoramento + alerta | [x] | [x] página 200 |
+| Cliente compra e acompanha sem “ficar no escuro” | [x] | [x] pedido paid + e-mail log |
+| HITL impede publicação automática | [x] | [ ] (seed usou produto já publicado) |
+| Chat cita fonte; ao escalar, histórico vai junto | [x] | [x] citação S-001; escala via chamado separado |
+| Descoberta por sintoma / modelo / foto | [x] | [x] chat + foto endpoint |
+
+## Aceite T-P.1
+
+- [x] ≥1 sessão real documentada na tabela Sessões
+- [x] Taxa RAG / alucinação preenchida
+- [x] Issues P0/P1 com dono (B-007 corrigido; HOME/B-008–B-010 fechados)
+- [x] Golden/prompts atualizados se houver regressão (teste novo)
+- [x] Polish de percepção UI (home + fotos seed + card diagnóstico + sw.js)
 
 ## Próximos passos
 
-1. Rodar **sessão de beta humana** (script em [`beta-script.md`](beta-script.md)) e atualizar taxa RAG / issues reais.
-2. Opcional: reforçar home marketing (HOME) e E2E Playwright (T-P.6).
+1. Conferir no browser: `/`, PDP CAP-35 com foto, chat com card linkado, `/sw.js`.
+2. Merge PR T-P.1 → seguir **T-P.2** (hardening/staging).
+3. Opcional: T-P.6 Playwright; sync `embedding_vec` em Postgres.

@@ -22,6 +22,42 @@ logger = structlog.get_logger(__name__)
 PROMPT_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
 
+def _sku_product_links(skus: list[str]) -> list[dict]:
+    """Resolve SKUs → links de PDP para o card de diagnóstico."""
+    from django.urls import reverse
+
+    from apps.products.models import Product
+
+    if not skus:
+        return []
+    products = {
+        p.sku: p
+        for p in Product.objects.filter(sku__in=skus, status=Product.Status.PUBLISHED).only(
+            "sku", "slug", "brand", "model_code"
+        )
+    }
+    links: list[dict] = []
+    for sku in skus:
+        product = products.get(sku)
+        if product:
+            links.append(
+                {
+                    "sku": sku,
+                    "name": f"{product.brand} {product.model_code}".strip() or sku,
+                    "url": reverse("catalog:detail", kwargs={"slug": product.slug}),
+                }
+            )
+        else:
+            links.append(
+                {
+                    "sku": sku,
+                    "name": sku,
+                    "url": f"{reverse('catalog:list')}?q={sku}",
+                }
+            )
+    return links
+
+
 def load_diagnosis_prompt(version: str = "v1") -> str:
     path = PROMPT_DIR / f"diagnosis_system_{version}.md"
     if path.exists():
@@ -74,17 +110,37 @@ def diagnose_question(
     sources = result.get("sources") or []
     confidence = float(result.get("confidence") or 0.0)
     found = bool(result.get("found_in_manual"))
+    skus = result.get("recommended_skus") or []
+    products = _sku_product_links(skus)
+    from django.urls import reverse
+
+    ticket_url = reverse("tickets:list")
     card = None
     if found and result.get("ref_manual"):
         card = {
             "title": result.get("cause") or "Diagnóstico assistido",
             "confidence": confidence,
+            "confidenceLabel": f"{int(round(confidence * 100))}%",
             "description": answer[:500],
             "refManual": result["ref_manual"],
-            "recommendedSkus": result.get("recommended_skus") or [],
+            "recommendedSkus": skus,
+            "recommendedProducts": products,
+            "ticketUrl": ticket_url,
+            "ticketLabel": "Abrir chamado com este relato",
         }
-    elif result.get("decision") == "ask_details":
-        card = None
+    elif not found:
+        card = {
+            "title": "Sem evidência no manual",
+            "confidence": confidence,
+            "confidenceLabel": f"{int(round(confidence * 100))}%",
+            "description": answer[:500],
+            "refManual": "",
+            "recommendedSkus": [],
+            "recommendedProducts": [],
+            "ticketUrl": ticket_url,
+            "ticketLabel": "Abrir chamado para atendimento humano",
+            "fallback": True,
+        }
 
     tokens_in = max(1, len(cleaned) // 4)
     tokens_out = max(1, len(answer) // 4)

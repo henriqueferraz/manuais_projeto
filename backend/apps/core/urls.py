@@ -7,4 +7,5 @@ app_name = "core"
 urlpatterns = [
     path("", views.HomeView.as_view(), name="home"),
     path("health/", views.health, name="health"),
+    path("sw.js", views.service_worker, name="service_worker"),
 ]

@@ -28,9 +28,9 @@
       >Pular para o conteúdo</a
     >
     {% include "includes/header.html" %}
-    <main id="conteudo" class="tp-container py-4">
+    <main id="conteudo" class="{% block main_class %}tp-container py-4{% endblock %}">
       {% if messages %}
-      <ul class="list-unstyled" aria-live="polite">
+      <ul class="list-unstyled mb-3" aria-live="polite">
         {% for message in messages %}
         <li class="alert alert-{{ message.tags|default:'info' }}" role="status">
           {{ message }}
@@ -47,7 +47,7 @@
     {% if pwa_enabled %}
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("{% static 'pwa/sw.js' %}").catch(function () {});
+        navigator.serviceWorker.register("{% url 'core:service_worker' %}").catch(function () {});
       }
     </script>
     {% endif %}

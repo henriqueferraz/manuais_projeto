@@ -1,18 +1,58 @@
 {% extends "base.html" %}
 
-{% block title %}{{ brand_name }} — Início{% endblock %}
+{% block title %}{{ brand_name }} — Peças com precisão industrial{% endblock %}
+
+{% block main_class %}p-0{% endblock %}
 
 {% block content %}
-<section class="tp-section" aria-labelledby="home-title">
-  <p class="font-label-caps mb-2">TechParts AI</p>
-  <h1 id="home-title" class="font-headline-lg">Peças com precisão industrial</h1>
-  <p class="tp-section__lead font-body-lg col-lg-8">
-    Monólito modular Django pronto para catálogo, ingestão de manuais e chat com RAG.
-    A identidade visual Industrial Precision da Fase 0 já está aplicada neste shell.
+<section class="tp-home-hero" aria-labelledby="home-brand">
+  <div class="tp-home-hero__plane" aria-hidden="true"></div>
+  <div class="tp-home-hero__inner tp-container">
+    <p id="home-brand" class="tp-home-hero__brand">TechParts AI</p>
+    <h1 class="tp-home-hero__title">Peças certas. Diagnóstico sem chute.</h1>
+    <p class="tp-home-hero__lead">
+      Catálogo técnico com IA que cita o manual — da peça ao suporte, sem inventar especificação.
+    </p>
+    <div class="tp-home-hero__actions">
+      <a class="btn btn-primary btn-lg" href="{% url 'catalog:list' %}">Ver catálogo</a>
+      <a class="btn btn-ai btn-lg" href="{% url 'ai:chat' %}">Diagnóstico com IA</a>
+    </div>
+  </div>
+</section>
+
+<section class="tp-container py-5" aria-labelledby="home-next">
+  <h2 id="home-next" class="font-headline-sm mb-3">Comece por aqui</h2>
+  <p class="font-body-md text-tech-gray col-lg-8 mb-4">
+    Busque por modelo ou sintoma, confira compatibilidade e abra chamado com o histórico quando a IA não bastar.
   </p>
-  <div class="d-flex flex-wrap gap-2 mt-4">
-    <a class="btn btn-primary" href="{% url 'two_factor:login' %}">Acessar conta</a>
-    <a class="btn btn-outline-primary" href="{% url 'core:health' %}">Healthcheck</a>
+  <div class="row g-3">
+    <div class="col-md-4">
+      <a class="tp-home-link" href="{% url 'catalog:list' %}?q=CAP-35">
+        <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+        <span>
+          <strong class="d-block">Peça CAP-35</strong>
+          <span class="font-body-sm text-tech-gray">Capacitor de partida do VTE-02</span>
+        </span>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a class="tp-home-link" href="{% url 'ai:chat' %}">
+        <span class="material-symbols-outlined" aria-hidden="true">psychology</span>
+        <span>
+          <strong class="d-block">Assistente</strong>
+          <span class="font-body-sm text-tech-gray">Sintoma → citação → SKU</span>
+        </span>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a class="tp-home-link" href="{% url 'tickets:list' %}">
+        <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
+        <span>
+          <strong class="d-block">Chamados</strong>
+          <span class="font-body-sm text-tech-gray">Escalone sem repetir o relato</span>
+        </span>
+      </a>
+    </div>
   </div>
 </section>
 {% endblock %}

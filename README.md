@@ -6,10 +6,10 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Pós-F8 — backlog.** Fases F0–F8 concluídas. Próximo: beta humana, DoD residual, hardening e integrações live — ver [`docs/plano-tarefas.md`](docs/plano-tarefas.md#pós-f8--o-que-ainda-falta).
+**Pós-F8 — T-P.1 (beta humana) em andamento.** Fases F0–F8 + T-P.3 (DoD) concluídas. Backlog: [`docs/plano-tarefas.md`](docs/plano-tarefas.md#pós-f8--o-que-ainda-falta).
 
 Rotas F8: `/assinaturas/` · `/assistencias/` · `/garantia/<uuid>/` · `/canais/whatsapp/webhook/`  
-ADRs: [`docs/adr/`](docs/adr/) · Hardening: [`docs/security-hardening.md`](docs/security-hardening.md) · Beta: [`docs/beta-relatorio.md`](docs/beta-relatorio.md)
+ADRs: [`docs/adr/`](docs/adr/) · Hardening: [`docs/security-hardening.md`](docs/security-hardening.md) · Beta: [`docs/beta-script.md`](docs/beta-script.md) · [`docs/beta-relatorio.md`](docs/beta-relatorio.md)
 
 ## Bootstrap rápido (local sem Docker)
 
@@ -21,12 +21,14 @@ cp .env.example .env
 cd backend
 python manage.py migrate
 python manage.py bootstrap_rbac
-python manage.py createsuperuser
-python manage.py seed_scale_catalog
+python manage.py createsuperuser   # opcional se for usar seed_beta
+python manage.py seed_beta         # T-P.1: staff/tester + VTE-02/CAP-35 + RAG
+python manage.py seed_scale_catalog  # opcional: catálogo amplo (F8)
 python manage.py runserver
 ```
 
 Abra http://127.0.0.1:8000/ — shell Industrial Precision da F0.  
+Beta: staff `beta.staff@techparts.local` / tester `beta.tester@techparts.local` (senha `beta-local-only`) — ver [`docs/beta-script.md`](docs/beta-script.md).  
 Fila de revisão (staff): http://127.0.0.1:8000/manuais/revisao/
 
 ## Docker (`make up`)

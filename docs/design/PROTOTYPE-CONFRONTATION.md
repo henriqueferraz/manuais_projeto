@@ -8,7 +8,7 @@ Desvios aceitos: stack Django+Bootstrap vs Tailwind do protótipo; conteúdo din
 
 | Tela produção | Protótipo | Resultado | Notas / desvios conscientes |
 |---|---|---|---|
-| Home `/` | `code (cópia 4).html` / `code (cópia 3).html` (hero loja) | Parcial | Home ainda shell técnico; hero de marketing fora do escopo T-P.3 (débito de marca) |
+| Home `/` | `code (cópia 4).html` / `code (cópia 3).html` (hero loja) | Sim | Hero marketing `tp-home-hero` (navy full-bleed, marca + 1 headline + CTAs catálogo/IA); sem carousel/overlays do protótipo (DoD / brand rules) |
 | Catálogo | `code (cópia 10).html` | Sim | `tp-product-card`, navy, mono em specs, empty+CTA |
 | PDP | `code (cópia 6).html` / `code (cópia 11).html` | Sim | Hierarquia título → preço → ação → specs; cyan só em CTA de compat/IA |
 | Carrinho | `code (cópia 1).html` | Sim | Painel + empty `tp-empty`; checkout navy |
@@ -28,7 +28,7 @@ Desvios aceitos: stack Django+Bootstrap vs Tailwind do protótipo; conteúdo din
 
 ## Checklist DoD (pós T-P.3)
 
-- [x] Marca (superfícies listadas; home marketing ainda parcial)
+- [x] Marca (superfícies listadas; home marketing fechada em T-P.1 polish)
 - [x] Hierarquia
 - [x] Whitespace
 - [x] Estados (skeleton checkout + empty foto)
