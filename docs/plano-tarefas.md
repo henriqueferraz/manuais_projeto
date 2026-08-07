@@ -703,8 +703,10 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 ### P0 — Validação humana e go-live
 
-#### T-P.1 — Beta humana (próximo passo recomendado)
+#### T-P.1 — Beta humana _(em andamento — branch `fase/pos-f8-tp1-beta-humana`)_
 
+- [x] Preparar ambiente local de sessão (`seed_beta`: staff/tester + VTE-02/CAP-35 + manual indexado)
+- [x] Atualizar [`beta-script.md`](beta-script.md) e template de sessões em [`beta-relatorio.md`](beta-relatorio.md)
 - [ ] Rodar sessões com testers reais pelo [`beta-script.md`](beta-script.md)
 - [ ] Preencher taxa de citação/alucinação RAG e issues reais em [`beta-relatorio.md`](beta-relatorio.md)
 - [ ] Validar critérios specify com evidência humana (compra, chat, chamado, dashboard)
