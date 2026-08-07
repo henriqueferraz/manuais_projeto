@@ -180,7 +180,7 @@ def _dispatch_alert(alert: OpsAlert) -> None:
 
 
 def scan_and_emit_alerts() -> list[OpsAlert]:
-    """Varredura periódica: custo IA, SLA, falhas recorrentes."""
+    """Varredura periódica: custo IA, budget tokens, SLA, falhas recorrentes."""
     created: list[OpsAlert] = []
     since = timezone.now() - timedelta(hours=24)
     cost_threshold = Decimal(str(getattr(settings, "AI_COST_ALERT_USD", 5.0)))
@@ -199,6 +199,34 @@ def scan_and_emit_alerts() -> list[OpsAlert]:
                 payload={"chat_cost": float(chat_cost)},
             )
         )
+
+    # Budget diário de tokens (T-P.2) — aviso a 80% e crítico a 100%
+    from django.core.cache import cache
+
+    daily_budget = int(getattr(settings, "AI_TOKEN_BUDGET_DAILY", 0) or 0)
+    if daily_budget > 0:
+        used = int(cache.get("ai-token-budget:daily", 0) or 0)
+        ratio = used / daily_budget
+        if ratio >= 1.0:
+            created.append(
+                raise_ops_alert(
+                    kind=OpsAlert.Kind.COST,
+                    severity=OpsAlert.Severity.CRITICAL,
+                    title="Budget diário de tokens esgotado",
+                    message=f"Tokens usados: {used}/{daily_budget}.",
+                    payload={"used": used, "budget": daily_budget},
+                )
+            )
+        elif ratio >= 0.8:
+            created.append(
+                raise_ops_alert(
+                    kind=OpsAlert.Kind.COST,
+                    severity=OpsAlert.Severity.WARNING,
+                    title="Budget diário de tokens acima de 80%",
+                    message=f"Tokens usados: {used}/{daily_budget} ({ratio:.0%}).",
+                    payload={"used": used, "budget": daily_budget, "ratio": ratio},
+                )
+            )
 
     breached = Ticket.objects.filter(
         sla_breached=True,

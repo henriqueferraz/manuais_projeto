@@ -19,3 +19,10 @@ Antes de tráfego maior: rate limits, budget de tokens, checklist de produção.
 
 + Limites explícitos de custo/abuso.  
 − Budget diário requer Redis/cache consistente entre workers.
+
+## Atualização T-P.2 (2026-08-07)
+
+- `settings.production` / `staging` validam `SECRET_KEY`, `ALLOWED_HOSTS`, CSRF, Axes e budget.
+- Checklist [`security-hardening.md`](../security-hardening.md) marcado; runbook [`deploy.md`](../deploy.md).
+- Backup `scripts/backup_postgres.sh` com RPO ≤ 24h; ClamAV via Compose profile + `clamd`.
+- Alertas ops em 80%/100% do budget diário de tokens.

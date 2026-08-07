@@ -61,4 +61,28 @@ def record_token_usage(tokens: int) -> None:
         return
     day_key = "ai-token-budget:daily"
     used = int(cache.get(day_key, 0) or 0)
-    cache.set(day_key, used + int(tokens), timeout=86400)
+    new_used = used + int(tokens)
+    cache.set(day_key, new_used, timeout=86400)
+
+    daily_budget = int(getattr(settings, "AI_TOKEN_BUDGET_DAILY", 0) or 0)
+    if daily_budget > 0 and new_used >= daily_budget:
+        # Alerta único por dia (cache flag) — T-P.2
+        flag_key = "ai-token-budget:alerted"
+        if not cache.get(flag_key):
+            cache.set(flag_key, 1, timeout=86400)
+            try:
+                from apps.dashboard.models import OpsAlert
+                from apps.dashboard.services.monitoring import raise_ops_alert
+
+                raise_ops_alert(
+                    kind=OpsAlert.Kind.COST,
+                    severity=OpsAlert.Severity.CRITICAL,
+                    title="Orçamento diário de tokens esgotado",
+                    message=(
+                        f"Uso de tokens ({new_used}) atingiu o budget diário "
+                        f"({daily_budget}). Novas requisições de IA retornam 429."
+                    ),
+                    payload={"used": new_used, "budget": daily_budget},
+                )
+            except Exception:  # noqa: BLE001
+                pass

@@ -64,7 +64,12 @@ def scan_antivirus(content: bytes) -> str:
         except ImportError as exc:
             raise ValidationError("CLAMAV habilitado mas pacote 'clamd' não instalado.") from exc
         try:
-            cd = clamd.ClamdUnixSocket()
+            host = getattr(settings, "CLAMAV_HOST", "") or ""
+            port = int(getattr(settings, "CLAMAV_PORT", 3310) or 3310)
+            if host:
+                cd = clamd.ClamdNetworkSocket(host=host, port=port)
+            else:
+                cd = clamd.ClamdUnixSocket()
             result = cd.instream(content)
             status = result.get("stream", ("ERROR", "unknown"))[0]
             if status == "FOUND":

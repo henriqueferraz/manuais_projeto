@@ -717,12 +717,12 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 #### T-P.2 — Hardening e produção
 
-- [ ] Cumprir checklist [`security-hardening.md`](security-hardening.md) (secrets, HSTS, Axes, ClamAV, backups)
-- [ ] Staging/produção: `DEBUG=false`, SSL cookies, `ALLOWED_HOSTS` / CSRF
-- [ ] Ativar budget de tokens (`AI_TOKEN_BUDGET_DAILY` > 0) e alertas ops
-- [ ] Deploy documentado (Compose/Vercel/host) + RPO de backup Postgres
+- [x] Cumprir checklist [`security-hardening.md`](security-hardening.md) (secrets, HSTS, Axes, ClamAV, backups)
+- [x] Staging/produção: `DEBUG=false`, SSL cookies, `ALLOWED_HOSTS` / CSRF
+- [x] Ativar budget de tokens (`AI_TOKEN_BUDGET_DAILY` > 0) e alertas ops
+- [x] Deploy documentado (Compose/Vercel/host) + RPO de backup Postgres
 
-**Aceite:** checklist de hardening marcado; app sobe em staging sem secrets no git.
+**Aceite:** checklist de hardening marcado; app sobe em staging sem secrets no git. ✅ · [`deploy.md`](deploy.md)
 
 ### P1 — Débitos de produto e UX
 

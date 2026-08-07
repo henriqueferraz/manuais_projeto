@@ -1,8 +1,9 @@
-.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden golden-rag
+.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden golden-rag up-staging backup restore
 
 help:
 	@echo "Targets:"
 	@echo "  make up           - sobe stack Docker (db, redis, web, worker, beat, flower, nginx)"
+	@echo "  make up-staging   - sobe stack com overlay staging (DEBUG=false)"
 	@echo "  make down         - derruba stack"
 	@echo "  make build        - rebuild imagens"
 	@echo "  make migrate      - migrate no container web"
@@ -14,12 +15,23 @@ help:
 	@echo "  make lint         - ruff + black --check + bandit"
 	@echo "  make fmt          - black + ruff --fix"
 	@echo "  make ci           - lint + test + golden + check migrations"
+	@echo "  make backup       - dump Postgres (RPO ≤24h — docs/deploy.md)"
+	@echo "  make restore FILE=backups/....sql.gz"
 
 up:
 	docker compose up --build -d
 
+up-staging:
+	docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up --build -d
+
 down:
 	docker compose down
+
+backup:
+	bash scripts/backup_postgres.sh
+
+restore:
+	bash scripts/restore_postgres.sh "$(FILE)"
 
 build:
 	docker compose build
