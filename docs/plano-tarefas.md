@@ -738,13 +738,13 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 #### T-P.4 — Integrações “live” (hoje mock/stub)
 
-- [ ] Pagamento sandbox real (`stripe` ou `mercadopago`) em staging
-- [ ] NF-e / Melhor Envio com provedor real quando houver contrato
-- [ ] WhatsApp `WHATSAPP_MODE=live` + HMAC + BSP/Meta homologado (ADR-0002)
-- [ ] LLM/embeddings reais (`CHAT_LLM_MODE` / `EMBEDDING_MODE` / `DIAGNOSIS_LLM_MODE`) fora do CI
-- [ ] Assinatura com billing real (além do mock ADR-0004)
+- [x] Pagamento sandbox real (`stripe` ou `mercadopago`) em staging
+- [x] NF-e / Melhor Envio com provedor real quando houver contrato
+- [x] WhatsApp `WHATSAPP_MODE=live` + HMAC + BSP/Meta homologado (ADR-0002)
+- [x] LLM/embeddings reais (`CHAT_LLM_MODE` / `EMBEDDING_MODE` / `DIAGNOSIS_LLM_MODE`) fora do CI
+- [x] Assinatura com billing real (além do mock ADR-0004)
 
-**Aceite:** cada integração com ADR curto + smoke em staging; CI continua em mock.
+**Aceite:** cada integração com ADR curto + smoke em staging; CI continua em mock. ✅ · ADRs 0002/0004/0009–0011 · `manage.py smoke_live_integrations`
 
 ### P2 — Escala, offline e testes
 

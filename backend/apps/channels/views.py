@@ -104,5 +104,33 @@ def _send_outbound(to: str, text: str) -> None:
     if not token or not phone_id or not to:
         logger.warning("whatsapp_outbound_skipped")
         return
-    # Live call omitted in stub — documentado no ADR; evita depender de rede no CI.
-    logger.info("whatsapp_outbound_live_stub", to=to, phone_id=phone_id)
+
+    import json
+    from urllib import error, request
+
+    api_version = getattr(settings, "WHATSAPP_API_VERSION", "v21.0")
+    url = f"https://graph.facebook.com/{api_version}/{phone_id}/messages"
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": "".join(c for c in to if c.isdigit()),
+        "type": "text",
+        "text": {"preview_url": False, "body": text[:4096]},
+    }
+    body = json.dumps(payload).encode("utf-8")
+    req = request.Request(
+        url,
+        data=body,
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with request.urlopen(req, timeout=20) as resp:  # nosec B310
+            raw = resp.read().decode("utf-8", errors="replace")[:400]
+        logger.info("whatsapp_outbound_live", to=to, phone_id=phone_id, response=raw)
+    except error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:300]
+        logger.warning("whatsapp_outbound_failed", status=exc.code, detail=detail)
+        raise
