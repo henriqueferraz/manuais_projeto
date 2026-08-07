@@ -5,6 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}{{ brand_name }}{% endblock %}</title>
+    {% if pwa_enabled %}
+    <link rel="manifest" href="{% static 'pwa/manifest.webmanifest' %}" />
+    <meta name="theme-color" content="#0B1F33" />
+    {% endif %}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -40,6 +44,13 @@
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/htmx.min.js' %}" defer></script>
     <script src="{% static 'js/alpine.min.js' %}" defer></script>
+    {% if pwa_enabled %}
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("{% static 'pwa/sw.js' %}").catch(function () {});
+      }
+    </script>
+    {% endif %}
     {% block extra_js %}{% endblock %}
   </body>
 </html>

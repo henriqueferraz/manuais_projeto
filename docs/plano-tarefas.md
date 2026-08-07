@@ -672,24 +672,25 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 ### T-8.1 — Canais e idiomas
 
-- [ ] Multi-idioma no catálogo e chat (estrutura já preparada)
-- [ ] WhatsApp reaproveitando pipeline RAG/diagnóstico
-- [ ] Hardening de segurança antes de tráfego maior
+- [x] Multi-idioma no catálogo e chat (estrutura já preparada)
+- [x] WhatsApp reaproveitando pipeline RAG/diagnóstico
+- [x] Hardening de segurança antes de tráfego maior
 
 ### T-8.2 — Novos modelos de negócio e campo
 
-- [ ] Assinatura de manutenção preventiva
-- [ ] Rede de assistências parceiras
-- [ ] PWA offline para técnicos (manual + chamado)
-- [ ] Garantia digital com QR-code
+- [x] Assinatura de manutenção preventiva
+- [x] Rede de assistências parceiras
+- [x] PWA offline para técnicos (manual + chamado)
+- [x] Garantia digital com QR-code
 
 ### T-8.3 — Escala de dados e catálogo
 
-- [ ] Mais fabricantes/categorias
-- [ ] Revisar índices, read replica/particionamento se volume justificar
-- [ ] Revisar orçamento de tokens e rate limits
+- [x] Mais fabricantes/categorias
+- [x] Revisar índices, read replica/particionamento se volume justificar
+- [x] Revisar orçamento de tokens e rate limits
 
-**Aceite (fase):** cada item acima com escopo próprio e ADR antes de iniciar.
+**Aceite (fase):** cada item acima com escopo próprio e ADR antes de iniciar.  
+**ADRs:** `docs/adr/0001`–`0008` · Hardening: `docs/security-hardening.md`
 
 ---
 

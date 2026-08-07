@@ -14,6 +14,8 @@ from apps.tickets.services import cross_sell_for_product
 
 
 def _filter_params(request: HttpRequest) -> dict:
+    from apps.core.i18n import resolve_locale
+
     return {
         "q": request.GET.get("q", "").strip(),
         "category": request.GET.get("category", "").strip(),
@@ -21,12 +23,16 @@ def _filter_params(request: HttpRequest) -> dict:
         "model": request.GET.get("model", "").strip(),
         "brand": request.GET.get("brand", "").strip(),
         "compat_model": request.GET.get("compat_model", "").strip(),
+        "locale": resolve_locale(request),
     }
 
 
 @require_GET
 def product_list(request: HttpRequest) -> HttpResponse:
+    from apps.core.i18n import COOKIE
+
     params = _filter_params(request)
+    locale = params["locale"]
     qs = filter_catalog(**params)
     cache_key = "catalog:count:" + "&".join(f"{k}={v}" for k, v in sorted(params.items()) if v)
     total = cached_filter_count(cache_key, qs)
@@ -38,17 +44,24 @@ def product_list(request: HttpRequest) -> HttpResponse:
         "products": page,
         "params": params,
         "total": total,
+        "locale": locale,
         "voltages": ["110V", "220V", "Bivolt"],
         "categories": _category_choices(),
     }
 
     if request.headers.get("HX-Request"):
-        return render(request, "catalog/partials/product_grid.html", context)
-    return render(request, "catalog/product_list.html", context)
+        response = render(request, "catalog/partials/product_grid.html", context)
+    else:
+        response = render(request, "catalog/product_list.html", context)
+    if request.GET.get("lang"):
+        response.set_cookie(COOKIE, locale, max_age=60 * 60 * 24 * 365)
+    return response
 
 
 @require_GET
 def product_detail(request: HttpRequest, slug: str) -> HttpResponse:
+    from apps.core.i18n import resolve_locale
+
     product = get_object_or_404(
         Product.objects.select_related("category", "stock").prefetch_related(
             "translations", "images"
@@ -56,11 +69,13 @@ def product_detail(request: HttpRequest, slug: str) -> HttpResponse:
         slug=slug,
         status=Product.Status.PUBLISHED,
     )
+    locale = resolve_locale(request)
     return render(
         request,
         "catalog/product_detail.html",
         {
             "product": product,
+            "locale": locale,
             "compat_labels": compat_labels_for_product(product),
             "images": list(product.images.all()),
             "cross_sell": cross_sell_for_product(product),

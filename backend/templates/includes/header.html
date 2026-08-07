@@ -10,6 +10,8 @@
       <a href="{% url 'compatibility:checker' %}">Compatibilidade</a>
       <a href="{% url 'tickets:list' %}">Chamados</a>
       <a href="{% url 'returns:list' %}">Devoluções</a>
+      <a href="{% url 'subscriptions:plans' %}">Assinaturas</a>
+      <a href="{% url 'partners:list' %}">Assistências</a>
       <a href="{% url 'cart:detail' %}">
         Carrinho{% if cart_item_count %} ({{ cart_item_count }}){% endif %}
       </a>

@@ -34,6 +34,8 @@ class Ticket(models.Model):
         CHAT = "chat", "Chat IA"
         EMAIL = "email", "E-mail"
         INTERNAL = "internal", "Interno"
+        WHATSAPP = "whatsapp", "WhatsApp"
+        QR = "qr", "QR Garantia"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=24, unique=True, db_index=True)
@@ -89,6 +91,11 @@ class Ticket(models.Model):
         ordering = ("-created_at",)
         verbose_name = "chamado"
         verbose_name_plural = "chamados"
+        indexes = [
+            models.Index(fields=["status", "sla_due_at"]),
+            models.Index(fields=["origin", "created_at"]),
+            models.Index(fields=["status", "priority", "created_at"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.code} — {self.title}"
@@ -182,6 +189,9 @@ class CrossSellAttribution(models.Model):
         ordering = ("-created_at",)
         verbose_name = "atribuição cross-sell"
         verbose_name_plural = "atribuições cross-sell"
+        indexes = [
+            models.Index(fields=["source", "created_at"]),
+        ]
 
     def __str__(self) -> str:
         return f"XS {self.product_id} ← {self.source}"

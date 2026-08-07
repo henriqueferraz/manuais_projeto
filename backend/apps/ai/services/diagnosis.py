@@ -13,6 +13,8 @@ from django.conf import settings
 from apps.ai.graphs.diagnosis import run_diagnosis
 from apps.ai.models import ChatMessage, ChatSession
 from apps.ai.services.chat import FALLBACK_MSG, _estimate_cost, _stream_words
+from apps.core.i18n import detect_text_locale
+from apps.core.ratelimit import record_token_usage
 from apps.manuals.services.sanitize import sanitize_manual_text
 
 logger = structlog.get_logger(__name__)
@@ -44,6 +46,11 @@ def diagnose_question(
     if not cleaned:
         raise ValueError("Relato vazio.")
 
+    locale = detect_text_locale(cleaned)
+    graph_symptom = cleaned
+    if locale != "pt-BR":
+        graph_symptom = f"[Respond in locale={locale}]\n{cleaned}"
+
     ChatMessage.objects.create(
         session=session,
         role=ChatMessage.Role.USER,
@@ -57,7 +64,7 @@ def diagnose_question(
 
     started = time.perf_counter()
     result = run_diagnosis(
-        symptom=cleaned,
+        symptom=graph_symptom,
         product_id=session.product_id,
         category_id=session.category_id,
         user_id=user_id,
@@ -97,6 +104,7 @@ def diagnose_question(
         diagnosis_card=card or {},
     )
     assistant.save()
+    record_token_usage(tokens_in + tokens_out)
 
     def stream() -> Iterator[str]:
         collected: list[str] = []
@@ -128,6 +136,7 @@ def diagnose_question(
         "diagnosis_card": card,
         "recommended_skus": result.get("recommended_skus") or [],
         "decision": result.get("decision") or "",
+        "locale": locale,
     }
     return assistant, stream(), meta
 

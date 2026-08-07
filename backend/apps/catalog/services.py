@@ -12,14 +12,17 @@ from apps.products.models import Product, ProductTranslation
 CACHE_TTL = int(getattr(settings, "CATALOG_CACHE_TTL", 60))
 
 
-def published_products() -> QuerySet[Product]:
+def published_products(*, locale: str = "pt-BR") -> QuerySet[Product]:
+    locales = [locale]
+    if locale != "pt-BR":
+        locales.append("pt-BR")
     return (
         Product.objects.filter(status=Product.Status.PUBLISHED)
         .select_related("category", "stock")
         .prefetch_related(
             Prefetch(
                 "translations",
-                queryset=ProductTranslation.objects.filter(locale="pt-BR"),
+                queryset=ProductTranslation.objects.filter(locale__in=locales),
             ),
             "images",
         )
@@ -34,8 +37,9 @@ def filter_catalog(
     model: str = "",
     brand: str = "",
     compat_model: str = "",
+    locale: str = "pt-BR",
 ) -> QuerySet[Product]:
-    qs = published_products()
+    qs = published_products(locale=locale)
 
     if category:
         qs = qs.filter(Q(category__slug=category) | Q(category__name__iexact=category))

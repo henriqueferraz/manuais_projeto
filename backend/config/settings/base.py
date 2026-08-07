@@ -23,6 +23,15 @@ env = environ.Env(
     CSRF_COOKIE_SECURE=(bool, False),
     AXES_ENABLED=(bool, True),
     AI_RATE_LIMIT=(str, "30/m"),
+    AI_TOKEN_BUDGET_DAILY=(int, 0),
+    AI_TOKEN_BUDGET_PER_REQUEST=(int, 0),
+    WHATSAPP_MODE=(str, "mock"),
+    WHATSAPP_VERIFY_TOKEN=(str, "techparts-dev"),
+    WHATSAPP_APP_SECRET=(str, ""),
+    WHATSAPP_ACCESS_TOKEN=(str, ""),
+    WHATSAPP_PHONE_NUMBER_ID=(str, ""),
+    PWA_ENABLED=(bool, False),
+    DATABASE_READ_REPLICA_URL=(str, ""),
     USE_R2_STORAGE=(bool, False),
     MANUAL_MAX_UPLOAD_BYTES=(int, 25 * 1024 * 1024),
     MANUAL_SIGNED_URL_EXPIRES=(int, 3600),
@@ -101,6 +110,10 @@ LOCAL_APPS = [
     "apps.compatibility.apps.CompatibilityConfig",
     "apps.dashboard.apps.DashboardConfig",
     "apps.notifications.apps.NotificationsConfig",
+    "apps.subscriptions.apps.SubscriptionsConfig",
+    "apps.partners.apps.PartnersConfig",
+    "apps.channels.apps.ChannelsConfig",
+    "apps.warranty.apps.WarrantyConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -242,6 +255,17 @@ RBAC_GROUPS = (
 
 # Rate limit stub para endpoints de IA (F5+)
 AI_RATE_LIMIT = env("AI_RATE_LIMIT")
+AI_TOKEN_BUDGET_DAILY = env("AI_TOKEN_BUDGET_DAILY")
+AI_TOKEN_BUDGET_PER_REQUEST = env("AI_TOKEN_BUDGET_PER_REQUEST")
+
+# --- F8: canais / PWA / escala ---
+WHATSAPP_MODE = env("WHATSAPP_MODE")
+WHATSAPP_VERIFY_TOKEN = env("WHATSAPP_VERIFY_TOKEN")
+WHATSAPP_APP_SECRET = env("WHATSAPP_APP_SECRET")
+WHATSAPP_ACCESS_TOKEN = env("WHATSAPP_ACCESS_TOKEN")
+WHATSAPP_PHONE_NUMBER_ID = env("WHATSAPP_PHONE_NUMBER_ID")
+PWA_ENABLED = env("PWA_ENABLED")
+DATABASE_READ_REPLICA_URL = env("DATABASE_READ_REPLICA_URL")
 
 # --- F3: manuais / R2 / extração ---
 USE_R2_STORAGE = env("USE_R2_STORAGE")

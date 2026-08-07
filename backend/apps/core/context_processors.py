@@ -1,5 +1,7 @@
 """Context processors do shell da loja."""
 
+from django.conf import settings
+
 from apps.cart.models import Cart
 from apps.cart.services import CART_SESSION_KEY
 
@@ -15,4 +17,5 @@ def brand(request):
         "brand_name": "TechParts AI",
         "brand_tagline": "Peças com precisão industrial",
         "cart_item_count": count,
+        "pwa_enabled": bool(getattr(settings, "PWA_ENABLED", False)),
     }

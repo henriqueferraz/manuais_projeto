@@ -1,10 +1,11 @@
 {% extends "base.html" %}
-{% block title %}{{ product.name_pt }} — {{ brand_name }}{% endblock %}
+{% load i18n_extras %}
+{% block title %}{{ product|name_for_locale:locale }} — {{ brand_name }}{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'catalog:list' %}">Catálogo</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ product.name_pt }}</li>
+    <li class="breadcrumb-item active" aria-current="page">{{ product|name_for_locale:locale }}</li>
   </ol>
 </nav>
 
@@ -38,7 +39,7 @@
 
   <div class="col-lg-6">
     <p class="font-label-caps text-secondary mb-1">{{ product.brand }}</p>
-    <h1 class="font-headline-lg mb-2">{{ product.name_pt }}</h1>
+    <h1 class="font-headline-lg mb-2">{{ product|name_for_locale:locale }}</h1>
     <p class="font-technical text-secondary mb-3">
       SKU {{ product.sku }}
       {% if product.model_code %} · {{ product.model_code }}{% endif %}

@@ -14,7 +14,7 @@
     hx-trigger="change, keyup changed delay:300ms from:#id_q"
     hx-indicator="#catalog-skeleton"
   >
-    <div class="col-md-4 position-relative">
+    <div class="col-md-3 position-relative">
       <label class="form-label" for="id_q">Busca</label>
       <input
         id="id_q"
@@ -30,6 +30,14 @@
         hx-include="this"
       />
       <div id="ac-results" class="list-group position-absolute w-100 shadow-sm" style="z-index: 20"></div>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="id_lang">Idioma</label>
+      <select id="id_lang" name="lang" class="form-select">
+        <option value="pt-BR" {% if locale == "pt-BR" %}selected{% endif %}>PT</option>
+        <option value="en" {% if locale == "en" %}selected{% endif %}>EN</option>
+        <option value="es" {% if locale == "es" %}selected{% endif %}>ES</option>
+      </select>
     </div>
     <div class="col-md-2">
       <label class="form-label" for="id_category">Categoria</label>
