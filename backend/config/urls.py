@@ -20,4 +20,5 @@ urlpatterns = [
     path("devolucoes/", include("apps.orders.urls_returns")),
     path("compatibilidade/", include("apps.compatibility.urls")),
     path("assistente/", include("apps.ai.urls")),
+    path("dashboard/", include("apps.dashboard.urls")),
 ]

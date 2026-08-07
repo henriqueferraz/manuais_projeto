@@ -6,9 +6,9 @@ E-commerce de peças de reposição com IA (extração de manuais, RAG, catálog
 
 ## Fase atual
 
-**Fase 6 — Diagnóstico assistido e LangGraph.** Chat RAG (F5) + grafo de diagnóstico, HITL interrupt, busca por foto e golden no CI.
+**Fase 7 — Beta, dashboard e monitoramento.** Insights + painel de ops + script de beta.
 
-Rotas: `/assistente/chat/` · `/assistente/foto/` · `/manuais/revisao/`
+Rotas staff: `/dashboard/` · `/dashboard/monitoramento/`
 
 ## Bootstrap rápido (local sem Docker)
 

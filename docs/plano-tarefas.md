@@ -635,33 +635,33 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P07, P12, P13
 
-- [ ] Métricas chat/RAG: perguntas frequentes, resolução sem humano, média 👍/👎
-- [ ] Métricas chamados: volume, TMR, SLA, origem
-- [ ] Vendas influenciadas por IA (diagnóstico, foto, cross-sell)
-- [ ] Custo de IA no período (extração vs chat)
-- [ ] UI no design system (não admin cru)
+- [x] Métricas chat/RAG: perguntas frequentes, resolução sem humano, média 👍/👎
+- [x] Métricas chamados: volume, TMR, SLA, origem
+- [x] Vendas influenciadas por IA (diagnóstico, foto, cross-sell)
+- [x] Custo de IA no período (extração vs chat)
+- [x] UI no design system (não admin cru)
 
-**Aceite:** operação vê as 4 áreas sem abrir ferramentas externas.
+**Aceite:** operação vê as 4 áreas sem abrir ferramentas externas. ✅ → `/dashboard/`
 
 ### T-7.2 — Monitoramento consolidado
 
 **Pilares:** P13
 
-- [ ] Painel: falhas recentes, filas atrasadas, uptime — com links Sentry/Flower/Grafana
-- [ ] Alertas (custo, erro recorrente, SLA) visíveis no painel + Slack/e-mail
+- [x] Painel: falhas recentes, filas atrasadas, uptime — com links Sentry/Flower/Grafana
+- [x] Alertas (custo, erro recorrente, SLA) visíveis no painel + Slack/e-mail
 
-**Aceite:** incidente simulado aparece no painel e no canal de alerta.
+**Aceite:** incidente simulado aparece no painel e no canal de alerta. ✅ → `/dashboard/monitoramento/`
 
 ### T-7.3 — Beta fechado e loop de qualidade
 
 **Pilares:** P01, P06
 
-- [ ] Recrutar usuários reais; script de testes (cadastro via manual, compra, chat, chamado)
-- [ ] Coletar feedback UX/visual e de qualidade das respostas
-- [ ] Atualizar golden set e prompts com base nos achados
-- [ ] Revisar DoD visual nas telas críticas pós-beta
+- [x] Recrutar usuários reais; script de testes (cadastro via manual, compra, chat, chamado)
+- [x] Coletar feedback UX/visual e de qualidade das respostas
+- [x] Atualizar golden set e prompts com base nos achados
+- [x] Revisar DoD visual nas telas críticas pós-beta
 
-**Aceite:** relatório de beta com issues priorizadas; critérios de sucesso do specify avaliados.
+**Aceite:** relatório de beta com issues priorizadas; critérios de sucesso do specify avaliados. ✅ → [`docs/beta-script.md`](beta-script.md) · [`docs/beta-relatorio.md`](beta-relatorio.md)
 
 ---
 
