@@ -68,15 +68,23 @@ class Command(BaseCommand):
                 name=f"{brand} {model}",
                 description=f"Peça/escala seed {sku}",
             )
-            if i % 5 == 0:
-                ProductTranslation.objects.get_or_create(
-                    product=product,
-                    locale="en",
-                    defaults={
-                        "name": f"{brand} {model} (EN)",
-                        "description": f"Scale seed part {sku}",
-                    },
-                )
+            # T-P.5: conteúdo EN/ES além da estrutura i18n
+            ProductTranslation.objects.get_or_create(
+                product=product,
+                locale="en",
+                defaults={
+                    "name": f"{brand} {model} spare part",
+                    "description": f"Scale catalog seed part {sku} (EN).",
+                },
+            )
+            ProductTranslation.objects.get_or_create(
+                product=product,
+                locale="es",
+                defaults={
+                    "name": f"{brand} {model} repuesto",
+                    "description": f"Pieza seed de escala {sku} (ES).",
+                },
+            )
             Stock.objects.create(
                 product=product, quantity_available=10 + (i % 8), quantity_reserved=0
             )
@@ -84,3 +92,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"SKU {sku}"))
 
         self.stdout.write(self.style.SUCCESS(f"Criados: {created} (categorias={len(cats)})"))
+        self.stdout.write(
+            "Índices: Product(status,brand/voltage/model/sku) — ver ADR-0008 revisão T-P.5."
+        )

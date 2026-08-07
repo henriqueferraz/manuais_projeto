@@ -160,6 +160,13 @@ TEMPLATES = [
 
 DATABASES = {"default": env.db("DATABASE_URL")}
 
+# Réplica de leitura opcional (T-P.5) — só ativa se URL setada
+_replica_url = env("DATABASE_READ_REPLICA_URL")
+if _replica_url:
+    DATABASES["replica"] = env.db("DATABASE_READ_REPLICA_URL")
+    DATABASE_ROUTERS = ["apps.core.db_router.PrimaryReplicaRouter"]
+
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",

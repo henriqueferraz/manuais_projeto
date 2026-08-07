@@ -140,6 +140,9 @@ class ProductTranslation(models.Model):
 
     class Meta:
         unique_together = ("product", "locale")
+        indexes = [
+            models.Index(fields=["locale", "name"]),
+        ]
         verbose_name = "tradução de produto"
         verbose_name_plural = "traduções de produto"
 

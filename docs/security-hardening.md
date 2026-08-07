@@ -41,5 +41,5 @@ Runbook: [`deploy.md`](deploy.md).
 ## Dados
 
 - [x] Backup Postgres + RPO definido — `scripts/backup_postgres.sh`, RPO ≤ 24h em [`deploy.md`](deploy.md)
-- [ ] Avaliar `DATABASE_READ_REPLICA_URL` quando leitura > escrita no catálogo — T-P.5
-- [ ] Revisar índices (Product/Order/Ticket) após volume real — T-P.5
+- [x] Avaliar `DATABASE_READ_REPLICA_URL` quando leitura > escrita no catálogo — T-P.5 (`PrimaryReplicaRouter`)
+- [x] Revisar índices (Product/Order/Ticket) após volume real — T-P.5 (ADR-0008: sem novos índices além de `ProductTranslation`)
