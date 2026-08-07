@@ -33,7 +33,10 @@ def test_service_worker_served_at_root():
     assert response.status_code == 200
     assert "javascript" in response["Content-Type"]
     assert response.get("Service-Worker-Allowed") == "/"
-    body = b"".join(response.streaming_content) if hasattr(response, "streaming_content") else response.content
+    if hasattr(response, "streaming_content"):
+        body = b"".join(response.streaming_content)
+    else:
+        body = response.content
     assert b"tp-shell" in body or b"CACHE" in body
 
 
