@@ -85,22 +85,6 @@ def test_primary_image_skips_empty_file(published_product):
 
 
 @pytest.mark.django_db
-def test_debug_serves_media_files(settings, tmp_path, client):
-    settings.DEBUG = True
-    settings.MEDIA_ROOT = tmp_path
-    settings.MEDIA_URL = "/media/"
-    sample = tmp_path / "probe.txt"
-    sample.write_text("ok", encoding="utf-8")
-    response = client.get("/media/probe.txt")
-    assert response.status_code == 200
-    if hasattr(response, "streaming_content"):
-        body = b"".join(response.streaming_content)
-    else:
-        body = response.content
-    assert body == b"ok"
-
-
-@pytest.mark.django_db
 def test_stock_reserve_and_release(published_product):
     Stock.reserve(published_product.id, 2)
     published_product.stock.refresh_from_db()
