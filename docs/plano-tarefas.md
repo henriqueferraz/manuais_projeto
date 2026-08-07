@@ -759,11 +759,11 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 #### T-P.6 — E2E Playwright (débito R3)
 
-- [ ] Instalar Playwright (versão estável — R1) e smoke CI opcional/nightly
-- [ ] Fluxos críticos: checkout → pagamento mock; abertura de chamado; chat stream básico
-- [ ] Documentar como rodar localmente no README
+- [x] Instalar Playwright (versão estável — R1) e smoke CI opcional/nightly
+- [x] Fluxos críticos: checkout → pagamento mock; abertura de chamado; chat stream básico
+- [x] Documentar como rodar localmente no README
 
-**Aceite:** ≥3 specs E2E verdes localmente; gate no CI definido (obrigatório ou nightly).
+**Aceite:** ≥3 specs E2E verdes localmente; gate no CI definido (obrigatório ou nightly). ✅ · `e2e/` + workflow nightly
 
 ### Ordem sugerida pós-F8
 

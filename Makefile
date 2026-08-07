@@ -1,4 +1,4 @@
-.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden golden-rag up-staging backup restore
+.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden golden-rag up-staging backup restore e2e
 
 help:
 	@echo "Targets:"
@@ -10,6 +10,7 @@ help:
 	@echo "  make bootstrap    - RBAC groups"
 	@echo "  make runserver    - Django local (venv)"
 	@echo "  make test         - pytest"
+	@echo "  make e2e          - Playwright E2E (chromium; requer requirements/e2e.txt)"
 	@echo "  make golden       - regressão golden set de extração"
 	@echo "  make golden-rag   - regressão golden set RAG"
 	@echo "  make lint         - ruff + black --check + bandit"
@@ -55,6 +56,11 @@ runserver:
 test:
 	cd backend && DJANGO_SETTINGS_MODULE=config.settings.test \
 		../.venv/bin/pytest -q
+
+e2e:
+	DJANGO_SETTINGS_MODULE=config.settings.e2e \
+	DJANGO_ALLOW_ASYNC_UNSAFE=true \
+		.venv/bin/pytest e2e -q --no-cov --browser chromium
 
 golden:
 	cd backend && DJANGO_SETTINGS_MODULE=config.settings.test \

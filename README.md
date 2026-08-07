@@ -71,11 +71,22 @@ ADRs: pagamento [`0011`](docs/adr/0011-pagamento-sandbox.md) · NF-e [`0009`](do
 
 ```bash
 make test    # pytest
+make e2e     # Playwright chromium (T-P.6)
 make golden  # regressão golden set de extração
 make lint    # ruff, black, bandit
-make ci      # lint + test + check migrations
+make ci      # lint + test + golden + check migrations
 pre-commit install
 ```
+
+### E2E Playwright (T-P.6)
+
+```bash
+pip install -r requirements/e2e.txt
+playwright install chromium
+make e2e
+```
+
+Specs em `e2e/` (checkout mock, chamado, chat). Gate CI: nightly + PRs que tocam `e2e/**` — [`.github/workflows/e2e-nightly.yml`](.github/workflows/e2e-nightly.yml).
 
 ## Extração (F3)
 
