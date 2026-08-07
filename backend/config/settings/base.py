@@ -324,9 +324,22 @@ MELHOR_ENVIO_TOKEN = env("MELHOR_ENVIO_TOKEN", default="")
 SHIPPING_FIXED_PRICE = env("SHIPPING_FIXED_PRICE", default="19.90")
 SHIPPING_FREE_FROM = env("SHIPPING_FREE_FROM", default="299.00")
 NFE_PROVIDER = env("NFE_PROVIDER", default="mock")
+FOCUSNFE_TOKEN = env("FOCUSNFE_TOKEN", default="")
+FOCUSNFE_BASE_URL = env(
+    "FOCUSNFE_BASE_URL", default="https://homologacao.focusnfe.com.br"
+)
+NFE_EMITTER_CNPJ = env("NFE_EMITTER_CNPJ", default="")
+NFE_DEFAULT_CFOP = env("NFE_DEFAULT_CFOP", default="5102")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@techparts.local")
 TICKET_SLA_HOURS = env.int("TICKET_SLA_HOURS", default=24)
 RETURN_CDC_DAYS = env.int("RETURN_CDC_DAYS", default=7)
+MELHOR_ENVIO_STUB = env.bool("MELHOR_ENVIO_STUB", default=False)
+MELHOR_ENVIO_BASE_URL = env(
+    "MELHOR_ENVIO_BASE_URL", default="https://sandbox.melhorenvio.com.br"
+)
+MELHOR_ENVIO_FROM_CEP = env("MELHOR_ENVIO_FROM_CEP", default="01310100")
+SUBSCRIPTION_BILLING_MODE = env("SUBSCRIPTION_BILLING_MODE", default="mock")
+WHATSAPP_API_VERSION = env("WHATSAPP_API_VERSION", default="v21.0")
 
 CELERY_BEAT_SCHEDULE = {
     "tickets-check-sla": {

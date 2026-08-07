@@ -17,6 +17,7 @@ class SubscriptionPlan(models.Model):
     price_monthly = models.DecimalField(max_digits=12, decimal_places=2)
     currency = models.CharField(max_length=3, default="BRL")
     interval_days = models.PositiveIntegerField(default=30)
+    stripe_price_id = models.CharField(max_length=120, blank=True, default="")
     active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -52,6 +53,8 @@ class Subscription(models.Model):
     started_at = models.DateTimeField(default=timezone.now)
     current_period_end = models.DateTimeField()
     cancelled_at = models.DateTimeField(null=True, blank=True)
+    billing_provider = models.CharField(max_length=32, blank=True, default="mock")
+    provider_subscription_id = models.CharField(max_length=120, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -70,4 +73,6 @@ class Subscription(models.Model):
             user=user if getattr(user, "is_authenticated", False) else None,
             status=cls.Status.ACTIVE,
             current_period_end=timezone.now() + timedelta(days=plan.interval_days),
+            billing_provider="mock",
+            provider_subscription_id="mock",
         )

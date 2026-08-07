@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import uuid
-
 import structlog
 from celery import shared_task
 from django.conf import settings
@@ -51,25 +49,10 @@ def emit_invoice_task(self, order_id: str) -> dict:
 
 
 def _emit_nfe(order: Order, invoice: Invoice) -> dict:
-    """Provedor fiscal — mock por padrão; plugável via NFE_PROVIDER."""
-    provider = getattr(settings, "NFE_PROVIDER", "mock")
-    if provider != "mock":
-        # Placeholder para Focus NFe / NFe.io / etc.
-        raise RuntimeError(f"Provedor NF-e '{provider}' ainda não implementado.")
+    """Provedor fiscal — mock por padrão; Focus NFe via NFE_PROVIDER (T-P.4)."""
+    from apps.checkout.nfe import emit_nfe
 
-    # Simula falha controlada para testes
-    if order.notes == "force_nfe_fail":
-        raise RuntimeError("Falha simulada na API fiscal.")
-
-    key = (uuid.uuid4().hex + uuid.uuid4().hex)[:44]
-    number = str(1000 + invoice.attempts)
-    return {
-        "access_key": key,
-        "number": number,
-        "series": "1",
-        "pdf_url": f"https://example.local/nfe/{order.number}.pdf",
-        "xml_url": f"https://example.local/nfe/{order.number}.xml",
-    }
+    return emit_nfe(order, invoice)
 
 
 @shared_task(name="checkout.send_order_emails")

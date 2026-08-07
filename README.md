@@ -57,6 +57,16 @@ make backup                    # pg_dump → backups/ (RPO ≤ 24h)
 
 Detalhes: [`docs/deploy.md`](docs/deploy.md) · checklist: [`docs/security-hardening.md`](docs/security-hardening.md).
 
+## Integrações live (T-P.4)
+
+CI permanece em mock. Em staging, ative provedores via `.env` (ver `.env.example`) e rode:
+
+```bash
+cd backend && python manage.py smoke_live_integrations
+```
+
+ADRs: pagamento [`0011`](docs/adr/0011-pagamento-sandbox.md) · NF-e [`0009`](docs/adr/0009-nfe-focusnfe.md) · frete [`0010`](docs/adr/0010-melhor-envio-live.md) · WhatsApp [`0002`](docs/adr/0002-whatsapp-rag.md) · assinatura [`0004`](docs/adr/0004-assinatura-manutencao.md).
+
 ## Qualidade
 
 ```bash

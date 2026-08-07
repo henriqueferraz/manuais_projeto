@@ -89,6 +89,8 @@ def search_orders_node(state: DiagnosisState) -> dict[str, Any]:
 
 
 def suggest_node(state: DiagnosisState) -> dict[str, Any]:
+    from django.conf import settings
+
     from apps.ai.services.sku_recommend import recommend_skus_for_symptom
 
     chunks = state.get("chunks") or []
@@ -133,6 +135,16 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
     if skus:
         answer += f" Peças sugeridas: {', '.join(skus)}."
 
+    # T-P.4: DIAGNOSIS_LLM_MODE=anthropic enriquece a resposta com LLM (CI = mock)
+    mode = (getattr(settings, "DIAGNOSIS_LLM_MODE", "mock") or "mock").lower()
+    if mode == "anthropic":
+        enriched = _enrich_diagnosis_anthropic(
+            symptom=symptom, cite=cite, excerpt=excerpt, skus=skus
+        )
+        if enriched:
+            answer = enriched
+            cause = enriched[:240]
+
     conf = round(min(0.95, float(best.get("score") or 0) + 0.25), 3)
     return {
         "cause": cause,
@@ -153,6 +165,47 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
             for c in chunks
         ],
     }
+
+
+def _enrich_diagnosis_anthropic(*, symptom: str, cite: str, excerpt: str, skus: list[str]) -> str:
+    """Opcional: reformula diagnóstico com Anthropic sem inventar fora do trecho."""
+    try:
+        from langchain_anthropic import ChatAnthropic
+        from langchain_core.messages import HumanMessage, SystemMessage
+    except ImportError:
+        return ""
+
+    from django.conf import settings
+
+    api_key = getattr(settings, "ANTHROPIC_API_KEY", "") or ""
+    if not api_key:
+        return ""
+    llm = ChatAnthropic(
+        model=getattr(settings, "ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929"),
+        api_key=api_key,
+        temperature=0,
+        max_tokens=600,
+    )
+    system = (
+        "Você é o motor de diagnóstico da TechParts AI. "
+        "Use APENAS o trecho do manual fornecido. Cite a fonte. "
+        "Não invente peças fora da lista sugerida."
+    )
+    human = (
+        f"Sintoma: {symptom}\nFonte: {cite}\nTrecho: {excerpt}\n"
+        f"SKUs sugeridos: {', '.join(skus) or 'nenhum'}\n"
+        "Escreva o diagnóstico em português, citando a fonte."
+    )
+    try:
+        resp = llm.invoke([SystemMessage(content=system), HumanMessage(content=human)])
+        text = getattr(resp, "content", "") or ""
+        if isinstance(text, list):
+            text = "".join(
+                block.get("text", "") if isinstance(block, dict) else str(block) for block in text
+            )
+        return str(text).strip()
+    except Exception:  # noqa: BLE001
+        return ""
 
 
 def _after_understand(state: DiagnosisState) -> str:
