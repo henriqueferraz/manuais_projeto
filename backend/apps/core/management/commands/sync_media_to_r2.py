@@ -46,8 +46,10 @@ class Command(BaseCommand):
                 if path.is_file():
                     uploads.append((path.relative_to(media_root).as_posix(), path))
 
-        branding_dir = Path(options["branding_dir"]) if options["branding_dir"] else (
-            Path(settings.BASE_DIR) / "static" / "img"
+        branding_dir = (
+            Path(options["branding_dir"])
+            if options["branding_dir"]
+            else (Path(settings.BASE_DIR) / "static" / "img")
         )
         if branding_dir.is_dir():
             for key, name in BRANDING_LOCAL.items():
