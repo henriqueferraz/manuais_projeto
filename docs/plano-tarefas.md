@@ -696,15 +696,14 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 ---
 
-## Pós-F8 — O que ainda falta
+## Pós-F8 — Backlog pós-MVP (T-P.1–T-P.6)
 
-> As fases F0–F8 do roadmap estão entregues. O que segue é **backlog pós-MVP** (go-live, qualidade operacional e débitos).  
-> Fonte viva de issues UX: [`beta-relatorio.md`](beta-relatorio.md). Hardening: [`security-hardening.md`](security-hardening.md).  
-> Cada bloco abaixo = branch + PR + merge na `main` (R2), com ADR se mudar arquitetura/contrato.
+> As fases F0–F8 do roadmap estão entregues. Os itens abaixo são o **backlog pós-MVP** (go-live, qualidade operacional e débitos), já concluídos em código.  
+> Fonte viva de issues UX: [`beta-relatorio.md`](beta-relatorio.md). Hardening: [`security-hardening.md`](security-hardening.md).
 
 ### P0 — Validação humana e go-live
 
-#### T-P.1 — Beta humana _(pronto para merge — branch `fase/pos-f8-tp1-beta-humana`)_
+#### T-P.1 — Beta humana _(concluído — mergeado na `main`)_
 
 - [x] Preparar ambiente local de sessão (`seed_beta`: staff/tester + VTE-02/CAP-35 + manual indexado)
 - [x] Atualizar [`beta-script.md`](beta-script.md) e template de sessões em [`beta-relatorio.md`](beta-relatorio.md)
@@ -721,7 +720,7 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 - [x] Cumprir checklist [`security-hardening.md`](security-hardening.md) (secrets, HSTS, Axes, ClamAV, backups)
 - [x] Staging/produção: `DEBUG=false`, SSL cookies, `ALLOWED_HOSTS` / CSRF
 - [x] Ativar budget de tokens (`AI_TOKEN_BUDGET_DAILY` > 0) e alertas ops
-- [x] Deploy documentado (Compose/Vercel/host) + RPO de backup Postgres
+- [x] Deploy documentado (Compose + PaaS genérico) + RPO de backup Postgres
 
 **Aceite:** checklist de hardening marcado; app sobe em staging sem secrets no git. ✅ · [`deploy.md`](deploy.md)
 

@@ -15,7 +15,7 @@ Cobrança tokenizada já existia em código (`PAYMENT_PROVIDER=stripe|mercadopag
 2. Staging: `PAYMENT_PROVIDER=stripe` (test keys) **ou** `mercadopago` (sandbox token).
 3. UI continua enviando `payment_token` (PaymentMethod / card token) — Elements/Brick no front é opcional pós-smoke.
 4. Webhooks com assinatura (`STRIPE_WEBHOOK_SECRET` / `MERCADOPAGO_WEBHOOK_SECRET`).
-5. Smoke: `manage.py smoke_live_integrations --payments` (sem charge real se keys ausentes).
+5. Smoke: `manage.py smoke_live_integrations` (imprime modos/credenciais e testa frete; sem charge real).
 
 ## Consequências
 

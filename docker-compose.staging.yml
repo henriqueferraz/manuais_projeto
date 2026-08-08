@@ -1,9 +1,11 @@
 # Overlay staging — DEBUG=false, settings.staging, budget/Axes (T-P.2)
 # Uso: docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up -d
+#      (ou: make up-staging)
 #
 # Banco: use DATABASE_URL do .env.staging (Neon). Postgres Docker só com --profile local-db.
-# Portas no host (via env):
+# Portas no host (defaults do overlay; sobrescreva via env se precisar):
 #   web 8001 · nginx 8081 · redis 6380 · flower 5556 · clamav 3310
+# CSRF_TRUSTED_ORIGINS abaixo deve bater com WEB/NGINX_PUBLISH_PORT.
 
 services:
   db:
@@ -11,6 +13,10 @@ services:
     profiles: ["local-db"]
     volumes:
       - pgdata_staging:/var/lib/postgresql/data
+
+  redis:
+    ports:
+      - "${REDIS_PUBLISH_PORT:-6380}:6379"
 
   web:
     env_file:
@@ -35,6 +41,8 @@ services:
       CELERY_BROKER_URL: redis://redis:6379/1
       USE_REDIS_CACHE: "true"
       CELERY_TASK_ALWAYS_EAGER: "false"
+    ports:
+      - "${WEB_PUBLISH_PORT:-8001}:8000"
     command:
       [
         "gunicorn",
@@ -76,8 +84,15 @@ services:
     env_file:
       - .env.staging
     environment:
+      # Flower só precisa do broker; settings.local evita validação rígida de staging/prod.
       DJANGO_SETTINGS_MODULE: config.settings.local
       SENTRY_ENVIRONMENT: staging
+    ports:
+      - "${FLOWER_PUBLISH_PORT:-5556}:5555"
+
+  nginx:
+    ports:
+      - "${NGINX_PUBLISH_PORT:-8081}:80"
 
   clamav:
     profiles: ["clamav"]

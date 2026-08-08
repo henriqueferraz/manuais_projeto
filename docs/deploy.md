@@ -22,24 +22,36 @@ Pré-requisitos locais:
    - **Banco:** use o mesmo `DATABASE_URL` Neon do `.env` (Compose **não** sobrescreve em staging).
    - Postgres Docker só se precisar: `--profile local-db` (e aí aponte `DATABASE_URL` para `postgres://techparts:techparts@db:5432/techparts`).
 3. Para o critério specify 5 (venda BR): `PAYMENT_PROVIDER=stripe|mercadopago` + chave sandbox **e** `NFE_PROVIDER=notaas` + `API_KEY_NOTAAS` (ou Focus, se aplicável).
+4. Portas do overlay (`docker-compose.staging.yml`): web **8001**, nginx **8081**, flower **5556**, redis host **6380**. `CSRF_TRUSTED_ORIGINS` no Compose já aponta para 8001/8081 — se mudar `WEB_PUBLISH_PORT` / `NGINX_PUBLISH_PORT`, alinhe CSRF.
 
 ```bash
 cp .env.example .env.staging
 # Editar .env.staging: SECRET_KEY (≥50 chars), ALLOWED_HOSTS (incluir web/nginx/staging.local),
-# CSRF_TRUSTED_ORIGINS, AI_TOKEN_BUDGET_DAILY>0, AXES_ENABLED=true,
+# CSRF_TRUSTED_ORIGINS (8001/8081), AI_TOKEN_BUDGET_DAILY>0, AXES_ENABLED=true,
 # SECURE_SSL_REDIRECT=false se HTTP local sem TLS no edge,
 # DATABASE_URL=postgres://…@….neon.tech/…?sslmode=require,
 # + secrets de pagamento/NF-e quando disponíveis.
 
-docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up --build -d
-docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging exec web python manage.py migrate
-docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging exec web python manage.py bootstrap_rbac
-docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging exec web python manage.py collectstatic --noinput
-docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging exec web python manage.py smoke_live_integrations
+make up-staging
+# equivalente:
+# docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up --build -d
+
+STAGING="docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging"
+$STAGING exec web python manage.py migrate
+$STAGING exec web python manage.py bootstrap_rbac
+$STAGING exec web python manage.py collectstatic --noinput
+$STAGING exec web python manage.py smoke_live_integrations
 ```
 
-App: http://localhost:8001 · Nginx: http://localhost:8081 · Flower: http://localhost:5556  
-Redis host `6380`, ClamAV `3310`. Banco padrão = **Neon** via `DATABASE_URL`.
+| Serviço | URL / porta |
+|---|---|
+| App (gunicorn) | http://localhost:8001 |
+| Nginx | http://localhost:8081 |
+| Flower | http://localhost:5556 |
+| Redis (host) | `localhost:6380` |
+| ClamAV (perfil) | `localhost:3310` |
+
+Banco padrão = **Neon** via `DATABASE_URL`. Flower usa `config.settings.local` de propósito (só precisa do broker Celery).
 
 ClamAV (perfil opcional):
 
@@ -47,6 +59,8 @@ ClamAV (perfil opcional):
 docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging --profile clamav up -d
 # MANUAL_CLAMAV_ENABLED=true no .env.staging
 ```
+
+> Nota: `settings.staging` defaulta ClamAV ligado; o overlay Compose sobrescreve com `MANUAL_CLAMAV_ENABLED=false` até o perfil `clamav` estar no ar.
 
 ## Produção (Compose + TLS no edge)
 
@@ -56,9 +70,20 @@ docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .e
 4. `ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS` = domínio real (`https://…`).
 5. `SENTRY_DSN` obrigatório; `AI_TOKEN_BUDGET_DAILY` > 0; `AXES_ENABLED=true`.
 6. Staff ops com 2FA (django-otp / two_factor) — `LOGIN_URL=two_factor:login`.
-7. `make migrate` / bootstrap / collectstatic no release.
+7. No release, rode migrate/bootstrap/collectstatic **no mesmo projeto Compose** do ambiente (não use o `make migrate` do stack local sem o overlay/env corretos):
 
-Alternativa host: qualquer PaaS que rode Gunicorn + worker Celery + beat (mesmas env vars).
+```bash
+# Exemplo com overlay staging; em produção use o mesmo padrão com --env-file .env.production
+# e DJANGO_SETTINGS_MODULE=config.settings.production no serviço web.
+COMPOSE="docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging"
+$COMPOSE exec web python manage.py migrate
+$COMPOSE exec web python manage.py bootstrap_rbac
+$COMPOSE exec web python manage.py collectstatic --noinput
+```
+
+Não há `docker-compose.production.yml` versionado ainda — produção pode reutilizar o overlay staging com `.env.production` + `config.settings.production`, ou um overlay próprio no host.
+
+Alternativa host: qualquer PaaS que rode Gunicorn + worker Celery + beat (mesmas env vars). Este repositório documenta **Compose**; não há runbook Vercel para o monólito Django.
 
 ## Backup Postgres e RPO
 
@@ -71,10 +96,12 @@ Alternativa host: qualquer PaaS que rode Gunicorn + worker Celery + beat (mesmas
 
 ```bash
 chmod +x scripts/backup_postgres.sh scripts/restore_postgres.sh
-make backup     # com stack Compose no ar
+make backup     # com stack Compose no ar (serviço db) OU DATABASE_URL exportada no host
 # crontab exemplo (03:00 UTC):
 # 0 3 * * * cd /opt/techparts && make backup >> /var/log/techparts-backup.log 2>&1
 ```
+
+Com Neon (sem `--profile local-db`), exporte `DATABASE_URL` no shell antes do `make backup`, ou o script não encontra o Postgres.
 
 Testar restore em staging ao menos uma vez por trimestre.
 

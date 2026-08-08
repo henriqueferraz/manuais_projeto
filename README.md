@@ -134,7 +134,7 @@ Reinicie o `runserver` / containers.
 
 ### Cloudflare R2 (manuais e fotos)
 
-Com `USE_R2_STORAGE=true`, uploads de manuais (`manuals/...`) e fotos (`photos/{uuid}/...`) vão para o bucket R2.
+Com `USE_R2_STORAGE=true`, uploads de manuais (`manuals/{uuid}/...`) e fotos (`photos/{uuid}/...`) vão para o bucket R2.
 
 No `.env` (token em **R2 → Manage R2 API Tokens**):
 
@@ -163,9 +163,11 @@ CI e local continuam em **mock** por padrão.
 
 ```bash
 cp .env.example .env.staging
-# SECRET_KEY forte, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS, AI_TOKEN_BUDGET_DAILY>0, AXES_ENABLED=true
+# SECRET_KEY forte, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS (portas 8001/8081),
+# AI_TOKEN_BUDGET_DAILY>0, AXES_ENABLED=true, DATABASE_URL (Neon ou Compose)
 make up-staging
-make backup
+# App http://localhost:8001 · Nginx http://localhost:8081 · Flower http://localhost:5556
+make backup   # precisa de Postgres Compose (--profile local-db) ou DATABASE_URL exportada no host
 ```
 
 Runbook: [`docs/deploy.md`](docs/deploy.md) · checklist: [`docs/security-hardening.md`](docs/security-hardening.md).
@@ -178,7 +180,8 @@ Runbook: [`docs/deploy.md`](docs/deploy.md) · checklist: [`docs/security-harden
 make test     # pytest
 make lint     # ruff + black + bandit
 make golden   # golden set extração
-make ci       # lint + test + golden + migrations
+make golden-rag  # golden set RAG
+make ci       # lint + test + golden + golden-rag + check migrations
 ```
 
 E2E (Playwright):
