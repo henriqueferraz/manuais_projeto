@@ -51,6 +51,16 @@ class HomeView(TemplateView):
         ctx["featured_total"] = total
         ctx["featured_shown"] = len(featured)
         ctx["category_tiles"] = self._category_tiles()
+        ctx["filter_brands"] = list(
+            qs.exclude(brand="")
+            .order_by("brand")
+            .values_list("brand", flat=True)
+            .distinct()[:40]
+        )
+        ctx["filter_categories"] = list(
+            Category.objects.order_by("name").values("slug", "name")[:12]
+        )
+        ctx["filter_voltages"] = ["110V", "220V"]
         ctx["hero_slides"] = list(
             HomeHeroSlide.objects.filter(is_active=True).order_by("sort_order", "id")
         )

@@ -27,7 +27,7 @@ def test_home_renders_brand():
     assert b"Compatibilidade" in response.content
     assert b"Assinaturas" in response.content
     assert b"tp-home-ai" in response.content
-    assert b"tp-home-bento" in response.content
+    assert b"tp-home-filters" in response.content
     assert b"Produtos em destaque" in response.content
     assert b"Diagn" in response.content  # CTA diagnóstico
     assert b"catalogo" in response.content.lower() or b"Cat" in response.content
