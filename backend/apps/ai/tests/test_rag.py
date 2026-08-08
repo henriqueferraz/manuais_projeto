@@ -103,6 +103,13 @@ def test_chat_page_ok(client: Client):
 
 
 @pytest.mark.django_db
+def test_chat_page_prefills_q(client: Client):
+    response = client.get(reverse("ai:chat"), {"q": "Motor compressor Embraco"})
+    assert response.status_code == 200
+    assert b"Motor compressor Embraco" in response.content
+
+
+@pytest.mark.django_db
 def test_chat_stream_sse(indexed_manual, client: Client):
     url = reverse("ai:chat_stream")
     response = client.post(

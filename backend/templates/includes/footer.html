@@ -1,9 +1,42 @@
-<footer class="border-top mt-auto py-4" role="contentinfo">
-  <div class="tp-container d-flex flex-wrap justify-content-between gap-2 font-body-md">
-    <p class="mb-0">
-      <span class="font-label-caps">{{ brand_name }}</span>
-      — Industrial Precision
-    </p>
-    <p class="mb-0 text-secondary">Fase 2 · base Django + htmx + Bootstrap</p>
+<footer class="tp-footer" role="contentinfo">
+  <div class="tp-container tp-footer__inner">
+    <div class="tp-footer__brand">
+      <span class="tp-footer__logo">{{ brand_name }}</span>
+      <p class="tp-footer__pitch">
+        Componentes técnicos com inteligência de diagnóstico integrada —
+        eficiência através de automação.
+      </p>
+    </div>
+    <div class="tp-footer__cols">
+      <div class="tp-footer__col">
+        <h2 class="tp-footer__heading">Loja</h2>
+        <a href="{% url 'catalog:list' %}">Catálogo</a>
+        <a href="{% url 'compatibility:checker' %}">Compatibilidade</a>
+        <a href="{% url 'cart:detail' %}">Carrinho</a>
+        <a href="{% url 'subscriptions:plans' %}">Assinaturas</a>
+      </div>
+      <div class="tp-footer__col">
+        <h2 class="tp-footer__heading">Suporte</h2>
+        <a href="{% url 'ai:chat' %}">Assistente IA</a>
+        <a href="{% url 'tickets:list' %}">Chamados</a>
+        <a href="{% url 'partners:list' %}">Assistências</a>
+        <a href="{% url 'returns:list' %}">Devoluções</a>
+      </div>
+      <div class="tp-footer__col">
+        <h2 class="tp-footer__heading">Conta</h2>
+        {% if user.is_authenticated %}
+        <a href="{% url 'admin:index' %}">Admin</a>
+        {% if user.is_staff %}
+        <a href="{% url 'dashboard:insights' %}">Dashboard</a>
+        {% endif %}
+        {% else %}
+        <a href="{% url 'two_factor:login' %}">Entrar</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="tp-container tp-footer__bar">
+    <p class="mb-0">© {% now "Y" %} {{ brand_name }} — Eficiência através de Automação</p>
+    <p class="mb-0 tp-footer__tagline">{{ brand_tagline }}</p>
   </div>
 </footer>

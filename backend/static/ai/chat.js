@@ -305,4 +305,9 @@
   input.addEventListener("focus", () => {
     setTimeout(scrollBottom, 300);
   });
+
+  if ((input.value || "").trim()) {
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
 })();

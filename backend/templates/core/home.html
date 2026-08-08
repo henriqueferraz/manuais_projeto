@@ -6,7 +6,19 @@
 
 {% block content %}
 <section class="tp-home-hero" aria-labelledby="home-brand">
-  <div class="tp-home-hero__plane" aria-hidden="true"></div>
+  <div class="tp-home-hero__plane" aria-hidden="true">
+    {% if home_hero_url %}
+    <img
+      class="tp-home-hero__photo"
+      src="{{ home_hero_url }}"
+      alt=""
+      width="1920"
+      height="900"
+      decoding="async"
+      fetchpriority="high"
+    />
+    {% endif %}
+  </div>
   <div class="tp-home-hero__inner tp-container">
     <p id="home-brand" class="tp-home-hero__brand">TechParts AI</p>
     <h1 class="tp-home-hero__title">Peças certas. Diagnóstico sem chute.</h1>
@@ -20,39 +32,125 @@
   </div>
 </section>
 
-<section class="tp-container py-5" aria-labelledby="home-next">
-  <h2 id="home-next" class="font-headline-sm mb-3">Comece por aqui</h2>
-  <p class="font-body-md text-tech-gray col-lg-8 mb-4">
-    Busque por modelo ou sintoma, confira compatibilidade e abra chamado com o histórico quando a IA não bastar.
-  </p>
-  <div class="row g-3">
-    <div class="col-md-4">
-      <a class="tp-home-link" href="{% url 'catalog:list' %}?q=CAP-35">
-        <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
-        <span>
-          <strong class="d-block">Peça CAP-35</strong>
-          <span class="font-body-sm text-tech-gray">Capacitor de partida do VTE-02</span>
-        </span>
-      </a>
+<section class="tp-container tp-home-ai-wrap" aria-labelledby="home-ai-heading">
+  <form class="tp-home-ai" method="get" action="{% url 'ai:chat' %}">
+    <h2 id="home-ai-heading" class="tp-home-ai__title">
+      <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
+      Diagnóstico por IA
+    </h2>
+    <p class="tp-home-ai__lead">
+      Descreva o sintoma ou o modelo — a IA busca no manual e sugere o SKU.
+    </p>
+    <div class="tp-home-ai__row">
+      <label class="visually-hidden" for="home-ai-q">Relato para diagnóstico</label>
+      <input
+        id="home-ai-q"
+        class="form-control tp-home-ai__input"
+        type="search"
+        name="q"
+        maxlength="500"
+        placeholder="Ex.: Motor compressor Embraco 1/4…"
+        enterkeyhint="go"
+        autocomplete="off"
+      />
+      <button type="submit" class="btn btn-ai">Analisar</button>
     </div>
-    <div class="col-md-4">
-      <a class="tp-home-link" href="{% url 'ai:chat' %}">
-        <span class="material-symbols-outlined" aria-hidden="true">psychology</span>
-        <span>
-          <strong class="d-block">Assistente</strong>
-          <span class="font-body-sm text-tech-gray">Sintoma → citação → SKU</span>
-        </span>
-      </a>
-    </div>
-    <div class="col-md-4">
-      <a class="tp-home-link" href="{% url 'tickets:list' %}">
-        <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
-        <span>
-          <strong class="d-block">Chamados</strong>
-          <span class="font-body-sm text-tech-gray">Escalone sem repetir o relato</span>
-        </span>
-      </a>
-    </div>
+  </form>
+</section>
+
+<section class="tp-container tp-home-section" aria-labelledby="home-cats">
+  <h2 id="home-cats" class="visually-hidden">Categorias em destaque</h2>
+  <div class="tp-home-bento">
+    {% for tile in category_tiles %}
+    <a
+      class="tp-home-bento__tile{% if tile.wide %} tp-home-bento__tile--wide{% endif %}"
+      href="{{ tile.href }}"
+    >
+      {% if tile.image_url %}
+      <img
+        class="tp-home-bento__img"
+        src="{{ tile.image_url }}"
+        alt=""
+        width="960"
+        height="540"
+        loading="lazy"
+        decoding="async"
+      />
+      {% endif %}
+      <span class="tp-home-bento__shade" aria-hidden="true"></span>
+      <span class="tp-home-bento__copy">
+        <span class="tp-home-bento__name">{{ tile.title }}</span>
+        <span class="tp-home-bento__sub">{{ tile.subtitle }}</span>
+      </span>
+    </a>
+    {% endfor %}
   </div>
+</section>
+
+<section class="tp-container tp-home-section tp-home-featured" aria-labelledby="home-featured">
+  <div class="tp-home-featured__head">
+    <div>
+      <h2 id="home-featured" class="font-headline-md mb-1">Produtos em destaque</h2>
+      <p class="font-body-md text-tech-gray mb-0">
+        Equipamentos e peças publicados no catálogo TechParts AI
+      </p>
+    </div>
+    {% if featured_total %}
+    <span class="tp-home-featured__count font-technical">
+      {{ featured_shown }} / {{ featured_total }} peças
+    </span>
+    {% endif %}
+  </div>
+
+  {% if featured_products %}
+  <div class="row g-4">
+    {% for product in featured_products %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <article class="tp-product-card">
+        <a href="{% url 'catalog:detail' product.slug %}" class="text-decoration-none text-reset">
+          <div class="tp-product-card__media">
+            {% if product.primary_image and product.primary_image.image %}
+            <img
+              src="{{ product.primary_image.image.url }}"
+              alt="{{ product.primary_image.alt_text|default:product.name_pt }}"
+              loading="lazy"
+            />
+            {% else %}
+            <span class="material-symbols-outlined text-secondary" style="font-size: 3rem" aria-hidden="true">precision_manufacturing</span>
+            {% endif %}
+            {% if product.in_stock %}
+            <span class="tp-badge tp-badge--stock tp-product-card__stock">Disponível</span>
+            {% endif %}
+          </div>
+          <div class="tp-product-card__body">
+            <span class="tp-product-card__brand font-label-caps">{{ product.brand }}</span>
+            <h3 class="tp-product-card__title">{{ product.name_pt }}</h3>
+            <p class="tp-product-card__specs font-technical mb-2">
+              SKU: {{ product.sku }}
+              {% if product.voltage %} · {{ product.voltage }}{% endif %}
+            </p>
+            <div class="d-flex justify-content-between align-items-center mt-auto">
+              <span class="tp-product-card__price">R$ {{ product.price }}</span>
+              <span class="tp-product-card__cart-hint" aria-hidden="true">
+                <span class="material-symbols-outlined">add_shopping_cart</span>
+              </span>
+            </div>
+          </div>
+        </a>
+      </article>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="mt-4 mb-0">
+    <a class="btn btn-outline-primary" href="{% url 'catalog:list' %}">Ver catálogo completo</a>
+  </p>
+  {% else %}
+  <div class="tp-empty">
+    <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">inventory_2</span>
+    <h3 class="tp-empty__title">Catálogo ainda vazio</h3>
+    <p class="tp-empty__text">Publique produtos ou rode o seed local para ver destaques aqui.</p>
+    <a class="btn btn-primary" href="{% url 'catalog:list' %}">Ir ao catálogo</a>
+  </div>
+  {% endif %}
 </section>
 {% endblock %}
