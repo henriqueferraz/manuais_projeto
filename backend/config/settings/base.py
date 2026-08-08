@@ -41,8 +41,6 @@ env = environ.Env(
     CLAMAV_PORT=(int, 3310),
     MANUAL_OCR_ENABLED=(bool, False),
     EXTRACTION_LLM_MODE=(str, "mock"),
-    ANTHROPIC_API_KEY=(str, ""),
-    ANTHROPIC_MODEL=(str, "claude-sonnet-4-5-20250929"),
     LANGSMITH_TRACING=(bool, False),
     LANGSMITH_API_KEY=(str, ""),
     LANGSMITH_PROJECT=(str, "techparts-ai"),
@@ -50,6 +48,7 @@ env = environ.Env(
     EMBEDDING_MODE=(str, "mock"),
     EMBEDDING_DIMS=(int, 64),
     OPENAI_API_KEY=(str, ""),
+    OPENAI_CHAT_MODEL=(str, "gpt-4o-mini"),
     OPENAI_EMBEDDING_MODEL=(str, "text-embedding-3-small"),
     RAG_CHUNK_SIZE=(int, 900),
     RAG_CHUNK_OVERLAP=(int, 120),
@@ -287,8 +286,6 @@ CLAMAV_HOST = env("CLAMAV_HOST")
 CLAMAV_PORT = env("CLAMAV_PORT")
 MANUAL_OCR_ENABLED = env("MANUAL_OCR_ENABLED")
 EXTRACTION_LLM_MODE = env("EXTRACTION_LLM_MODE")
-ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY")
-ANTHROPIC_MODEL = env("ANTHROPIC_MODEL")
 LANGSMITH_TRACING = env("LANGSMITH_TRACING")
 LANGSMITH_API_KEY = env("LANGSMITH_API_KEY")
 LANGSMITH_PROJECT = env("LANGSMITH_PROJECT")
@@ -300,6 +297,7 @@ CHAT_LLM_MODE = env("CHAT_LLM_MODE")
 EMBEDDING_MODE = env("EMBEDDING_MODE")
 EMBEDDING_DIMS = env("EMBEDDING_DIMS")
 OPENAI_API_KEY = env("OPENAI_API_KEY")
+OPENAI_CHAT_MODEL = env("OPENAI_CHAT_MODEL")
 OPENAI_EMBEDDING_MODEL = env("OPENAI_EMBEDDING_MODEL")
 RAG_CHUNK_SIZE = env("RAG_CHUNK_SIZE")
 RAG_CHUNK_OVERLAP = env("RAG_CHUNK_OVERLAP")
@@ -355,20 +353,28 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID", default="")
-AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY", default="")
-AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default="")
-AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL", default="")
-AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME", default="auto")
-AWS_DEFAULT_ACL = "private"
-AWS_QUERYSTRING_AUTH = True
-AWS_QUERYSTRING_EXPIRE = MANUAL_SIGNED_URL_EXPIRES
-AWS_S3_FILE_OVERWRITE = False
+R2_ACCESS_KEY_ID = env("R2_ACCESS_KEY_ID", default="")
+R2_SECRET_ACCESS_KEY = env("R2_SECRET_ACCESS_KEY", default="")
+R2_BUCKET_NAME = env("R2_BUCKET_NAME", default="")
+R2_ENDPOINT_URL = env("R2_ENDPOINT_URL", default="")
+R2_REGION_NAME = env("R2_REGION_NAME", default="auto")
 
 if USE_R2_STORAGE:
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "access_key": R2_ACCESS_KEY_ID,
+                "secret_key": R2_SECRET_ACCESS_KEY,
+                "bucket_name": R2_BUCKET_NAME,
+                "endpoint_url": R2_ENDPOINT_URL,
+                "region_name": R2_REGION_NAME,
+                "default_acl": "private",
+                "querystring_auth": True,
+                "querystring_expire": MANUAL_SIGNED_URL_EXPIRES,
+                "file_overwrite": False,
+                "object_parameters": {"CacheControl": "max-age=86400"},
+            },
         },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",

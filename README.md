@@ -37,12 +37,12 @@ cp .env.example .env
 Para o primeiro start local, o `.env` já vem pronto (mock de IA/pagamento, SQLite, Axes desligado). Ajuste só se precisar:
 
 | Variável | Local (default) | Quando mudar |
-|---|---|---|
+| --- | --- | --- |
 | `SECRET_KEY` | valor de dev | Staging/prod: gere uma chave forte (≥50 chars) |
 | `DEBUG` | `true` | Staging/prod: `false` |
 | `DATABASE_URL` | (vazio → SQLite) | Postgres local ou Compose |
 | `CELERY_TASK_ALWAYS_EAGER` | `true` | `false` com Redis + worker |
-| `*_LLM_MODE` / `EMBEDDING_MODE` | `mock` | `anthropic` / `openai` + API keys |
+| `*_LLM_MODE` / `EMBEDDING_MODE` | `mock` | `openai` + `OPENAI_API_KEY` |
 | `PAYMENT_PROVIDER` | `mock` | `stripe` / `mercadopago` em sandbox |
 | `AI_TOKEN_BUDGET_DAILY` | `0` (off) | Staging/prod: valor > 0 |
 
@@ -52,25 +52,25 @@ Lista completa e comentada: [`.env.example`](.env.example). Índice dos docs: [`
 
 ```bash
 cd backend
-python manage.py migrate
-python manage.py bootstrap_rbac
-python manage.py seed_beta          # staff/tester + produtos demo + RAG
+python3 manage.py migrate
+python3 manage.py bootstrap_rbac
+python3 manage.py seed_beta          # staff/tester + produtos demo + RAG
 # python manage.py createsuperuser  # opcional
-python manage.py runserver
+python3 manage.py runserver
 # ou na raiz: make runserver
 ```
 
-Abra **http://127.0.0.1:8000/**
+Abra **<http://127.0.0.1:8000/>**
 
 | Conta demo (`seed_beta`) | Senha |
-|---|---|
+| --- | --- |
 | `beta.staff@techparts.local` | `beta-local-only` |
 | `beta.tester@techparts.local` | `beta-local-only` |
 
 Rotas úteis no primeiro uso:
 
 | URL | O quê |
-|---|---|
+| --- | --- |
 | `/` | Home |
 | `/catalogo/` | Catálogo |
 | `/assistente/chat/` | Chat / diagnóstico |
@@ -88,10 +88,10 @@ make up
 ```
 
 | Serviço | URL |
-|---|---|
-| App (gunicorn) | http://localhost:8000 |
-| Nginx | http://localhost:8080 |
-| Flower | http://localhost:5555 |
+| --- | --- |
+| App (gunicorn) | <http://localhost:8000> |
+| Nginx | <http://localhost:8080> |
+| Flower | <http://localhost:5555> |
 | Postgres | `localhost:5432` |
 | Redis | `localhost:6379` |
 
@@ -111,8 +111,8 @@ docker compose exec web python manage.py seed_beta
 
 ```bash
 cd backend
-python manage.py seed_scale_catalog   # catálogo amplo + traduções EN/ES
-python manage.py smoke_live_integrations   # confere modos/credenciais (sem cobrança)
+python3 manage.py seed_scale_catalog   # catálogo amplo + traduções EN/ES
+python3 manage.py smoke_live_integrations   # confere modos/credenciais (sem cobrança)
 ```
 
 ### Ativar IA de verdade (fora do CI)
@@ -120,18 +120,34 @@ python manage.py smoke_live_integrations   # confere modos/credenciais (sem cobr
 No `.env`:
 
 ```bash
-ANTHROPIC_API_KEY=sk-ant-...
-CHAT_LLM_MODE=anthropic
-EXTRACTION_LLM_MODE=anthropic
-DIAGNOSIS_LLM_MODE=anthropic
-PHOTO_LLM_MODE=anthropic
-
 OPENAI_API_KEY=sk-...
+OPENAI_CHAT_MODEL=gpt-4o-mini
+CHAT_LLM_MODE=openai
+EXTRACTION_LLM_MODE=openai
+DIAGNOSIS_LLM_MODE=openai
+PHOTO_LLM_MODE=openai
 EMBEDDING_MODE=openai
 EMBEDDING_DIMS=1536          # alinhar ao modelo (ex.: text-embedding-3-small)
 ```
 
 Reinicie o `runserver` / containers.
+
+### Cloudflare R2 (manuais e fotos)
+
+Com `USE_R2_STORAGE=true`, uploads de manuais (`manuals/...`) e fotos (`photos/{uuid}/...`) vão para o bucket R2.
+
+No `.env` (token em **R2 → Manage R2 API Tokens**):
+
+```bash
+USE_R2_STORAGE=true
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET_NAME=projeto-manuais
+R2_ENDPOINT_URL=https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+R2_REGION_NAME=auto
+```
+
+O `R2_ENDPOINT_URL` deve ser **só o host** (sem `/nome-do-bucket`). Em local, o settings respeita R2 quando a flag está ligada.
 
 ### Pagamento / frete / NF-e (sandbox)
 
@@ -178,7 +194,7 @@ make e2e
 ## Mapa da documentação
 
 | Doc | Para quê |
-|---|---|
+| --- | --- |
 | [`docs/README.md`](docs/README.md) | Índice (canônico × obsoleto) |
 | [`docs/plano-tarefas.md`](docs/plano-tarefas.md) | Fases e aceite |
 | [`docs/adr/`](docs/adr/) | Decisões de arquitetura |

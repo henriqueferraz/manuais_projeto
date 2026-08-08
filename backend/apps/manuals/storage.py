@@ -47,13 +47,13 @@ def signed_url(storage_key: str, *, expires_seconds: int | None = None) -> str:
 
 
 def r2_settings_dict() -> dict[str, Any]:
-    """Parâmetros boto3/S3 para Cloudflare R2."""
+    """Parâmetros do storage Cloudflare R2 (API S3-compatible)."""
     return {
-        "access_key": getattr(settings, "AWS_ACCESS_KEY_ID", ""),
-        "secret_key": getattr(settings, "AWS_SECRET_ACCESS_KEY", ""),
-        "bucket_name": getattr(settings, "AWS_STORAGE_BUCKET_NAME", ""),
-        "endpoint_url": getattr(settings, "AWS_S3_ENDPOINT_URL", ""),
-        "region_name": getattr(settings, "AWS_S3_REGION_NAME", "auto"),
+        "access_key": getattr(settings, "R2_ACCESS_KEY_ID", ""),
+        "secret_key": getattr(settings, "R2_SECRET_ACCESS_KEY", ""),
+        "bucket_name": getattr(settings, "R2_BUCKET_NAME", ""),
+        "endpoint_url": getattr(settings, "R2_ENDPOINT_URL", ""),
+        "region_name": getattr(settings, "R2_REGION_NAME", "auto"),
         "default_acl": "private",
         "querystring_auth": True,
         "querystring_expire": int(getattr(settings, "MANUAL_SIGNED_URL_EXPIRES", 3600)),

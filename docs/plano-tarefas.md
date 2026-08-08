@@ -336,7 +336,7 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 - [x] Sanitizar conteúdo do manual antes do LLM (anti prompt injection via PDF)
 - [x] Medir tokens/custo por execução (hook LangSmith)
 
-**Aceite:** ≥3 manuais reais geram JSON válido no schema; custo visível por run. ✅ (mock heurístico no CI; Anthropic via `EXTRACTION_LLM_MODE=anthropic`)
+**Aceite:** ≥3 manuais reais geram JSON válido no schema; custo visível por run. ✅ (mock heurístico no CI; OpenAI via `EXTRACTION_LLM_MODE=openai`)
 
 ### T-3.3 — Human-in-the-loop (revisão)
 

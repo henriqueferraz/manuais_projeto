@@ -135,10 +135,10 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
     if skus:
         answer += f" Peças sugeridas: {', '.join(skus)}."
 
-    # T-P.4: DIAGNOSIS_LLM_MODE=anthropic enriquece a resposta com LLM (CI = mock)
+    # T-P.4: DIAGNOSIS_LLM_MODE=openai enriquece a resposta com LLM (CI = mock)
     mode = (getattr(settings, "DIAGNOSIS_LLM_MODE", "mock") or "mock").lower()
-    if mode == "anthropic":
-        enriched = _enrich_diagnosis_anthropic(
+    if mode == "openai":
+        enriched = _enrich_diagnosis_openai(
             symptom=symptom, cite=cite, excerpt=excerpt, skus=skus
         )
         if enriched:
@@ -167,21 +167,21 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
     }
 
 
-def _enrich_diagnosis_anthropic(*, symptom: str, cite: str, excerpt: str, skus: list[str]) -> str:
-    """Opcional: reformula diagnóstico com Anthropic sem inventar fora do trecho."""
+def _enrich_diagnosis_openai(*, symptom: str, cite: str, excerpt: str, skus: list[str]) -> str:
+    """Opcional: reformula diagnóstico com OpenAI sem inventar fora do trecho."""
     try:
-        from langchain_anthropic import ChatAnthropic
         from langchain_core.messages import HumanMessage, SystemMessage
+        from langchain_openai import ChatOpenAI
     except ImportError:
         return ""
 
     from django.conf import settings
 
-    api_key = getattr(settings, "ANTHROPIC_API_KEY", "") or ""
+    api_key = getattr(settings, "OPENAI_API_KEY", "") or ""
     if not api_key:
         return ""
-    llm = ChatAnthropic(
-        model=getattr(settings, "ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929"),
+    llm = ChatOpenAI(
+        model=getattr(settings, "OPENAI_CHAT_MODEL", "gpt-4o-mini"),
         api_key=api_key,
         temperature=0,
         max_tokens=600,

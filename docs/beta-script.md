@@ -22,7 +22,7 @@ O `seed_beta` deixa pronto (idempotente):
 | Peça | SKU `CAP-35` com estoque + compatibilidade |
 | RAG | Manual VTE-02 indexado (capacitor / diagnóstico) |
 
-Modos esperados: `PAYMENT_PROVIDER=mock`, `CHAT_LLM_MODE=mock` (ou Anthropic se quiser LLM real).  
+Modos esperados: `PAYMENT_PROVIDER=mock`, `CHAT_LLM_MODE=mock` (ou `openai` se quiser LLM real).  
 **Não** rode `seed_beta` em produção (`DEBUG=false` bloqueia; `--force` só em staging controlado).
 
 ## Script (ordem)

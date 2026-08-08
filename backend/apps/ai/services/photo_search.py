@@ -1,4 +1,4 @@
-"""Busca de peça por foto (Claude vision / mock) — F6 / T-6.3."""
+"""Busca de peça por foto (OpenAI vision / mock) — F6 / T-6.3."""
 
 from __future__ import annotations
 
@@ -99,14 +99,18 @@ def run_photo_search(search_id: str | uuid.UUID) -> PhotoSearch:
         if hasattr(search.image, "seek"):
             search.image.seek(0)
         mode = getattr(settings, "PHOTO_LLM_MODE", "mock").lower()
-        if mode == "anthropic":
-            candidates = _vision_anthropic(content, search.mime_type)
+        if mode == "openai":
+            candidates = _vision_openai(content, search.mime_type)
         else:
             candidates = _vision_mock(content, search)
         search.candidates = candidates
         search.status = PhotoSearch.Status.DONE
         search.error_message = ""
-        search.model_name = "anthropic-vision" if mode == "anthropic" else "mock-vision"
+        search.model_name = (
+            getattr(settings, "OPENAI_CHAT_MODEL", "gpt-4o-mini")
+            if mode == "openai"
+            else "mock-vision"
+        )
     except Exception as exc:  # noqa: BLE001
         logger.exception("photo_search_failed", search_id=str(search.pk))
         search.status = PhotoSearch.Status.FAILED
@@ -162,15 +166,15 @@ def _vision_mock(content: bytes, search: PhotoSearch) -> list[dict]:
     return out
 
 
-def _vision_anthropic(content: bytes, mime: str) -> list[dict]:
-    from langchain_anthropic import ChatAnthropic
+def _vision_openai(content: bytes, mime: str) -> list[dict]:
     from langchain_core.messages import HumanMessage
+    from langchain_openai import ChatOpenAI
 
     b64 = base64.standard_b64encode(content).decode("ascii")
     media = mime or "image/jpeg"
-    llm = ChatAnthropic(
-        model=getattr(settings, "ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929"),
-        api_key=settings.ANTHROPIC_API_KEY or None,
+    llm = ChatOpenAI(
+        model=getattr(settings, "OPENAI_CHAT_MODEL", "gpt-4o-mini"),
+        api_key=settings.OPENAI_API_KEY or None,
         temperature=0,
         max_tokens=800,
     )
@@ -193,8 +197,8 @@ def _vision_anthropic(content: bytes, mime: str) -> list[dict]:
                 ),
             },
             {
-                "type": "image",
-                "source": {"type": "base64", "media_type": media, "data": b64},
+                "type": "image_url",
+                "image_url": {"url": f"data:{media};base64,{b64}"},
             },
         ]
     )

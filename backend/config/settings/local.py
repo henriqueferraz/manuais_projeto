@@ -17,13 +17,21 @@ _local_origins = (
 )
 CSRF_TRUSTED_ORIGINS = list(dict.fromkeys([*BASE_CSRF_TRUSTED_ORIGINS, *_local_origins]))
 
-# Em local, Manifest static storage exige collectstatic; usar StaticFiles simples
-STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
+# Em local, Manifest static storage exige collectstatic; usar StaticFiles simples.
+# Com USE_R2_STORAGE=true, preservar o default S3/R2 definido em base.py.
+_staticfiles = {
+    "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
 }
+if USE_R2_STORAGE:
+    STORAGES = {
+        "default": STORAGES["default"],
+        "staticfiles": _staticfiles,
+    }
+else:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": _staticfiles,
+    }
 
 # Redis opcional: se REDIS_URL apontar para serviço real, usa django-redis
 if env.bool("USE_REDIS_CACHE", default=False):

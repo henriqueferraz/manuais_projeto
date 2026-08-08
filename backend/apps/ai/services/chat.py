@@ -1,4 +1,4 @@
-"""Geração de respostas RAG com streaming SSE (mock ou Anthropic)."""
+"""Geração de respostas RAG com streaming SSE (mock ou OpenAI)."""
 
 from __future__ import annotations
 
@@ -21,8 +21,9 @@ logger = structlog.get_logger(__name__)
 PROMPT_DIR = Path(__file__).resolve().parent.parent / "prompts"
 PROMPT_VERSION = "v1"
 
-_INPUT_COST_PER_MTOK = Decimal("3.00")
-_OUTPUT_COST_PER_MTOK = Decimal("15.00")
+# Preços aproximados gpt-4o-mini (USD / 1M tokens)
+_INPUT_COST_PER_MTOK = Decimal("0.15")
+_OUTPUT_COST_PER_MTOK = Decimal("0.60")
 
 FALLBACK_MSG = (
     "Não encontrei isso no manual indexado. "
@@ -86,8 +87,8 @@ def answer_question(
         tokens_out = max(1, len(full_text) // 4)
         trace_id = ""
         confidence = 0.0
-    elif mode == "anthropic":
-        full_text, token_iter, meta = _answer_anthropic(cleaned_q, hits, request_id=request_id)
+    elif mode == "openai":
+        full_text, token_iter, meta = _answer_openai(cleaned_q, hits, request_id=request_id)
         model_name = meta["model_name"]
         tokens_in = meta["tokens_in"]
         tokens_out = meta["tokens_out"]
@@ -203,14 +204,14 @@ def _answer_mock(
     return text, _stream_words(text), meta
 
 
-def _answer_anthropic(
+def _answer_openai(
     question: str,
     hits: list[RetrievedChunk],
     *,
     request_id: str = "",
 ) -> tuple[str, Iterator[str], dict]:
-    from langchain_anthropic import ChatAnthropic
     from langchain_core.messages import HumanMessage, SystemMessage
+    from langchain_openai import ChatOpenAI
 
     if getattr(settings, "LANGSMITH_TRACING", False) and settings.LANGSMITH_API_KEY:
         import os
@@ -234,9 +235,10 @@ def _answer_anthropic(
         "Responda em português, cite seção/página, e se não houver evidência diga "
         "explicitamente que não encontrou no manual."
     )
-    llm = ChatAnthropic(
-        model=getattr(settings, "ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929"),
-        api_key=settings.ANTHROPIC_API_KEY or None,
+    model_name = getattr(settings, "OPENAI_CHAT_MODEL", "gpt-4o-mini")
+    llm = ChatOpenAI(
+        model=model_name,
+        api_key=settings.OPENAI_API_KEY or None,
         temperature=0,
         max_tokens=1024,
     )
@@ -261,10 +263,10 @@ def _answer_anthropic(
 
     conf = round(min(0.95, hits[0].score + 0.25), 3) if hits else 0.0
     meta_out = {
-        "model_name": getattr(settings, "ANTHROPIC_MODEL", "claude"),
+        "model_name": model_name,
         "tokens_in": tokens_in,
         "tokens_out": tokens_out,
-        "trace_id": trace_id or f"anth-{uuid.uuid4().hex[:12]}",
+        "trace_id": trace_id or f"oai-{uuid.uuid4().hex[:12]}",
         "confidence": conf,
     }
     return text, _stream_words(text), meta_out

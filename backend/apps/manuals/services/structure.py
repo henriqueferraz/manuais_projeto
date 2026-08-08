@@ -17,9 +17,9 @@ logger = structlog.get_logger(__name__)
 PROMPT_DIR = Path(__file__).resolve().parent.parent / "prompts"
 PROMPT_VERSION = "v1"
 
-# Preços aproximados Claude Sonnet (USD / 1M tokens) — estimativa P07
-_INPUT_COST_PER_MTOK = Decimal("3.00")
-_OUTPUT_COST_PER_MTOK = Decimal("15.00")
+# Preços aproximados gpt-4o-mini (USD / 1M tokens) — estimativa P07
+_INPUT_COST_PER_MTOK = Decimal("0.15")
+_OUTPUT_COST_PER_MTOK = Decimal("0.60")
 
 
 def load_system_prompt(version: str = PROMPT_VERSION) -> str:
@@ -39,10 +39,10 @@ def structure_manual_text(
     manufacturer_hint: str = "",
     filename: str = "",
 ) -> ExtractionResult:
-    """Roteia mock (CI/local) ou Anthropic conforme EXTRACTION_LLM_MODE."""
+    """Roteia mock (CI/local) ou OpenAI conforme EXTRACTION_LLM_MODE."""
     mode = getattr(settings, "EXTRACTION_LLM_MODE", "mock").lower()
-    if mode == "anthropic":
-        return _structure_with_anthropic(text, manufacturer_hint=manufacturer_hint)
+    if mode == "openai":
+        return _structure_with_openai(text, manufacturer_hint=manufacturer_hint)
     return _structure_mock(text, manufacturer_hint=manufacturer_hint, filename=filename)
 
 
@@ -106,13 +106,13 @@ def _structure_mock(
     )
 
 
-def _structure_with_anthropic(text: str, *, manufacturer_hint: str = "") -> ExtractionResult:
-    from langchain_anthropic import ChatAnthropic
+def _structure_with_openai(text: str, *, manufacturer_hint: str = "") -> ExtractionResult:
+    from langchain_openai import ChatOpenAI
     from langsmith import tracing_context
 
-    model_name = getattr(settings, "ANTHROPIC_MODEL", "claude-sonnet-4-5-20250929")
-    api_key = getattr(settings, "ANTHROPIC_API_KEY", "") or None
-    llm = ChatAnthropic(
+    model_name = getattr(settings, "OPENAI_CHAT_MODEL", "gpt-4o-mini")
+    api_key = getattr(settings, "OPENAI_API_KEY", "") or None
+    llm = ChatOpenAI(
         model=model_name,
         api_key=api_key,
         temperature=0,

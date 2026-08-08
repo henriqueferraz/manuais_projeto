@@ -41,9 +41,12 @@ class Command(BaseCommand):
             "FOCUSNFE_TOKEN": bool(getattr(settings, "FOCUSNFE_TOKEN", "")),
             "MELHOR_ENVIO_TOKEN": bool(getattr(settings, "MELHOR_ENVIO_TOKEN", "")),
             "WHATSAPP_ACCESS_TOKEN": bool(getattr(settings, "WHATSAPP_ACCESS_TOKEN", "")),
-            "ANTHROPIC_API_KEY": bool(getattr(settings, "ANTHROPIC_API_KEY", "")),
             "OPENAI_API_KEY": bool(getattr(settings, "OPENAI_API_KEY", "")),
+            "R2_ACCESS_KEY_ID": bool(getattr(settings, "R2_ACCESS_KEY_ID", "")),
+            "R2_SECRET_ACCESS_KEY": bool(getattr(settings, "R2_SECRET_ACCESS_KEY", "")),
+            "R2_BUCKET_NAME": bool(getattr(settings, "R2_BUCKET_NAME", "")),
         }
+        self.stdout.write(f"USE_R2_STORAGE={getattr(settings, 'USE_R2_STORAGE', False)}")
         self.stdout.write("=== Credenciais presentes (bool) ===")
         for key, present in secrets.items():
             self.stdout.write(f"  {key}: {'yes' if present else 'no'}")
