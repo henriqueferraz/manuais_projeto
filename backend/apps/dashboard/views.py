@@ -9,7 +9,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from apps.dashboard.models import OpsAlert
+from apps.dashboard.forms import HomeHeroSlideForm
+from apps.dashboard.models import HomeHeroSlide, OpsAlert
 from apps.dashboard.services.metrics import collect_insights
 from apps.dashboard.services.monitoring import collect_monitoring, simulate_incident
 
@@ -80,3 +81,73 @@ def simulate_incident_view(request: HttpRequest) -> HttpResponse:
     if request.headers.get("Accept") == "application/json":
         return JsonResponse({"ok": True, "alert_id": str(alert.pk)})
     return redirect("dashboard:monitoring")
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_GET
+def home_hero_list(request: HttpRequest) -> HttpResponse:
+    slides = HomeHeroSlide.objects.all()
+    return render(
+        request,
+        "dashboard/home_hero.html",
+        {
+            "slides": slides,
+            "page_title": "Hero da home",
+            "form": HomeHeroSlideForm(),
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_http_methods(["GET", "POST"])
+def home_hero_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
+    slide = get_object_or_404(HomeHeroSlide, pk=pk) if pk else None
+    if request.method == "POST":
+        form = HomeHeroSlideForm(request.POST, request.FILES, instance=slide)
+        if form.is_valid():
+            saved = form.save()
+            messages.success(
+                request,
+                "Slide atualizado." if slide else "Slide criado.",
+            )
+            return redirect("dashboard:home_hero_edit", pk=saved.pk)
+    else:
+        form = HomeHeroSlideForm(instance=slide)
+    return render(
+        request,
+        "dashboard/home_hero_form.html",
+        {
+            "form": form,
+            "slide": slide,
+            "page_title": "Editar slide" if slide else "Novo slide",
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_POST
+def home_hero_toggle(request: HttpRequest, pk: int) -> HttpResponse:
+    slide = get_object_or_404(HomeHeroSlide, pk=pk)
+    slide.is_active = not slide.is_active
+    slide.save(update_fields=["is_active", "updated_at"])
+    messages.success(
+        request,
+        "Slide ativado." if slide.is_active else "Slide desativado.",
+    )
+    return redirect("dashboard:home_hero")
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_POST
+def home_hero_delete(request: HttpRequest, pk: int) -> HttpResponse:
+    slide = get_object_or_404(HomeHeroSlide, pk=pk)
+    title = slide.title
+    if slide.image:
+        slide.image.delete(save=False)
+    slide.delete()
+    messages.success(request, f"Slide removido: {title}")
+    return redirect("dashboard:home_hero")

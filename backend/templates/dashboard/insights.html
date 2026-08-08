@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Dashboard de insights — {{ brand_name }}{% endblock %}
 {% block content %}
-<section class="tp-section" style="margin-block-start: 0">
+<section class="tp-section tp-section--flush-top">
   <header class="tp-ops-hero">
     <p class="font-label-caps tp-ops-hero__eyebrow tp-ops-hero__eyebrow--ai">
-      <span class="material-symbols-outlined align-middle" style="font-size: 1rem" aria-hidden="true">monitoring</span>
+      <span class="material-symbols-outlined" aria-hidden="true">monitoring</span>
       Operação · Insights IA
     </p>
     <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start">
@@ -15,15 +15,16 @@
         </p>
       </div>
       <form method="get" class="d-flex gap-2">
-        <select name="days" class="form-select form-select-sm" aria-label="Período" onchange="this.form.submit()">
+        <select name="days" class="form-select form-select-sm" aria-label="Período" data-auto-submit>
           <option value="7" {% if days == 7 %}selected{% endif %}>7 dias</option>
           <option value="30" {% if days == 30 %}selected{% endif %}>30 dias</option>
           <option value="90" {% if days == 90 %}selected{% endif %}>90 dias</option>
         </select>
       </form>
     </div>
-    <div class="mt-3">
+    <div class="mt-3 d-flex flex-wrap gap-2">
       <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:monitoring' %}">Monitoramento</a>
+      <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:home_hero' %}">Hero da home</a>
     </div>
   </header>
 

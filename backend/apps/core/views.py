@@ -17,6 +17,7 @@ from apps.core.branding import (
     HOME_CAT_KITCHEN_KEY,
     branding_image_url,
 )
+from apps.dashboard.models import HomeHeroSlide
 
 # Bento da home — slugs preferidos (seed_beta / seed_scale_catalog); fallback = catálogo.
 _HOME_CATEGORY_TILES = (
@@ -50,6 +51,9 @@ class HomeView(TemplateView):
         ctx["featured_total"] = total
         ctx["featured_shown"] = len(featured)
         ctx["category_tiles"] = self._category_tiles()
+        ctx["hero_slides"] = list(
+            HomeHeroSlide.objects.filter(is_active=True).order_by("sort_order", "id")
+        )
         return ctx
 
     def _category_tiles(self) -> list[dict]:

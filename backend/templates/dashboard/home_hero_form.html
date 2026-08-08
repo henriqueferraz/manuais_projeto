@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="tp-section tp-section--flush-top">
+  <header class="tp-ops-hero">
+    <p class="font-label-caps tp-ops-hero__eyebrow">
+      <span class="material-symbols-outlined" aria-hidden="true">view_carousel</span>
+      Operação · Hero
+    </p>
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start">
+      <div>
+        <h1 class="font-headline-md">{% if slide %}Editar slide{% else %}Novo slide{% endif %}</h1>
+        <p class="tp-ops-hero__lead">Imagem sobe para o storage padrão (R2 quando USE_R2_STORAGE=true).</p>
+      </div>
+      <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:home_hero' %}">Voltar à lista</a>
+    </div>
+  </header>
+
+  <section class="tp-panel mt-4">
+    <div class="tp-panel__header"><h2>{% if slide %}{{ slide.title }}{% else %}Dados do slide{% endif %}</h2></div>
+    <div class="tp-panel__body">
+      <form method="post" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="col-12">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="col-md-8">
+          <label class="form-label" for="{{ form.title.id_for_label }}">Título</label>
+          {{ form.title }}
+          {{ form.title.errors }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.badge.id_for_label }}">Badge</label>
+          {{ form.badge }}
+          {{ form.badge.errors }}
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="{{ form.lead.id_for_label }}">Lead</label>
+          {{ form.lead }}
+          {{ form.lead.errors }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.image.id_for_label }}">Imagem</label>
+          {{ form.image }}
+          {{ form.image.errors }}
+          {% if slide and slide.image %}
+          <div class="mt-2">
+            <img src="{{ slide.image.url }}" alt="" class="img-fluid rounded border tp-hero-preview" />
+          </div>
+          {% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.alt_text.id_for_label }}">Alt text</label>
+          {{ form.alt_text }}
+          {{ form.alt_text.errors }}
+          <label class="form-label mt-3" for="{{ form.sort_order.id_for_label }}">Ordem</label>
+          {{ form.sort_order }}
+          {{ form.sort_order.errors }}
+          <div class="form-check mt-3">
+            {{ form.is_active }}
+            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Ativo na home</label>
+            {{ form.is_active.errors }}
+          </div>
+        </div>
+        <div class="col-12 d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Salvar</button>
+          <a class="btn btn-outline-secondary" href="{% url 'dashboard:home_hero' %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}

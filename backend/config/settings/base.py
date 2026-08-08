@@ -231,7 +231,10 @@ CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": ("'self'",),
         "script-src": ("'self'",),
-        "style-src": ("'self'", "https://fonts.googleapis.com"),
+        # Folhas de estilo externas (inclui <style> / <link>); sem unsafe-inline.
+        "style-src-elem": ("'self'", "https://fonts.googleapis.com"),
+        # Bootstrap/Popper precisa setar element.style (dropdown, collapse, etc.).
+        "style-src-attr": ("'unsafe-inline'",),
         "font-src": ("'self'", "https://fonts.gstatic.com", "data:"),
         "img-src": ("'self'", "data:", "https:"),
         "connect-src": ("'self'",),

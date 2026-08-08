@@ -2,8 +2,7 @@
 {% block title %}Checkout — pagamento{% endblock %}
 {% block content %}
 <section
-  class="tp-section"
-  style="max-width: 40rem"
+  class="tp-section tp-section--narrow"
   hx-boost="true"
   hx-target="main#conteudo"
   hx-select="main#conteudo > *"
@@ -19,7 +18,7 @@
   <div id="checkout-skeleton" class="tp-checkout-skeleton htmx-indicator" aria-hidden="true">
     <div class="tp-skeleton tp-skeleton--title"></div>
     <div class="tp-skeleton tp-skeleton--line"></div>
-    <div class="tp-skeleton tp-skeleton--card" style="height: 6rem"></div>
+    <div class="tp-skeleton tp-skeleton--card tp-skeleton--h-96"></div>
   </div>
 
   <div class="alert alert-secondary small border" role="status">

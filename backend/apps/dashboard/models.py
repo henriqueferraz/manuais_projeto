@@ -1,4 +1,4 @@
-"""Models do dashboard / alertas operacionais (F7)."""
+"""Models do dashboard / alertas operacionais (F7) + hero da home."""
 
 from __future__ import annotations
 
@@ -53,3 +53,35 @@ class OpsAlert(models.Model):
 
     def __str__(self) -> str:
         return f"[{self.severity}] {self.title}"
+
+
+def home_hero_image_upload_to(instance: HomeHeroSlide, filename: str) -> str:
+    safe = filename.replace(" ", "_")
+    uid = instance.pk or uuid.uuid4()
+    return f"branding/hero/{uid}/{safe}"
+
+
+class HomeHeroSlide(models.Model):
+    """Slide do carrossel full-bleed da home (textos + imagem no R2)."""
+
+    badge = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Eyebrow opcional (ex.: TECNOLOGIA AI)",
+    )
+    title = models.CharField(max_length=160)
+    lead = models.TextField(blank=True)
+    image = models.ImageField(upload_to=home_hero_image_upload_to, blank=True)
+    alt_text = models.CharField(max_length=255, blank=True)
+    sort_order = models.PositiveIntegerField(default=0, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("sort_order", "id")
+        verbose_name = "slide do hero"
+        verbose_name_plural = "slides do hero"
+
+    def __str__(self) -> str:
+        return self.title

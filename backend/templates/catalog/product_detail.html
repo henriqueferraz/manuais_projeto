@@ -11,18 +11,17 @@
 
 <article class="row g-5">
   <div class="col-lg-6">
-    <div class="bg-white border rounded p-3 text-center" style="min-height: 320px">
+    <div class="bg-white border rounded p-3 text-center tp-media-frame">
       {% with img=images.0 %}
       {% if img and img.image %}
       <img
         src="{{ img.image.url }}"
         alt="{{ img.alt_text|default:product.name_pt }}"
-        class="img-fluid"
+        class="img-fluid tp-media-img"
         loading="eager"
-        style="max-height: 420px; object-fit: contain"
       />
       {% else %}
-      <span class="material-symbols-outlined text-secondary" style="font-size: 6rem" aria-hidden="true">precision_manufacturing</span>
+      <span class="material-symbols-outlined text-secondary tp-icon-xl" aria-hidden="true">precision_manufacturing</span>
       {% endif %}
       {% endwith %}
     </div>
@@ -60,7 +59,7 @@
       <input type="hidden" name="product_id" value="{{ product.pk }}" />
       <div>
         <label class="form-label" for="qty">Qtd</label>
-        <input id="qty" name="quantity" type="number" min="1" value="1" class="form-control" style="width: 5rem" {% if not product.in_stock %}disabled{% endif %} />
+        <input id="qty" name="quantity" type="number" min="1" value="1" class="form-control tp-qty-input" {% if not product.in_stock %}disabled{% endif %} />
       </div>
       <button type="submit" class="btn btn-primary" {% if not product.in_stock %}disabled{% endif %}>
         Adicionar ao carrinho
@@ -94,7 +93,7 @@
 
     {% if product.description_pt %}
     <h2 class="font-headline-sm mt-4">Descrição</h2>
-    <p class="font-body-lg" style="white-space: pre-wrap">{{ product.description_pt }}</p>
+    <p class="font-body-lg tp-pre-wrap">{{ product.description_pt }}</p>
     {% endif %}
   </div>
 </article>

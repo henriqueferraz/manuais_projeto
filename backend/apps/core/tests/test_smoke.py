@@ -60,6 +60,33 @@ def test_home_featured_products_when_published():
 
 
 @pytest.mark.django_db
+def test_home_hero_carousel_when_slides_active():
+    from apps.dashboard.models import HomeHeroSlide
+
+    HomeHeroSlide.objects.create(
+        badge="TECNOLOGIA AI",
+        title="Precisao em Diagnostico",
+        lead="IA cita o manual.",
+        sort_order=1,
+        is_active=True,
+    )
+    HomeHeroSlide.objects.create(
+        title="Inativo nao aparece",
+        is_active=False,
+        sort_order=2,
+    )
+
+    client = Client()
+    response = client.get(reverse("core:home"))
+    assert response.status_code == 200
+    assert b"tp-home-hero--carousel" in response.content
+    assert b"Precisao em Diagnostico" in response.content
+    assert b"TECNOLOGIA AI" in response.content
+    assert b"Inativo nao aparece" not in response.content
+    assert b"data-tp-hero-carousel" in response.content
+
+
+@pytest.mark.django_db
 def test_service_worker_served_at_root():
     client = Client()
     response = client.get(reverse("core:service_worker"))
