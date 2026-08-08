@@ -299,7 +299,7 @@ def test_products_edit_shows_and_saves_specs(staff_user, db):
     get_res = client.get(reverse("dashboard:products_edit", args=[product.pk]))
     assert get_res.status_code == 200
     assert b"Especifica" in get_res.content
-    assert b"value=\"120\"" in get_res.content or b"value=\"120.00\"" in get_res.content
+    assert b'value="120"' in get_res.content or b'value="120.00"' in get_res.content
     assert b"ABS" in get_res.content
     assert b"ncm: 84145910" in get_res.content
 
