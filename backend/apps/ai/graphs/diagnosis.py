@@ -138,9 +138,7 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
     # T-P.4: DIAGNOSIS_LLM_MODE=openai enriquece a resposta com LLM (CI = mock)
     mode = (getattr(settings, "DIAGNOSIS_LLM_MODE", "mock") or "mock").lower()
     if mode == "openai":
-        enriched = _enrich_diagnosis_openai(
-            symptom=symptom, cite=cite, excerpt=excerpt, skus=skus
-        )
+        enriched = _enrich_diagnosis_openai(symptom=symptom, cite=cite, excerpt=excerpt, skus=skus)
         if enriched:
             answer = enriched
             cause = enriched[:240]
