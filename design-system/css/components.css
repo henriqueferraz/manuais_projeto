@@ -566,8 +566,103 @@
   --bs-btn-hover-color: var(--tp-industrial-navy, #0b1f33);
 }
 
+.tp-home-hero__badge {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.4rem 1rem;
+  font-family: var(--tp-font-sans, Inter, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tp-industrial-navy, #1a2b3c);
+  background: var(--tp-ai-cyan, #00e5ff);
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+.tp-home-hero--carousel {
+  display: block;
+  padding: 0;
+  min-height: min(72vh, 34rem);
+}
+
+.tp-home-hero__track {
+  position: absolute;
+  inset: 0;
+}
+
+.tp-home-hero__slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tp-home-hero__slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.tp-home-hero--carousel .tp-home-hero__plane {
+  inset: 0;
+}
+
+.tp-home-hero--carousel .tp-home-hero__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.tp-home-hero__controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.5rem;
+  z-index: 3;
+  display: flex;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.tp-home-hero__nav {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 9999px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.tp-home-hero__nav:hover,
+.tp-home-hero__nav:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.tp-home-hero__nav .material-symbols-outlined {
+  font-size: 1.35rem;
+}
+
 .tp-home-ai-wrap {
-  margin-top: -2.5rem;
+  margin-top: 1.5rem;
   position: relative;
   z-index: 2;
   padding-bottom: 0;

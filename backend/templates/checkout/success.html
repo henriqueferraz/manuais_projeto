@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Pedido {{ order.number }}{% endblock %}
 {% block content %}
-<section class="tp-section" style="max-width: 40rem">
+<section class="tp-section tp-section--narrow">
   {% include "checkout/partials/steps.html" %}
   <div class="tp-empty border-0 bg-transparent px-0">
-    <span class="material-symbols-outlined text-success" style="font-size: 3rem" aria-hidden="true">check_circle</span>
+    <span class="material-symbols-outlined text-success tp-icon-lg" aria-hidden="true">check_circle</span>
     <h1 class="font-headline-lg">Pedido confirmado</h1>
     <p class="font-technical">{{ order.number }} · {{ order.get_status_display }}</p>
     <p>Enviamos a confirmação para <strong>{{ order.email }}</strong>. A NF-e será emitida em seguida.</p>

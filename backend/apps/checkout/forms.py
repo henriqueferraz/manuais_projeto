@@ -23,7 +23,7 @@ class CheckoutAddressForm(forms.Form):
         self.fields["shipping_phone"].widget.attrs["inputmode"] = "tel"
         self.fields["email"].widget.attrs["inputmode"] = "email"
         self.fields["shipping_state"].widget.attrs["maxlength"] = "2"
-        self.fields["shipping_state"].widget.attrs["style"] = "text-transform:uppercase"
+        self.fields["shipping_state"].widget.attrs["class"] += " tp-input-uf"
 
 
 class CheckoutShippingForm(forms.Form):

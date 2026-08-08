@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Monitoramento — {{ brand_name }}{% endblock %}
 {% block content %}
-<section class="tp-section" style="margin-block-start: 0">
+<section class="tp-section tp-section--flush-top">
   <header class="tp-ops-hero">
     <p class="font-label-caps tp-ops-hero__eyebrow">
-      <span class="material-symbols-outlined align-middle" style="font-size: 1rem" aria-hidden="true">health_and_safety</span>
+      <span class="material-symbols-outlined" aria-hidden="true">health_and_safety</span>
       Operação · Monitoramento
     </p>
     <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
@@ -14,6 +14,7 @@
       </div>
       <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:insights' %}">Insights</a>
+        <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:home_hero' %}">Hero da home</a>
         <form method="post" action="{% url 'dashboard:simulate_incident' %}">
           {% csrf_token %}
           <button type="submit" class="btn btn-sm btn-warning">Simular incidente</button>

@@ -14,7 +14,7 @@
     <p class="font-technical text-secondary">{{ ticket.code }} · {{ ticket.get_priority_display }} · origem {{ ticket.get_origin_display }}</p>
     <span class="tp-badge {% if ticket.sla_breached %}tp-badge--sla{% else %}tp-badge--draft{% endif %} mb-3">{{ ticket.get_status_display }}</span>
     {% if ticket.sla_breached %}<span class="tp-badge tp-badge--sla">SLA estourado</span>{% endif %}
-    <p class="mt-3" style="white-space: pre-wrap">{{ ticket.description }}</p>
+    <p class="mt-3 tp-pre-wrap">{{ ticket.description }}</p>
     <p class="font-technical">Equipamento: {{ ticket.equipment|default:"—" }}</p>
     <p class="small text-secondary">SLA até {{ ticket.sla_due_at|date:"d/m/Y H:i" }}</p>
 

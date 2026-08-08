@@ -142,3 +142,45 @@ def test_monitoring_simulated_incident_appears(staff_user, settings):
 def test_insights_requires_staff(client):
     res = client.get(reverse("dashboard:insights"))
     assert res.status_code in (302, 301)
+
+
+@pytest.mark.django_db
+def test_home_hero_dashboard_staff_ok(staff_user):
+    from apps.dashboard.models import HomeHeroSlide
+
+    HomeHeroSlide.objects.create(title="Slide A", sort_order=0, is_active=True)
+    client = Client()
+    client.force_login(staff_user)
+    res = client.get(reverse("dashboard:home_hero"))
+    assert res.status_code == 200
+    assert b"Hero da home" in res.content
+    assert b"Slide A" in res.content
+
+
+@pytest.mark.django_db
+def test_home_hero_dashboard_anonymous_redirects(client):
+    res = client.get(reverse("dashboard:home_hero"))
+    assert res.status_code in (302, 301)
+
+
+@pytest.mark.django_db
+def test_home_hero_create_slide(staff_user):
+    from apps.dashboard.models import HomeHeroSlide
+
+    client = Client()
+    client.force_login(staff_user)
+    res = client.post(
+        reverse("dashboard:home_hero_create"),
+        {
+            "badge": "ESTOQUE",
+            "title": "Alta Performance",
+            "lead": "Componentes certificados.",
+            "alt_text": "",
+            "sort_order": 1,
+            "is_active": "on",
+        },
+    )
+    assert res.status_code == 302
+    slide = HomeHeroSlide.objects.get(title="Alta Performance")
+    assert slide.badge == "ESTOQUE"
+    assert slide.is_active

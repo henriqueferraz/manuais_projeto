@@ -5,6 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}{{ brand_name }}{% endblock %}</title>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="{% static 'design-system/favicon-16x16.png' %}"
+    />
     {% if pwa_enabled %}
     <link rel="manifest" href="{% static 'pwa/manifest.webmanifest' %}" />
     <meta name="theme-color" content="#0B1F33" />
@@ -23,7 +29,7 @@
     <link href="{% static 'design-system/theme.css' %}" rel="stylesheet" />
     {% block extra_css %}{% endblock %}
   </head>
-  <body>
+  <body{% if pwa_enabled %} data-sw-url="{% url 'core:service_worker' %}"{% endif %}>
     <a class="visually-hidden-focusable btn btn-primary m-2" href="#conteudo"
       >Pular para o conteúdo</a
     >
@@ -44,12 +50,10 @@
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/htmx.min.js' %}" defer></script>
     <script src="{% static 'js/alpine.min.js' %}" defer></script>
+    <script src="{% static 'js/form-auto-submit.js' %}" defer></script>
+    <script src="{% static 'js/confirm-submit.js' %}" defer></script>
     {% if pwa_enabled %}
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("{% url 'core:service_worker' %}").catch(function () {});
-      }
-    </script>
+    <script src="{% static 'js/pwa-register.js' %}" defer></script>
     {% endif %}
     {% block extra_js %}{% endblock %}
   </body>

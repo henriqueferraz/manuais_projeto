@@ -2,8 +2,7 @@
 {% block title %}Checkout — frete{% endblock %}
 {% block content %}
 <section
-  class="tp-section"
-  style="max-width: 40rem"
+  class="tp-section tp-section--narrow"
   hx-boost="true"
   hx-target="main#conteudo"
   hx-select="main#conteudo > *"
@@ -16,8 +15,8 @@
 
   <div id="checkout-skeleton" class="tp-checkout-skeleton htmx-indicator" aria-hidden="true">
     <div class="tp-skeleton tp-skeleton--title"></div>
-    <div class="tp-skeleton tp-skeleton--card" style="height: 4.5rem"></div>
-    <div class="tp-skeleton tp-skeleton--card" style="height: 4.5rem; margin-top: 0.75rem"></div>
+    <div class="tp-skeleton tp-skeleton--card tp-skeleton--h-72"></div>
+    <div class="tp-skeleton tp-skeleton--card tp-skeleton--h-72 tp-skeleton--mt"></div>
   </div>
 
   <form method="post" class="vstack gap-3 mt-3">

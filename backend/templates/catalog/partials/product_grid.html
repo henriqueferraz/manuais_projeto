@@ -10,7 +10,7 @@
           {% if product.primary_image and product.primary_image.image %}
           <img src="{{ product.primary_image.image.url }}" alt="{{ product.primary_image.alt_text|default:product.name_pt }}" loading="lazy" />
           {% else %}
-          <span class="material-symbols-outlined text-secondary" style="font-size: 3rem" aria-hidden="true">precision_manufacturing</span>
+          <span class="material-symbols-outlined text-secondary tp-icon-lg" aria-hidden="true">precision_manufacturing</span>
           {% endif %}
         </div>
         <div class="tp-product-card__body">

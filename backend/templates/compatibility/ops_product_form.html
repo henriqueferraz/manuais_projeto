@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{% if product %}Editar {{ product.sku }}{% else %}Novo produto{% endif %}{% endblock %}
 {% block content %}
-<section class="tp-section" style="max-width: 40rem">
+<section class="tp-section tp-section--narrow">
   <h1 class="font-headline-lg">{% if product %}Editar produto{% else %}Novo produto{% endif %}</h1>
   <form method="post" class="vstack gap-3">
     {% csrf_token %}

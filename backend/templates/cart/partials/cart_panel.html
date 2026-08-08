@@ -18,7 +18,7 @@
           <span class="font-technical text-secondary">{{ item.product.sku }}</span>
         </td>
         <td class="font-technical">R$ {{ item.unit_price }}</td>
-        <td style="width: 7rem">
+        <td class="tp-cart-qty-col">
           <form
             method="post"
             action="{% url 'cart:update' %}"
@@ -34,7 +34,7 @@
               min="1"
               value="{{ item.quantity }}"
               class="form-control form-control-sm"
-              onchange="this.form.requestSubmit()"
+              data-auto-submit
             />
           </form>
         </td>

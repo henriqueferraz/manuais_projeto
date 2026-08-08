@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Hero da home — {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="tp-section tp-section--flush-top">
+  <header class="tp-ops-hero">
+    <p class="font-label-caps tp-ops-hero__eyebrow">
+      <span class="material-symbols-outlined" aria-hidden="true">view_carousel</span>
+      Operação · Conteúdo
+    </p>
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start">
+      <div>
+        <h1 class="font-headline-md">Hero da home</h1>
+        <p class="tp-ops-hero__lead">
+          Slides do carrossel.
+        </p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:insights' %}">Insights</a>
+        <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:monitoring' %}">Monitoramento</a>
+        <a class="btn btn-sm btn-light" href="{% url 'dashboard:home_hero_create' %}">Novo slide</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="tp-panel mt-4" aria-labelledby="hero-slides">
+    <div class="tp-panel__header">
+      <h2 id="hero-slides">Slides ({{ slides|length }})</h2>
+    </div>
+    <div class="tp-panel__body tp-panel__body--flush">
+      {% if slides %}
+      <div class="table-responsive">
+        <table class="table tp-table mb-0 align-middle">
+          <thead>
+            <tr>
+              <th scope="col">Ordem</th>
+              <th scope="col">Preview</th>
+              <th scope="col">Título</th>
+              <th scope="col">Badge</th>
+              <th scope="col">Ativo</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for slide in slides %}
+            <tr>
+              <td class="font-technical">{{ slide.sort_order }}</td>
+              <td>
+                {% if slide.image %}
+                <img src="{{ slide.image.url }}" alt="" width="72" height="40" class="tp-hero-thumb" />
+                {% else %}
+                <span class="text-secondary">—</span>
+                {% endif %}
+              </td>
+              <td>
+                <strong>{{ slide.title }}</strong>
+                {% if slide.lead %}
+                <div class="small text-secondary text-truncate tp-hero-lead-preview">{{ slide.lead }}</div>
+                {% endif %}
+              </td>
+              <td class="font-label-caps small">{{ slide.badge|default:"—" }}</td>
+              <td>
+                {% if slide.is_active %}
+                <span class="tp-badge tp-badge--stock">Ativo</span>
+                {% else %}
+                <span class="tp-badge tp-badge--draft">Inativo</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="d-flex flex-wrap gap-2">
+                  <a class="btn btn-sm btn-outline-primary"
+                    href="{% url 'dashboard:home_hero_edit' slide.pk %}">Editar</a>
+                  <form method="post" action="{% url 'dashboard:home_hero_toggle' slide.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                      {% if slide.is_active %}Desativar{% else %}Ativar{% endif %}
+                    </button>
+                  </form>
+                  <form
+                    method="post"
+                    action="{% url 'dashboard:home_hero_delete' slide.pk %}"
+                    data-confirm="Excluir este slide?"
+                  >
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="tp-empty p-4">
+        <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">view_carousel</span>
+        <h3 class="tp-empty__title">Nenhum slide</h3>
+        <p class="tp-empty__text">A home usa o hero estático de fallback até você criar slides ativos.</p>
+        <a class="btn btn-primary" href="{% url 'dashboard:home_hero_create' %}">Criar primeiro slide</a>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</section>
+{% endblock %}
