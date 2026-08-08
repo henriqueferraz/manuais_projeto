@@ -1,5 +1,6 @@
 """Settings compartilhados (local / staging / production)."""
 
+import os
 from pathlib import Path
 
 import environ
@@ -289,6 +290,14 @@ EXTRACTION_LLM_MODE = env("EXTRACTION_LLM_MODE")
 LANGSMITH_TRACING = env("LANGSMITH_TRACING")
 LANGSMITH_API_KEY = env("LANGSMITH_API_KEY")
 LANGSMITH_PROJECT = env("LANGSMITH_PROJECT")
+# Propaga vars oficiais LangSmith/LangChain no processo (chat, extração, diagnóstico).
+if LANGSMITH_TRACING and LANGSMITH_API_KEY:
+    os.environ.setdefault("LANGSMITH_TRACING", "true")
+    os.environ.setdefault("LANGCHAIN_TRACING_V2", "true")
+    os.environ.setdefault("LANGSMITH_API_KEY", LANGSMITH_API_KEY)
+    os.environ.setdefault("LANGCHAIN_API_KEY", LANGSMITH_API_KEY)
+    os.environ.setdefault("LANGSMITH_PROJECT", LANGSMITH_PROJECT)
+    os.environ.setdefault("LANGCHAIN_PROJECT", LANGSMITH_PROJECT)
 CART_RESERVATION_MINUTES = env.int("CART_RESERVATION_MINUTES", default=30)
 CATALOG_CACHE_TTL = env.int("CATALOG_CACHE_TTL", default=60)
 
@@ -331,8 +340,14 @@ SHIPPING_FREE_FROM = env("SHIPPING_FREE_FROM", default="299.00")
 NFE_PROVIDER = env("NFE_PROVIDER", default="mock")
 FOCUSNFE_TOKEN = env("FOCUSNFE_TOKEN", default="")
 FOCUSNFE_BASE_URL = env("FOCUSNFE_BASE_URL", default="https://homologacao.focusnfe.com.br")
+API_KEY_NOTAAS = env("API_KEY_NOTAAS", default="")
+NOTAAS_BASE_URL = env("NOTAAS_BASE_URL", default="https://platform.notaas.com.br/api/v1")
 NFE_EMITTER_CNPJ = env("NFE_EMITTER_CNPJ", default="")
 NFE_DEFAULT_CFOP = env("NFE_DEFAULT_CFOP", default="5102")
+NFE_DEFAULT_NCM = env("NFE_DEFAULT_NCM", default="85437099")
+NFE_DEFAULT_IBGE_CODE = env("NFE_DEFAULT_IBGE_CODE", default="3550308")
+NFE_DEFAULT_DEST_DOCUMENT = env("NFE_DEFAULT_DEST_DOCUMENT", default="")
+NFE_DEFAULT_CSOSN = env("NFE_DEFAULT_CSOSN", default="102")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@techparts.local")
 TICKET_SLA_HOURS = env.int("TICKET_SLA_HOURS", default=24)
 RETURN_CDC_DAYS = env.int("RETURN_CDC_DAYS", default=7)

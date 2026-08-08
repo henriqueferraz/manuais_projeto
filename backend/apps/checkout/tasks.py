@@ -49,7 +49,7 @@ def emit_invoice_task(self, order_id: str) -> dict:
 
 
 def _emit_nfe(order: Order, invoice: Invoice) -> dict:
-    """Provedor fiscal — mock por padrão; Focus NFe via NFE_PROVIDER (T-P.4)."""
+    """Provedor fiscal — mock por padrão; NotaAS/Focus via NFE_PROVIDER (T-P.4)."""
     from apps.checkout.nfe import emit_nfe
 
     return emit_nfe(order, invoice)

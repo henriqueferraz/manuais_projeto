@@ -39,6 +39,7 @@ class Command(BaseCommand):
             "STRIPE_SECRET_KEY": bool(getattr(settings, "STRIPE_SECRET_KEY", "")),
             "MERCADOPAGO_ACCESS_TOKEN": bool(getattr(settings, "MERCADOPAGO_ACCESS_TOKEN", "")),
             "FOCUSNFE_TOKEN": bool(getattr(settings, "FOCUSNFE_TOKEN", "")),
+            "API_KEY_NOTAAS": bool(getattr(settings, "API_KEY_NOTAAS", "")),
             "MELHOR_ENVIO_TOKEN": bool(getattr(settings, "MELHOR_ENVIO_TOKEN", "")),
             "WHATSAPP_ACCESS_TOKEN": bool(getattr(settings, "WHATSAPP_ACCESS_TOKEN", "")),
             "OPENAI_API_KEY": bool(getattr(settings, "OPENAI_API_KEY", "")),

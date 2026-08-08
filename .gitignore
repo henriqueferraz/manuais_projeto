@@ -35,3 +35,7 @@ staticfiles/
 backups/
 backend/e2e.sqlite3
 e2e/.auth/
+
+# Celery Beat local schedule DB
+backend/celerybeat-schedule
+backend/celerybeat-schedule-*

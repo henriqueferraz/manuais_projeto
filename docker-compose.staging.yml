@@ -1,8 +1,20 @@
 # Overlay staging — DEBUG=false, settings.staging, budget/Axes (T-P.2)
 # Uso: docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up -d
+#
+# Banco: use DATABASE_URL do .env.staging (Neon). Postgres Docker só com --profile local-db.
+# Portas no host (via env):
+#   web 8001 · nginx 8081 · redis 6380 · flower 5556 · clamav 3310
 
 services:
+  db:
+    # Opcional — só se quiser Postgres local em vez de Neon
+    profiles: ["local-db"]
+    volumes:
+      - pgdata_staging:/var/lib/postgresql/data
+
   web:
+    env_file:
+      - .env.staging
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.staging
       DEBUG: "false"
@@ -12,7 +24,17 @@ services:
       AXES_ENABLED: "true"
       AI_TOKEN_BUDGET_DAILY: ${AI_TOKEN_BUDGET_DAILY:-500000}
       MANUAL_CLAMAV_ENABLED: ${MANUAL_CLAMAV_ENABLED:-false}
+      MANUAL_AV_STUB_OK: ${MANUAL_AV_STUB_OK:-true}
+      CLAMAV_HOST: ${CLAMAV_HOST:-clamav}
+      CLAMAV_PORT: ${CLAMAV_PORT:-3310}
       SENTRY_ENVIRONMENT: staging
+      ALLOWED_HOSTS: localhost,127.0.0.1,web,nginx,staging.local
+      CSRF_TRUSTED_ORIGINS: http://localhost:8001,http://127.0.0.1:8001,http://localhost:8081,http://127.0.0.1:8081
+      # DATABASE_URL vem do .env.staging (Neon). Não sobrescrever aqui.
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      USE_REDIS_CACHE: "true"
+      CELERY_TASK_ALWAYS_EAGER: "false"
     command:
       [
         "gunicorn",
@@ -24,24 +46,44 @@ services:
       ]
 
   worker:
+    env_file:
+      - .env.staging
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.staging
       DEBUG: "false"
       AXES_ENABLED: "true"
       AI_TOKEN_BUDGET_DAILY: ${AI_TOKEN_BUDGET_DAILY:-500000}
+      MANUAL_CLAMAV_ENABLED: ${MANUAL_CLAMAV_ENABLED:-false}
+      MANUAL_AV_STUB_OK: ${MANUAL_AV_STUB_OK:-true}
+      CLAMAV_HOST: ${CLAMAV_HOST:-clamav}
+      CLAMAV_PORT: ${CLAMAV_PORT:-3310}
       SENTRY_ENVIRONMENT: staging
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_TASK_ALWAYS_EAGER: "false"
 
   beat:
+    env_file:
+      - .env.staging
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.staging
       DEBUG: "false"
+      SENTRY_ENVIRONMENT: staging
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+
+  flower:
+    env_file:
+      - .env.staging
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.local
       SENTRY_ENVIRONMENT: staging
 
   clamav:
     profiles: ["clamav"]
     image: clamav/clamav:1.4
     ports:
-      - "3310:3310"
+      - "${CLAMAV_PUBLISH_PORT:-3310}:3310"
     volumes:
       - clamav_data:/var/lib/clamav
     healthcheck:
@@ -52,4 +94,5 @@ services:
       start_period: 120s
 
 volumes:
+  pgdata_staging:
   clamav_data:

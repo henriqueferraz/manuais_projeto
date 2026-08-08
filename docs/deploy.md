@@ -15,23 +15,36 @@ Template de variáveis: [`.env.example`](../.env.example) na **raiz** do reposit
 
 ## Staging com Compose
 
+Pré-requisitos locais:
+
+1. Usuário no grupo `docker` (`sudo usermod -aG docker $USER` + re-login) **ou** `sudo docker …`.
+2. Arquivo `.env.staging` na raiz (não versionado). Pode partir de `.env` / `.env.example`.
+   - **Banco:** use o mesmo `DATABASE_URL` Neon do `.env` (Compose **não** sobrescreve em staging).
+   - Postgres Docker só se precisar: `--profile local-db` (e aí aponte `DATABASE_URL` para `postgres://techparts:techparts@db:5432/techparts`).
+3. Para o critério specify 5 (venda BR): `PAYMENT_PROVIDER=stripe|mercadopago` + chave sandbox **e** `NFE_PROVIDER=notaas` + `API_KEY_NOTAAS` (ou Focus, se aplicável).
+
 ```bash
 cp .env.example .env.staging
-# Editar .env.staging: SECRET_KEY (≥50 chars), ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS,
-# SENTRY_DSN (opcional), AI_TOKEN_BUDGET_DAILY>0, AXES_ENABLED=true
+# Editar .env.staging: SECRET_KEY (≥50 chars), ALLOWED_HOSTS (incluir web/nginx/staging.local),
+# CSRF_TRUSTED_ORIGINS, AI_TOKEN_BUDGET_DAILY>0, AXES_ENABLED=true,
+# SECURE_SSL_REDIRECT=false se HTTP local sem TLS no edge,
+# DATABASE_URL=postgres://…@….neon.tech/…?sslmode=require,
+# + secrets de pagamento/NF-e quando disponíveis.
 
 docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up --build -d
-docker compose -f docker-compose.yml -f docker-compose.staging.yml exec web python manage.py migrate
-docker compose -f docker-compose.yml -f docker-compose.staging.yml exec web python manage.py bootstrap_rbac
-docker compose -f docker-compose.yml -f docker-compose.staging.yml exec web python manage.py collectstatic --noinput
+docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging exec web python manage.py migrate
+docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging exec web python manage.py bootstrap_rbac
+docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging exec web python manage.py collectstatic --noinput
+docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging exec web python manage.py smoke_live_integrations
 ```
 
-App: http://localhost:8000 · Nginx: http://localhost:8080 · Flower: http://localhost:5555
+App: http://localhost:8001 · Nginx: http://localhost:8081 · Flower: http://localhost:5556  
+Redis host `6380`, ClamAV `3310`. Banco padrão = **Neon** via `DATABASE_URL`.
 
 ClamAV (perfil opcional):
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.staging.yml --profile clamav up -d
+docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging --profile clamav up -d
 # MANUAL_CLAMAV_ENABLED=true no .env.staging
 ```
 

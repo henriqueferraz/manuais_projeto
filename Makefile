@@ -3,7 +3,7 @@
 help:
 	@echo "Targets:"
 	@echo "  make up           - sobe stack Docker (db, redis, web, worker, beat, flower, nginx)"
-	@echo "  make up-staging   - sobe stack com overlay staging (DEBUG=false)"
+	@echo "  make up-staging   - sobe stack staging (DEBUG=false; ports 8001/8081)"
 	@echo "  make down         - derruba stack"
 	@echo "  make build        - rebuild imagens"
 	@echo "  make migrate      - migrate no container web"
