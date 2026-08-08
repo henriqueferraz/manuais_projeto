@@ -870,11 +870,11 @@ Sequência de alto nível (ajustar duração à capacidade; ~1 unidade = bloco d
 
 O plano de fases F0–F8 está **entregue em código**. O sistema está “cumprido” operacionalmente quando (ainda pendente validação humana / produção):
 
-1. [ ] Produto novo entra via manual com pouco esforço humano e qualidade revisável. _(pipeline + HITL ok em código)_
-2. [ ] Chat resolve parcela relevante das dúvidas com fonte; ao escalar, histórico vai junto. _(beta humana)_
-3. [ ] Cliente descobre a peça por sintoma, modelo ou foto. _(beta humana)_
-4. [ ] Operação acompanha vendas, chamados, custo de IA e qualidade sem ferramentas cruas. _(dashboard ok; beta ops)_
-5. [ ] Loja vende no Brasil com NF-e, arrependimento e LGPD desde o primeiro pedido. _(mock/sandbox → live em T-P.4 / T-P.2)_
-6. [x] UI/UX respeitam os pilares P16–P24 em todas as superfícies críticas. _(T-P.3 + polish HOME T-P.1)_
+1. [ ] Produto novo entra via manual com pouco esforço humano e qualidade revisável. _(pipeline + HITL ok em código; falta sessão staff upload→revisão)_
+2. [x] Chat resolve parcela relevante das dúvidas com fonte; ao escalar, histórico vai junto. _(S-001/S-002 — [`beta-relatorio.md`](beta-relatorio.md))_
+3. [x] Cliente descobre a peça por sintoma, modelo ou foto. _(S-002 chat + foto R2/OpenAI)_
+4. [x] Operação acompanha vendas, chamados, custo de IA e qualidade sem ferramentas cruas. _(dashboard S-001/S-002)_
+5. [ ] Loja vende no Brasil com NF-e, arrependimento e LGPD desde o primeiro pedido. _(mock/sandbox → live em staging/prod)_
+6. [x] UI/UX respeitam os pilares P16–P24 em todas as superfícies críticas. _(T-P.3 + polish HOME T-P.1 + DoD S-002)_
 
 Rastreio: [`beta-relatorio.md`](beta-relatorio.md) · backlog: [Pós-F8](#pós-f8--o-que-ainda-falta).
