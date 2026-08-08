@@ -1,17 +1,18 @@
 # Relatório de beta — TechParts AI (T-P.1 / pós-F8)
 
-**Status:** S-001 (mock) + **S-002** (OpenAI + R2) documentadas; validações locais dos 6 fluxos verdes.  
+**Status:** S-001 (mock) + S-002 (OpenAI + R2) + **S-003** (HITL staff) documentadas; validações locais verdes.  
 **Data:** 2026-08-08  
 **Participantes:** proxy interno (Cursor + HTTP + runserver local)  
-**Branch/base:** `main` @ CI verde (`68e9bef`) · seed com `seed_beta --reindex` (embeddings 1536)
+**Branch/base:** `main` · seed beta + extração live OpenAI (S-003)
 
 ## Resumo executivo
 
 - **S-001:** 6/6 fluxos no ambiente local **mock** após correção P0 de retrieval (B-007).
 - **S-002:** 6/6 fluxos com **OpenAI** (chat/embeddings/foto) + **R2** para upload de foto; pagamento permanece mock.
+- **S-003:** 6/6 — upload PDF → `awaiting_review` → approve HITL → **draft** (sem auto-publish) → publish staff → catálogo.
 - Achado S-001: `embedding_vec` NULL engolia fallback JSON/hybrid → corrigido.
 - Observação S-002: diagnóstico LangGraph citou fonte corretamente; `model_name` ainda rotula `langgraph-diagnosis-mock` mesmo com `DIAGNOSIS_LLM_MODE=openai` (enriquecimento LLM não refletido no campo — P2).
-- DoD visual: checklist código ok; validação humana via proxy HTTP S-001/S-002 nas telas críticas.
+- DoD visual: checklist código ok; validação humana via proxy HTTP S-001/S-002/S-003 nas telas críticas.
 
 ## Sessões
 
@@ -19,6 +20,7 @@
 |---|---|---|---|---|---|---|
 | S-001 | 2026-08-07 | proxy interno (Cursor + HTTP) | cliente + staff | local mock | 1–6 ✅ | Pedido `TP-20260807-DDD35B` paid; chat citou p.12/14 + SKUs VTE-02/CAP-35; chamado `CH-260807-4D0A5` |
 | S-002 | 2026-08-08 | proxy interno (Cursor + HTTP) | cliente + staff | local OpenAI + R2 | 1–6 ✅ | Pedido `TP-20260808-9C7660` paid; chat citou Manutenção p.12 + CAP-35; foto R2 `gpt-4o-mini` 5 candidatos; chamado `CH-260808-092D8` |
+| S-003 | 2026-08-08 | proxy interno (Cursor + HTTP) | staff HITL | local OpenAI + R2 | upload→HITL→draft→publish ✅ | Extração `#5` → draft `MONDIAL-VT-40-NB` → publish staff → `/catalogo/?q=MONDIAL-VT-40-NB` |
 
 ### S-001 — 2026-08-07 — proxy interno
 
@@ -72,6 +74,17 @@ Evidências rápidas:
 | 6 Dashboard | `/dashboard/` + monitoramento 200 com `tp-stat` |
 
 Script: `backend/scripts_beta_s002.py`.
+
+### S-003 — 2026-08-08 — staff HITL (upload → draft → publish)
+
+- Papel: staff (`beta.staff@techparts.local`) — fila `/manuais/revisao/`
+- Ambiente: local live (`EXTRACTION_LLM_MODE=openai`, `CELERY_TASK_ALWAYS_EAGER=true`, R2)
+- Fluxo: upload PDF (fixture VT-40-NB) → `awaiting_review` → approve HITL → **Product DRAFT** → publish staff → catálogo
+- Assert chave: approve **não** publica sozinho (`status=draft`, `published_at=None`); só após passo staff explícito o SKU aparece no catálogo
+- Evidências: extração `#5`; SKU `MONDIAL-VT-40-NB`; `/catalogo/?q=MONDIAL-VT-40-NB` 200 com SKU no HTML
+- Fixes de caminho: structured output OpenAI via `function_calling`; `index_manual` após `on_commit`; savepoint no DDL pgvector (não abortar TX do approve)
+
+Script: `backend/scripts_beta_s003_hitl.py`.
 
 ### Template de sessão (copiar)
 
@@ -135,7 +148,7 @@ Perguntas-guia do seed: “Qual o capacitor de partida do VTE-02?” · “Venti
 | Operação vê chat/chamados/vendas IA/custo no dashboard | [x] | [x] S-001/S-002 HTTP |
 | Incidente aparece no monitoramento + alerta | [x] | [x] página 200 |
 | Cliente compra e acompanha sem “ficar no escuro” | [x] | [x] pedidos paid + e-mail (S-001/S-002) |
-| HITL impede publicação automática | [x] | [ ] (seed usou produto já publicado; falta sessão staff upload→revisão) |
+| HITL impede publicação automática | [x] | [x] S-003 — approve → draft; publish staff separado |
 | Chat cita fonte; ao escalar, histórico vai junto | [x] | [x] citação S-001/S-002; chamado com contexto |
 | Descoberta por sintoma / modelo / foto | [x] | [x] chat + foto R2/OpenAI (S-002) |
 
@@ -150,6 +163,5 @@ Perguntas-guia do seed: “Qual o capacitor de partida do VTE-02?” · “Venti
 ## Próximos passos
 
 1. Opcional: fechar **B-011** (rótulo de modelo no diagnóstico OpenAI).
-2. Sessão staff HITL: upload manual → revisão → publicar (critério specify ainda aberto).
-3. Go-live staging: checklist [`security-hardening.md`](security-hardening.md) + [`deploy.md`](deploy.md) com secrets reais (pagamento/NF-e se contrato).
-4. Conferência visual no browser humano (Assinaturas / Assistências / Garantia).
+2. Go-live staging: checklist [`security-hardening.md`](security-hardening.md) + [`deploy.md`](deploy.md) com secrets reais (pagamento/NF-e se contrato).
+3. Conferência visual no browser humano (Assinaturas / Assistências / Garantia).

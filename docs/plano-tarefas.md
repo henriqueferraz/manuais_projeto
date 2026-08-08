@@ -870,7 +870,7 @@ Sequência de alto nível (ajustar duração à capacidade; ~1 unidade = bloco d
 
 O plano de fases F0–F8 está **entregue em código**. O sistema está “cumprido” operacionalmente quando (ainda pendente validação humana / produção):
 
-1. [ ] Produto novo entra via manual com pouco esforço humano e qualidade revisável. _(pipeline + HITL ok em código; falta sessão staff upload→revisão)_
+1. [x] Produto novo entra via manual com pouco esforço humano e qualidade revisável. _(S-003 — upload→HITL→draft→publish staff; [`beta-relatorio.md`](beta-relatorio.md))_
 2. [x] Chat resolve parcela relevante das dúvidas com fonte; ao escalar, histórico vai junto. _(S-001/S-002 — [`beta-relatorio.md`](beta-relatorio.md))_
 3. [x] Cliente descobre a peça por sintoma, modelo ou foto. _(S-002 chat + foto R2/OpenAI)_
 4. [x] Operação acompanha vendas, chamados, custo de IA e qualidade sem ferramentas cruas. _(dashboard S-001/S-002)_

@@ -227,29 +227,32 @@ def _sync_pgvector(manual_id: int) -> None:
 
 
 def _ensure_pgvector_schema() -> bool:
+    # Savepoint: falha de DDL no Postgres aborta a TX; sem atomic o erro
+    # contaminaria a transação chamadora mesmo após o except.
     try:
-        with connection.cursor() as cursor:
-            cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
-            cursor.execute("""
-                ALTER TABLE ai_manualchunk
-                ADD COLUMN IF NOT EXISTS embedding_vec vector
-                """)
-            cursor.execute("""
-                DO $$
-                BEGIN
-                  IF NOT EXISTS (
-                    SELECT 1 FROM pg_indexes WHERE indexname = 'ai_manualchunk_embedding_hnsw'
-                  ) THEN
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
+                cursor.execute("""
+                    ALTER TABLE ai_manualchunk
+                    ADD COLUMN IF NOT EXISTS embedding_vec vector
+                    """)
+                cursor.execute("""
+                    DO $$
                     BEGIN
-                      CREATE INDEX ai_manualchunk_embedding_hnsw
-                      ON ai_manualchunk
-                      USING hnsw (embedding_vec vector_cosine_ops);
-                    EXCEPTION WHEN others THEN
-                      NULL;
-                    END;
-                  END IF;
-                END$$;
-                """)
+                      IF NOT EXISTS (
+                        SELECT 1 FROM pg_indexes WHERE indexname = 'ai_manualchunk_embedding_hnsw'
+                      ) THEN
+                        BEGIN
+                          CREATE INDEX ai_manualchunk_embedding_hnsw
+                          ON ai_manualchunk
+                          USING hnsw (embedding_vec vector_cosine_ops);
+                        EXCEPTION WHEN others THEN
+                          NULL;
+                        END;
+                      END IF;
+                    END$$;
+                    """)
         return True
     except Exception as exc:  # noqa: BLE001
         logger.warning("pgvector_schema_failed", error=str(exc))

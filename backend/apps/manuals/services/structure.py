@@ -118,7 +118,7 @@ def _structure_with_openai(text: str, *, manufacturer_hint: str = "") -> Extract
         temperature=0,
         max_tokens=4096,
     )
-    structured = llm.with_structured_output(ExtractedProduct)
+    structured = llm.with_structured_output(ExtractedProduct, method="function_calling")
     system = load_system_prompt()
     user = (
         f"Fabricante (dica): {manufacturer_hint or 'desconhecido'}\n\n"

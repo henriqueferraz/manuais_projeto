@@ -126,19 +126,38 @@ def approve_extraction(
     }:
         raise ValueError(f"Extração em status inválido para aprovação: {log.status}")
 
-    # Retoma grafo LangGraph se pausado (não reinicia extract/structure)
+    # Retoma grafo LangGraph se pausado (não reinicia extract/structure).
+    # MemorySaver some entre processos/reloads — fallback para approve direto.
+    # Savepoint: falha no resume não aborta a transação externa (Postgres).
     if not skip_graph_resume and log.langgraph_interrupted and log.langgraph_thread_id:
         from apps.manuals.graphs.extraction import resume_extraction_graph
 
-        resume_extraction_graph(
-            log.pk,
-            action="approve",
-            reviewer_id=getattr(reviewer, "pk", None),
-            corrected=corrected,
-            notes=notes,
-        )
-        log.refresh_from_db()
-        if log.draft_product_id:
+        try:
+            with transaction.atomic():
+                resume_extraction_graph(
+                    log.pk,
+                    action="approve",
+                    reviewer_id=getattr(reviewer, "pk", None),
+                    corrected=corrected,
+                    notes=notes,
+                )
+                log.refresh_from_db()
+                if (
+                    log.status == ExtractionLog.Status.APPROVED
+                    and log.draft_product_id
+                ):
+                    return log.draft_product
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "langgraph_resume_failed_fallback",
+                extraction_id=log.pk,
+                thread_id=log.langgraph_thread_id,
+                exc_info=True,
+            )
+            log.refresh_from_db()
+
+        # Resume sem checkpoint válido pode deixar status inconsistente.
+        if log.status == ExtractionLog.Status.APPROVED and log.draft_product_id:
             return log.draft_product
 
     data = corrected if corrected is not None else (log.corrected_json or log.raw_json)
@@ -221,10 +240,15 @@ def approve_extraction(
         },
     )
 
-    # F5: indexar manual para RAG após aprovação HITL
-    from apps.ai.tasks import index_manual_task
+    # F5: indexar após commit — evita DDL/embed abortar a TX do approve (Postgres).
+    manual_id = log.manual_id
 
-    index_manual_task.delay(log.manual_id)
+    def _enqueue_index() -> None:
+        from apps.ai.tasks import index_manual_task
+
+        index_manual_task.delay(manual_id)
+
+    transaction.on_commit(_enqueue_index)
     return product
 
 
@@ -246,17 +270,19 @@ def reject_extraction(
         from apps.manuals.graphs.extraction import resume_extraction_graph
 
         try:
-            resume_extraction_graph(
-                log.pk,
-                action="reject",
-                reviewer_id=getattr(reviewer, "pk", None),
-                notes=notes,
-            )
-            log.refresh_from_db()
-            if log.status == ExtractionLog.Status.REJECTED:
-                return log
+            with transaction.atomic():
+                resume_extraction_graph(
+                    log.pk,
+                    action="reject",
+                    reviewer_id=getattr(reviewer, "pk", None),
+                    notes=notes,
+                )
+                log.refresh_from_db()
+                if log.status == ExtractionLog.Status.REJECTED:
+                    return log
         except Exception:  # noqa: BLE001
             logger.exception("extraction_graph_resume_reject_fallback", extraction_id=log.pk)
+            log.refresh_from_db()
 
     log.status = ExtractionLog.Status.REJECTED
     log.reviewed_by = reviewer
