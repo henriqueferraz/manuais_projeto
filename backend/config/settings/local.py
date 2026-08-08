@@ -3,7 +3,8 @@
 from .base import *  # noqa: F401,F403
 from .base import ALLOWED_HOSTS as BASE_ALLOWED_HOSTS
 from .base import CSRF_TRUSTED_ORIGINS as BASE_CSRF_TRUSTED_ORIGINS
-from .base import env
+from .base import STORAGES as BASE_STORAGES
+from .base import USE_R2_STORAGE, env
 
 DEBUG = env.bool("DEBUG", default=True)
 SECRET_KEY = env("SECRET_KEY", default="dev-only-change-me-techparts-f2")
@@ -24,7 +25,7 @@ _staticfiles = {
 }
 if USE_R2_STORAGE:
     STORAGES = {
-        "default": STORAGES["default"],
+        "default": BASE_STORAGES["default"],
         "staticfiles": _staticfiles,
     }
 else:
