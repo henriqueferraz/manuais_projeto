@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.exceptions import ValidationError
 from django.db.models import F, Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -260,11 +260,7 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
     image_errors: list[str] = []
     if request.method == "POST" and form.is_valid():
         data = form.cleaned_data
-        delete_ids = {
-            int(x)
-            for x in request.POST.getlist("delete_images")
-            if str(x).isdigit()
-        }
+        delete_ids = {int(x) for x in request.POST.getlist("delete_images") if str(x).isdigit()}
         primary_raw = request.POST.get("primary_image") or ""
         primary_id = int(primary_raw) if primary_raw.isdigit() else None
         uploads = [f for f in request.FILES.getlist("images") if f]

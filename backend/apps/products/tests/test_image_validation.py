@@ -66,7 +66,15 @@ def test_prepare_product_image_normalizes_panorama():
 
 
 def test_prepare_product_image_upsizes_small():
-    prepared = prepare_product_image(_make_image(width=200, height=200, name="mini.png", fmt="PNG", content_type="image/png"))
+    prepared = prepare_product_image(
+        _make_image(
+            width=200,
+            height=200,
+            name="mini.png",
+            fmt="PNG",
+            content_type="image/png",
+        )
+    )
     with Image.open(prepared) as img:
         assert img.size[0] >= PRODUCT_IMAGE_MIN_SIDE
         assert img.size[1] >= PRODUCT_IMAGE_MIN_SIDE
@@ -74,7 +82,15 @@ def test_prepare_product_image_upsizes_small():
 
 
 def test_prepare_product_image_downsizes_large():
-    prepared = prepare_product_image(_make_image(width=2400, height=2400, name="grande.webp", fmt="WEBP", content_type="image/webp"))
+    prepared = prepare_product_image(
+        _make_image(
+            width=2400,
+            height=2400,
+            name="grande.webp",
+            fmt="WEBP",
+            content_type="image/webp",
+        )
+    )
     with Image.open(prepared) as img:
         assert img.size == (PRODUCT_IMAGE_MAX_SIDE, PRODUCT_IMAGE_MAX_SIDE)
     validate_product_image(prepared)
@@ -112,7 +128,13 @@ def test_products_dashboard_upload_image():
 
     client = Client()
     client.force_login(user)
-    upload = _make_image(width=1200, height=600, name="nova.png", fmt="PNG", content_type="image/png")
+    upload = _make_image(
+        width=1200,
+        height=600,
+        name="nova.png",
+        fmt="PNG",
+        content_type="image/png",
+    )
     res = client.post(
         reverse("dashboard:products_edit", args=[product.pk]),
         {
@@ -131,10 +153,9 @@ def test_products_dashboard_upload_image():
         },
     )
     if res.status_code != 302:
-        raise AssertionError(
-            f"status={res.status_code} form={getattr(res, 'context', None) and res.context['form'].errors} "
-            f"images={getattr(res, 'context', None) and res.context.get('image_errors')}"
-        )
+        form_errors = getattr(res, "context", None) and res.context["form"].errors
+        image_errors = getattr(res, "context", None) and res.context.get("image_errors")
+        raise AssertionError(f"status={res.status_code} form={form_errors} images={image_errors}")
     saved = ProductImage.objects.get(product=product)
     assert saved.is_primary
     assert saved.image.name.endswith(".jpg")

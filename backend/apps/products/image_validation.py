@@ -102,9 +102,7 @@ def prepare_product_image(upload: UploadedFile) -> InMemoryUploadedFile:
             payload, out_name = _encode_jpeg(img, original_name=name)
         upload.seek(0)
     except (UnidentifiedImageError, OSError, ValueError) as exc:
-        raise ValidationError(
-            "Não foi possível ler a imagem. Arquivo corrompido?"
-        ) from exc
+        raise ValidationError("Não foi possível ler a imagem. Arquivo corrompido?") from exc
 
     return InMemoryUploadedFile(
         file=payload,
@@ -127,9 +125,7 @@ def _read_image_meta(upload: UploadedFile) -> tuple[int, int, str]:
             fmt = (img.format or "").upper()
         upload.seek(0)
     except (UnidentifiedImageError, OSError, ValueError) as exc:
-        raise ValidationError(
-            "Não foi possível ler a imagem. Arquivo corrompido?"
-        ) from exc
+        raise ValidationError("Não foi possível ler a imagem. Arquivo corrompido?") from exc
     return width, height, fmt
 
 
@@ -162,7 +158,9 @@ def _fit_to_catalog_square(img: Image.Image) -> Image.Image:
 
 def _encode_jpeg(img: Image.Image, *, original_name: str) -> tuple[BytesIO, str]:
     stem = Path(original_name).stem or "foto"
-    safe_stem = "".join(ch if ch.isalnum() or ch in "-_" else "-" for ch in stem).strip("-") or "foto"
+    safe_stem = (
+        "".join(ch if ch.isalnum() or ch in "-_" else "-" for ch in stem).strip("-") or "foto"
+    )
     out_name = f"{safe_stem}{PRODUCT_IMAGE_OUTPUT_EXT}"
 
     for quality in (85, 75, 65, 55, 45):
@@ -180,8 +178,6 @@ def _encode_jpeg(img: Image.Image, *, original_name: str) -> tuple[BytesIO, str]
     buf = BytesIO()
     smaller.save(buf, format=PRODUCT_IMAGE_OUTPUT_FORMAT, quality=40, optimize=True)
     if buf.tell() > PRODUCT_IMAGE_MAX_BYTES:
-        raise ValidationError(
-            "Não foi possível comprimir a imagem para menos de 2 MB."
-        )
+        raise ValidationError("Não foi possível comprimir a imagem para menos de 2 MB.")
     buf.seek(0)
     return buf, out_name

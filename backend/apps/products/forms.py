@@ -126,7 +126,9 @@ def initial_specs_from_product(product: Product) -> dict[str, Any]:
         "rpm": "" if specs.get("rpm") is None else str(specs.get("rpm")),
         "mounting": specs.get("mounting") or "",
         "bearing_type": specs.get("bearing_type") or "",
-        "remote_included": bool(remote) if remote not in (None, "", 0, "0", "false", "não", "nao") else False,
+        "remote_included": (
+            bool(remote) if remote not in (None, "", 0, "0", "false", "não", "nao") else False
+        ),
         "specs_extra": format_specs_extra(specs),
     }
 
@@ -251,9 +253,7 @@ class InternalProductForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["brand_ref"].queryset = Brand.objects.order_by("name")
-        self.fields["equipment_model"].queryset = EquipmentModel.objects.order_by(
-            "brand", "code"
-        )
+        self.fields["equipment_model"].queryset = EquipmentModel.objects.order_by("brand", "code")
         self.fields["category"].queryset = Category.objects.order_by("name")
         for name, field in self.fields.items():
             if name == "sku":
