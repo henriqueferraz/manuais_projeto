@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load money_tags %}
 {% block title %}Checkout — endereço{% endblock %}
 {% block content %}
 <section
@@ -11,7 +12,7 @@
 >
   {% include "checkout/partials/steps.html" %}
   <h1 class="font-headline-lg">Endereço de entrega</h1>
-  <p class="text-secondary">Passo 1 de 3 · Subtotal R$ {{ totals.subtotal }}</p>
+  <p class="text-secondary">Passo 1 de 3 · Subtotal {{ totals.subtotal|brl }}</p>
 
   <div id="checkout-skeleton" class="tp-checkout-skeleton htmx-indicator" aria-hidden="true">
     <div class="tp-skeleton tp-skeleton--title"></div>

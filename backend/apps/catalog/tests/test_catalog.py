@@ -169,20 +169,24 @@ def test_compatibility_checker(client, spare_part):
 
 @pytest.mark.django_db
 def test_ops_requires_staff(client):
-    r = client.get(reverse("compatibility:ops_list"))
+    r = client.get(reverse("dashboard:products"))
     assert r.status_code in (302, 301)
 
 
 @pytest.mark.django_db
 def test_ops_staff_can_create(client, category):
+    from apps.catalog.models import Brand, EquipmentModel
+
     user = User.objects.create_user(username="ops", password="x", is_staff=True)
     client.force_login(user)
+    brand = Brand.objects.create(name="Mondial", slug="mondial")
+    model = EquipmentModel.objects.create(code="X1", brand="Mondial", slug="mondial-x1")
     r = client.post(
-        reverse("compatibility:ops_create"),
+        reverse("dashboard:products_create"),
         {
             "sku": "NEW-001",
-            "brand": "Mondial",
-            "model_code": "X1",
+            "brand_ref": brand.pk,
+            "equipment_model": model.pk,
             "name": "Peça teste",
             "description": "",
             "price": "10.00",
@@ -195,8 +199,19 @@ def test_ops_staff_can_create(client, category):
         },
     )
     assert r.status_code == 302
-    assert Product.objects.filter(sku="NEW-001", status="draft").exists()
+    assert Product.objects.filter(
+        sku="NEW-001", status="draft", brand="Mondial", model_code="X1"
+    ).exists()
     assert Stock.objects.filter(product__sku="NEW-001", quantity_available=3).exists()
+
+
+@pytest.mark.django_db
+def test_legacy_ops_url_still_serves_dashboard(client):
+    user = User.objects.create_user(username="ops2", password="x", is_staff=True)
+    client.force_login(user)
+    r = client.get(reverse("compatibility:ops_list"))
+    assert r.status_code == 200
+    assert b"Estoque e produtos" in r.content
 
 
 @pytest.mark.django_db

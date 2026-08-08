@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load money_tags %}
 {% block title %}Pedido {{ order.number }}{% endblock %}
 {% block content %}
 <section class="tp-section tp-section--narrow">
@@ -9,13 +10,13 @@
     <p class="font-technical">{{ order.number }} · {{ order.get_status_display }}</p>
     <p>Enviamos a confirmação para <strong>{{ order.email }}</strong>. A NF-e será emitida em seguida.</p>
     <dl class="row font-technical text-start mt-4">
-      <dt class="col-5">Subtotal</dt><dd class="col-7">R$ {{ order.subtotal }}</dd>
-      <dt class="col-5">Frete</dt><dd class="col-7">R$ {{ order.shipping_cost }} ({{ order.shipping_method }})</dd>
-      <dt class="col-5">Total</dt><dd class="col-7"><strong>R$ {{ order.total }}</strong></dd>
+      <dt class="col-5">Subtotal</dt><dd class="col-7">{{ order.subtotal|brl }}</dd>
+      <dt class="col-5">Frete</dt><dd class="col-7">{{ order.shipping_cost|brl }} ({{ order.shipping_method }})</dd>
+      <dt class="col-5">Total</dt><dd class="col-7"><strong>{{ order.total|brl }}</strong></dd>
     </dl>
     <ul class="list-unstyled text-start">
       {% for item in order.items.all %}
-      <li class="border-bottom py-2 font-technical">{{ item.sku }} · {{ item.name }} × {{ item.quantity }} — R$ {{ item.line_total }}</li>
+      <li class="border-bottom py-2 font-technical">{{ item.sku }} · {{ item.name }} × {{ item.quantity }} — {{ item.line_total|brl }}</li>
       {% endfor %}
     </ul>
     <a class="btn btn-primary mt-3" href="{% url 'catalog:list' %}">Voltar ao catálogo</a>

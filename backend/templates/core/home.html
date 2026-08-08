@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static money_tags %}
 
 {% block title %}{{ brand_name }} — Peças com precisão industrial{% endblock %}
 
@@ -199,7 +199,7 @@
                   {% if product.voltage %} · {{ product.voltage }}{% endif %}
                 </p>
                 <div class="d-flex justify-content-between align-items-center mt-auto">
-                  <span class="tp-product-card__price">R$ {{ product.price }}</span>
+                  <span class="tp-product-card__price">{{ product.price|brl }}</span>
                   <span class="tp-product-card__cart-hint" aria-hidden="true">
                     <span class="material-symbols-outlined">add_shopping_cart</span>
                   </span>

@@ -22,9 +22,20 @@ class StockInline(admin.StackedInline):
 
 @admin.register(Product)
 class ProductAdmin(SimpleHistoryAdmin):
-    list_display = ("sku", "brand", "model_code", "status", "product_kind", "price", "updated_at")
-    list_filter = ("status", "product_kind", "brand", "voltage")
+    list_display = (
+        "sku",
+        "brand",
+        "brand_ref",
+        "model_code",
+        "equipment_model",
+        "status",
+        "product_kind",
+        "price",
+        "updated_at",
+    )
+    list_filter = ("status", "product_kind", "brand", "brand_ref", "voltage", "equipment_model")
     search_fields = ("sku", "brand", "model_code")
+    autocomplete_fields = ("brand_ref", "equipment_model", "category")
     inlines = [ProductTranslationInline, ProductImageInline, StockInline]
     readonly_fields = ("published_at", "created_at", "updated_at")
 

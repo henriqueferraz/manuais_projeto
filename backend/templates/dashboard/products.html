@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load money_tags %}
+{% block title %}Estoque e produtos — {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="tp-section tp-section--flush-top">
+  <header class="tp-ops-hero">
+    <p class="font-label-caps tp-ops-hero__eyebrow">
+      <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+      Operação · Catálogo
+    </p>
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start">
+      <div>
+        <h1 class="font-headline-md">Estoque e produtos</h1>
+        <p class="tp-ops-hero__lead">
+          Cadastro, status e níveis de estoque.
+        </p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:insights' %}">Insights</a>
+        <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:monitoring' %}">Monitoramento</a>
+        <a class="btn btn-sm btn-outline-light" href="{% url 'compatibility:ops_compat' %}">Compatibilidades</a>
+        <a class="btn btn-sm btn-light" href="{% url 'dashboard:products_create' %}">Novo produto</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="tp-panel mt-4" aria-labelledby="products-list">
+    <div class="tp-panel__header d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+      <h2 id="products-list" class="mb-0">Produtos ({{ products|length }})</h2>
+      <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+        <label class="visually-hidden" for="products-q">Buscar</label>
+        <input id="products-q" type="search" name="q" class="form-control form-control-sm" value="{{ q }}"
+          placeholder="SKU, marca, modelo…" style="min-width: 12rem" />
+        <select name="status" class="form-select form-select-sm" aria-label="Status" data-auto-submit>
+          <option value="">Todos os status</option>
+          {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <select name="kind" class="form-select form-select-sm" aria-label="Tipo" data-auto-submit>
+          <option value="">Todos os tipos</option>
+          {% for value, label in kind_choices %}
+          <option value="{{ value }}" {% if kind == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-check form-check-inline mb-0">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="low_stock"
+            value="1"
+            id="products-low-stock"
+            {% if low_stock %}checked{% endif %}
+            data-auto-submit
+          />
+          <label class="form-check-label small" for="products-low-stock">Abaixo do mínimo</label>
+        </div>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Filtrar</button>
+      </form>
+    </div>
+    <div class="tp-panel__body tp-panel__body--flush">
+      {% if products %}
+      <div class="table-responsive">
+        <table class="table tp-table tp-products-table mb-0 align-middle">
+          <thead>
+            <tr>
+              <th scope="col" class="tp-products-table__col-sku">SKU</th>
+              <th scope="col" class="tp-products-table__col-brand">Marca</th>
+              <th scope="col" class="tp-products-table__col-name">Nome</th>
+              <th scope="col" class="tp-products-table__col-kind">Tipo</th>
+              <th scope="col" class="tp-products-table__col-status">Status</th>
+              <th scope="col" class="tp-products-table__col-num text-center">Disp.</th>
+              <th scope="col" class="tp-products-table__col-num text-center">Res.</th>
+              <th scope="col" class="tp-products-table__col-alert text-center">Alerta</th>
+              <th scope="col" class="tp-products-table__col-price text-end">Preço</th>
+              <th scope="col" class="tp-products-table__col-actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in products %}
+            <tr{% if p.stock and p.stock.below_minimum %} class="table-warning"{% endif %}>
+              <td class="font-technical tp-products-table__sku" title="{{ p.sku }}">{{ p.sku }}</td>
+              <td class="tp-products-table__brand" title="{{ p.brand }}">{{ p.brand }}</td>
+              <td class="tp-products-table__name">
+                <strong title="{{ p.name_pt|default:'' }}">{{ p.name_pt|default:"—" }}</strong>
+                {% if p.model_code %}
+                <div class="small text-secondary font-technical text-truncate" title="{{ p.model_code }}">{{ p.model_code }}</div>
+                {% endif %}
+              </td>
+              <td class="small tp-products-table__kind" title="{{ p.get_product_kind_display }}">
+                {{ p.get_product_kind_display }}
+              </td>
+              <td>
+                <span class="tp-badge {% if p.status == 'published' %}tp-badge--stock{% else %}tp-badge--draft{% endif %}">
+                  {{ p.get_status_display }}
+                </span>
+              </td>
+              {% if p.stock %}
+              <td class="font-technical text-center">{{ p.stock.quantity_available }}</td>
+              <td class="font-technical text-center">{{ p.stock.quantity_reserved }}</td>
+              <td class="tp-products-table__alert text-center">
+                <div class="tp-products-table__alert-inner">
+                  <span class="font-technical">{{ p.stock.minimum_alert }}</span>
+                  {% if p.stock.below_minimum %}
+                  <span class="tp-badge tp-badge--draft">Baixo</span>
+                  {% endif %}
+                </div>
+              </td>
+              {% else %}
+              <td colspan="3" class="text-secondary small text-center">Sem estoque</td>
+              {% endif %}
+              <td class="font-technical tp-products-table__price text-nowrap text-end">{{ p.price|brl }}</td>
+              <td class="tp-products-table__actions">
+                <div class="tp-products-table__actions-row">
+                  <a class="btn btn-sm btn-outline-primary" href="{% url 'dashboard:products_edit' p.pk %}">Editar</a>
+                  <form
+                    class="m-0"
+                    method="post"
+                    action="{% url 'dashboard:products_delete' p.pk %}"
+                    data-confirm="Excluir o produto {{ p.sku }}? Esta ação não pode ser desfeita."
+                  >
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="tp-empty p-4">
+        <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">inventory_2</span>
+        <h3 class="tp-empty__title">Nenhum produto</h3>
+        <p class="tp-empty__text">Ajuste os filtros ou cadastre o primeiro item do catálogo.</p>
+        <a class="btn btn-primary" href="{% url 'dashboard:products_create' %}">Novo produto</a>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</section>
+{% endblock %}

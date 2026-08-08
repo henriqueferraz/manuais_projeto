@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import F, Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -13,6 +15,12 @@ from apps.dashboard.forms import HomeHeroSlideForm
 from apps.dashboard.models import HomeHeroSlide, OpsAlert
 from apps.dashboard.services.metrics import collect_insights
 from apps.dashboard.services.monitoring import collect_monitoring, simulate_incident
+from apps.products.forms import InternalProductForm, initial_specs_from_product
+from apps.products.image_validation import (
+    PRODUCT_IMAGE_MAX_COUNT,
+    prepare_product_image,
+)
+from apps.products.models import Product, ProductImage, ProductTranslation, Stock
 
 
 def _is_ops(user) -> bool:
@@ -151,3 +159,241 @@ def home_hero_delete(request: HttpRequest, pk: int) -> HttpResponse:
     slide.delete()
     messages.success(request, f"Slide removido: {title}")
     return redirect("dashboard:home_hero")
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_GET
+def products_list(request: HttpRequest) -> HttpResponse:
+    status = request.GET.get("status", "").strip()
+    kind = request.GET.get("kind", "").strip()
+    q = request.GET.get("q", "").strip()
+    low_stock = request.GET.get("low_stock") == "1"
+
+    qs = Product.objects.select_related(
+        "category", "stock", "equipment_model", "brand_ref"
+    ).order_by("-updated_at")
+    if status:
+        qs = qs.filter(status=status)
+    if kind:
+        qs = qs.filter(product_kind=kind)
+    if q:
+        qs = qs.filter(
+            Q(sku__icontains=q)
+            | Q(brand__icontains=q)
+            | Q(model_code__icontains=q)
+            | Q(translations__name__icontains=q)
+        ).distinct()
+    if low_stock:
+        qs = qs.filter(
+            stock__isnull=False,
+            stock__quantity_available__lte=F("stock__minimum_alert")
+            + F("stock__quantity_reserved"),
+        )
+
+    return render(
+        request,
+        "dashboard/products.html",
+        {
+            "products": qs[:200],
+            "status": status,
+            "kind": kind,
+            "q": q,
+            "low_stock": low_stock,
+            "status_choices": Product.Status.choices,
+            "kind_choices": Product.Kind.choices,
+            "page_title": "Estoque e produtos",
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_http_methods(["GET", "POST"])
+def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
+    product = get_object_or_404(Product, pk=pk) if pk else None
+    stock = None
+    product_images: list[ProductImage] = []
+    initial = {}
+    if product:
+        product_images = list(product.images.order_by("sort_order", "id"))
+        tr = product.translations.filter(locale="pt-BR").first()
+        try:
+            stock = product.stock
+        except Stock.DoesNotExist:
+            stock = None
+        equipment_model_id = product.equipment_model_id
+        if not equipment_model_id and product.model_code:
+            from apps.catalog.models import EquipmentModel
+
+            equipment_model_id = (
+                EquipmentModel.objects.filter(code=product.model_code)
+                .values_list("pk", flat=True)
+                .first()
+            )
+        brand_ref_id = product.brand_ref_id
+        if not brand_ref_id and product.brand:
+            from apps.catalog.models import Brand
+
+            brand_ref_id = (
+                Brand.objects.filter(name__iexact=product.brand)
+                .values_list("pk", flat=True)
+                .first()
+            )
+        initial = {
+            "sku": product.sku,
+            "brand_ref": brand_ref_id,
+            "equipment_model": equipment_model_id,
+            "name": tr.name if tr else "",
+            "description": tr.description if tr else "",
+            "price": product.price,
+            "voltage": product.voltage,
+            "product_kind": product.product_kind,
+            "status": product.status,
+            "category": product.category_id,
+            "quantity_available": stock.quantity_available if stock else 0,
+            "minimum_alert": stock.minimum_alert if stock else 2,
+        }
+        initial.update(initial_specs_from_product(product))
+
+    form = InternalProductForm(request.POST or None, initial=initial)
+    image_errors: list[str] = []
+    if request.method == "POST" and form.is_valid():
+        data = form.cleaned_data
+        delete_ids = {
+            int(x)
+            for x in request.POST.getlist("delete_images")
+            if str(x).isdigit()
+        }
+        primary_raw = request.POST.get("primary_image") or ""
+        primary_id = int(primary_raw) if primary_raw.isdigit() else None
+        uploads = [f for f in request.FILES.getlist("images") if f]
+
+        kept_count = 0
+        if product:
+            kept_count = product.images.exclude(pk__in=delete_ids).count()
+        remaining_slots = PRODUCT_IMAGE_MAX_COUNT - kept_count
+        prepared_uploads = []
+        if len(uploads) > remaining_slots:
+            image_errors.append(
+                f"Limite de {PRODUCT_IMAGE_MAX_COUNT} fotos. "
+                f"Você pode adicionar no máximo {max(0, remaining_slots)} agora."
+            )
+        else:
+            for upload in uploads:
+                try:
+                    prepared_uploads.append(prepare_product_image(upload))
+                except ValidationError as exc:
+                    msg = "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
+                    image_errors.append(f"{upload.name}: {msg}")
+                    break
+
+        if image_errors:
+            return render(
+                request,
+                "dashboard/products_form.html",
+                {
+                    "form": form,
+                    "product": product,
+                    "stock": stock,
+                    "product_images": product_images,
+                    "image_max_count": PRODUCT_IMAGE_MAX_COUNT,
+                    "image_errors": image_errors,
+                    "page_title": f"Editar {product.sku}" if product else "Novo produto",
+                },
+            )
+
+        if product is None:
+            product = Product(sku=data["sku"])
+        product.sku = data["sku"]
+        brand_obj = data["brand_ref"]
+        product.brand_ref = brand_obj
+        product.brand = brand_obj.name if brand_obj else ""
+        equipment_model = data["equipment_model"]
+        product.equipment_model = equipment_model
+        product.model_code = equipment_model.code if equipment_model else ""
+        product.price = data["price"]
+        product.voltage = data["voltage"]
+        product.product_kind = data["product_kind"]
+        product.status = data["status"]
+        product.category = data["category"]
+        product.power_w = data.get("power_w")
+        product.weight_kg = data.get("weight_kg")
+        product.dimensions = form.cleaned_dimensions()
+        product.specs = form.cleaned_specs()
+        product.save()
+        ProductTranslation.objects.update_or_create(
+            product=product,
+            locale="pt-BR",
+            defaults={"name": data["name"], "description": data["description"]},
+        )
+        stock, _ = Stock.objects.get_or_create(product=product)
+        stock.quantity_available = data["quantity_available"]
+        stock.minimum_alert = data["minimum_alert"]
+        stock.save()
+
+        if delete_ids:
+            for image in product.images.filter(pk__in=delete_ids):
+                if image.image:
+                    image.image.delete(save=False)
+                image.delete()
+
+        next_order = (
+            product.images.order_by("-sort_order").values_list("sort_order", flat=True).first()
+            or -1
+        )
+        created_ids: list[int] = []
+        for upload in prepared_uploads:
+            next_order += 1
+            img = ProductImage(
+                product=product,
+                alt_text=data["name"][:255],
+                sort_order=next_order,
+                is_primary=False,
+            )
+            img.image.save(upload.name, upload, save=True)
+            created_ids.append(img.pk)
+
+        remaining = list(product.images.order_by("sort_order", "id"))
+        if remaining:
+            if primary_id and any(i.pk == primary_id for i in remaining):
+                chosen = primary_id
+            elif created_ids and not any(i.is_primary for i in remaining):
+                chosen = created_ids[0]
+            elif any(i.is_primary for i in remaining):
+                chosen = next(i.pk for i in remaining if i.is_primary)
+            else:
+                chosen = remaining[0].pk
+            product.images.update(is_primary=False)
+            product.images.filter(pk=chosen).update(is_primary=True)
+
+        messages.success(request, f"Produto {product.sku} salvo.")
+        return redirect("dashboard:products_edit", pk=product.pk)
+
+    return render(
+        request,
+        "dashboard/products_form.html",
+        {
+            "form": form,
+            "product": product,
+            "stock": stock,
+            "product_images": product_images,
+            "image_max_count": PRODUCT_IMAGE_MAX_COUNT,
+            "image_errors": [],
+            "page_title": f"Editar {product.sku}" if product else "Novo produto",
+        },
+    )
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_POST
+def products_delete(request: HttpRequest, pk: int) -> HttpResponse:
+    product = get_object_or_404(Product, pk=pk)
+    sku = product.sku
+    for image in product.images.all():
+        if image.image:
+            image.image.delete(save=False)
+    product.delete()
+    messages.success(request, f"Produto {sku} excluído.")
+    return redirect("dashboard:products")

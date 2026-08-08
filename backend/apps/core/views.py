@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView
 
-from apps.catalog.models import Category
+from apps.catalog.models import Brand, Category
 from apps.catalog.services import published_products
 from apps.core.branding import (
     HOME_CAT_HVAC_KEY,
@@ -52,15 +52,12 @@ class HomeView(TemplateView):
         ctx["featured_shown"] = len(featured)
         ctx["category_tiles"] = self._category_tiles()
         ctx["filter_brands"] = list(
-            qs.exclude(brand="")
-            .order_by("brand")
-            .values_list("brand", flat=True)
-            .distinct()[:40]
+            Brand.objects.order_by("name").values_list("name", flat=True)[:40]
         )
         ctx["filter_categories"] = list(
             Category.objects.order_by("name").values("slug", "name")[:12]
         )
-        ctx["filter_voltages"] = ["110V", "220V"]
+        ctx["filter_voltages"] = ["110V", "220V", "Bivolt"]
         ctx["hero_slides"] = list(
             HomeHeroSlide.objects.filter(is_active=True).order_by("sort_order", "id")
         )

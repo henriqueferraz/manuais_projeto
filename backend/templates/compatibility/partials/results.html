@@ -1,3 +1,4 @@
+{% load money_tags %}
 {% if searched and parts %}
 <div class="row g-3">
   {% for product in parts %}
@@ -7,7 +8,7 @@
         <span class="tp-badge tp-badge--compat mb-2">Compatível</span>
         <span class="font-label-caps">{{ product.brand }}</span>
         <h2 class="tp-product-card__title">{{ product.name_pt }}</h2>
-        <p class="font-technical">{{ product.sku }} · R$ {{ product.price }}</p>
+        <p class="font-technical">{{ product.sku }} · {{ product.price|brl }}</p>
         <a class="btn btn-outline-primary btn-sm" href="{% url 'catalog:detail' product.slug %}">Ver peça</a>
       </div>
     </article>

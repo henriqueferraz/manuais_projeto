@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load money_tags %}
 {% block title %}Operação — Produtos{% endblock %}
 {% block content %}
 <section class="tp-section">
@@ -41,7 +42,7 @@
           <td>{{ p.name_pt }}</td>
           <td><span class="tp-badge {% if p.status == 'published' %}tp-badge--stock{% else %}tp-badge--draft{% endif %}">{{ p.get_status_display }}</span></td>
           <td class="font-technical">{% if p.stock %}{{ p.stock.sellable }}{% else %}—{% endif %}</td>
-          <td class="font-technical">R$ {{ p.price }}</td>
+          <td class="font-technical">{{ p.price|brl }}</td>
           <td><a href="{% url 'compatibility:ops_edit' p.pk %}">Editar</a></td>
         </tr>
         {% empty %}

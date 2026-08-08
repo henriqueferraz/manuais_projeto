@@ -1,3 +1,4 @@
+{% load money_tags %}
 {% if items %}
 <div class="table-responsive">
   <table class="table tp-table align-middle">
@@ -17,7 +18,7 @@
           <strong>{{ item.product.name_pt }}</strong><br />
           <span class="font-technical text-secondary">{{ item.product.sku }}</span>
         </td>
-        <td class="font-technical">R$ {{ item.unit_price }}</td>
+        <td class="font-technical">{{ item.unit_price|brl }}</td>
         <td class="tp-cart-qty-col">
           <form
             method="post"
@@ -38,7 +39,7 @@
             />
           </form>
         </td>
-        <td class="font-technical">R$ {{ item.line_total }}</td>
+        <td class="font-technical">{{ item.line_total|brl }}</td>
         <td>
           <form
             method="post"
@@ -94,10 +95,10 @@
     {% endif %}
   </div>
   <div class="col-md-6 text-md-end">
-    <p class="mb-1">Subtotal · <strong class="font-technical">R$ {{ subtotal }}</strong></p>
+    <p class="mb-1">Subtotal · <strong class="font-technical">{{ subtotal|brl }}</strong></p>
     {% if discount %}
-    <p class="mb-1 text-success">Desconto · <strong class="font-technical">− R$ {{ discount }}</strong></p>
-    <p class="mb-1">Total · <strong class="font-technical">R$ {{ total_after_discount }}</strong> · {{ count }} item{{ count|pluralize }}</p>
+    <p class="mb-1 text-success">Desconto · <strong class="font-technical">− {{ discount|brl }}</strong></p>
+    <p class="mb-1">Total · <strong class="font-technical">{{ total_after_discount|brl }}</strong> · {{ count }} item{{ count|pluralize }}</p>
     {% else %}
     <p class="mb-1">{{ count }} item{{ count|pluralize }}</p>
     {% endif %}

@@ -94,11 +94,12 @@
             {% if user.is_staff %}
             <li><a class="dropdown-item" href="{% url 'dashboard:insights' %}">Dashboard</a></li>
             <li><a class="dropdown-item" href="{% url 'dashboard:monitoring' %}">Monitoramento</a></li>
+            <li><a class="dropdown-item" href="{% url 'dashboard:products' %}">Estoque e produtos</a></li>
             <li><a class="dropdown-item" href="{% url 'dashboard:home_hero' %}">Hero da home</a></li>
             <li><a class="dropdown-item" href="{% url 'tickets:support' %}">Painel suporte</a></li>
             <li><a class="dropdown-item" href="{% url 'returns:ops' %}">Trocas/ops</a></li>
             <li><a class="dropdown-item" href="{% url 'manuals:review_queue' %}">Revisão de manuais</a></li>
-            <li><a class="dropdown-item" href="{% url 'compatibility:ops_list' %}">Operação</a></li>
+            <li><a class="dropdown-item" href="{% url 'compatibility:ops_compat' %}">Compatibilidades</a></li>
             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
             <li><hr class="dropdown-divider" /></li>
             {% endif %}

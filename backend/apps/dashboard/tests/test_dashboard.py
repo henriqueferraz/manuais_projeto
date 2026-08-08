@@ -184,3 +184,161 @@ def test_home_hero_create_slide(staff_user):
     slide = HomeHeroSlide.objects.get(title="Alta Performance")
     assert slide.badge == "ESTOQUE"
     assert slide.is_active
+
+
+@pytest.mark.django_db
+def test_products_dashboard_staff_ok(staff_user):
+    from decimal import Decimal
+
+    from apps.catalog.models import Category
+    from apps.products.models import Product, ProductTranslation, Stock
+
+    cat = Category.objects.create(name="Ventiladores", slug="vent-dash")
+    product = Product.objects.create(
+        sku="DASH-01",
+        brand="Mondial",
+        model_code="D1",
+        price=Decimal("50.00"),
+        status=Product.Status.PUBLISHED,
+        category=cat,
+    )
+    ProductTranslation.objects.create(product=product, locale="pt-BR", name="Peça dashboard")
+    Stock.objects.create(product=product, quantity_available=4, minimum_alert=2)
+
+    client = Client()
+    client.force_login(staff_user)
+    res = client.get(reverse("dashboard:products"))
+    assert res.status_code == 200
+    assert b"Estoque e produtos" in res.content
+    assert b"DASH-01" in res.content
+    assert b"Pe" in res.content
+
+
+@pytest.mark.django_db
+def test_products_dashboard_create(staff_user, db):
+    from apps.catalog.models import Brand, Category, EquipmentModel
+    from apps.products.models import Product, Stock
+
+    cat = Category.objects.create(name="Cat dash", slug="cat-dash")
+    brand = Brand.objects.create(name="LG", slug="lg")
+    model = EquipmentModel.objects.create(code="L1", brand="LG", slug="lg-l1")
+    client = Client()
+    client.force_login(staff_user)
+    res = client.post(
+        reverse("dashboard:products_create"),
+        {
+            "sku": "DASH-NEW",
+            "brand_ref": brand.pk,
+            "equipment_model": model.pk,
+            "name": "Compressor teste",
+            "description": "",
+            "price": "199.90",
+            "voltage": "110V",
+            "product_kind": "spare_part",
+            "status": "draft",
+            "category": cat.pk,
+            "quantity_available": 5,
+            "minimum_alert": 1,
+        },
+    )
+    assert res.status_code == 302
+    product = Product.objects.get(sku="DASH-NEW")
+    assert product.brand == "LG"
+    assert product.brand_ref_id == brand.pk
+    assert product.model_code == "L1"
+    assert product.equipment_model_id == model.pk
+    assert Stock.objects.get(product=product).quantity_available == 5
+
+
+@pytest.mark.django_db
+def test_products_dashboard_delete(staff_user):
+    from decimal import Decimal
+
+    from apps.products.models import Product
+
+    product = Product.objects.create(
+        sku="DASH-DEL",
+        brand="Mondial",
+        model_code="X",
+        price=Decimal("10.00"),
+        status=Product.Status.DRAFT,
+    )
+    client = Client()
+    client.force_login(staff_user)
+    res = client.post(reverse("dashboard:products_delete", args=[product.pk]))
+    assert res.status_code == 302
+    assert not Product.objects.filter(sku="DASH-DEL").exists()
+
+
+@pytest.mark.django_db
+def test_products_edit_shows_and_saves_specs(staff_user, db):
+    from decimal import Decimal
+
+    from apps.catalog.models import Brand, Category
+    from apps.products.models import Product, ProductTranslation, Stock
+
+    brand = Brand.objects.create(name="SpecsBrand", slug="specsbrand")
+    cat = Category.objects.create(name="SpecsCat", slug="specs-cat")
+    product = Product.objects.create(
+        sku="SPEC-01",
+        brand="SpecsBrand",
+        brand_ref=brand,
+        price=Decimal("20.00"),
+        status=Product.Status.DRAFT,
+        category=cat,
+        power_w=Decimal("120.00"),
+        weight_kg=Decimal("2.500"),
+        dimensions={"height_cm": 40, "width_cm": 30, "depth_cm": 20},
+        specs={"blade_count": 3, "material": "ABS", "ncm": "84145910"},
+    )
+    ProductTranslation.objects.create(product=product, locale="pt-BR", name="Produto specs")
+    Stock.objects.create(product=product, quantity_available=2, minimum_alert=1)
+
+    client = Client()
+    client.force_login(staff_user)
+    get_res = client.get(reverse("dashboard:products_edit", args=[product.pk]))
+    assert get_res.status_code == 200
+    assert b"Especifica" in get_res.content
+    assert b"value=\"120\"" in get_res.content or b"value=\"120.00\"" in get_res.content
+    assert b"ABS" in get_res.content
+    assert b"ncm: 84145910" in get_res.content
+
+    post_res = client.post(
+        reverse("dashboard:products_edit", args=[product.pk]),
+        {
+            "sku": "SPEC-01",
+            "brand_ref": brand.pk,
+            "name": "Produto specs",
+            "description": "",
+            "price": "20.00",
+            "voltage": "220V",
+            "product_kind": "finished_good",
+            "status": "draft",
+            "category": cat.pk,
+            "quantity_available": 2,
+            "minimum_alert": 1,
+            "power_w": "150",
+            "weight_kg": "3.1",
+            "dim_height_cm": "41",
+            "dim_width_cm": "31",
+            "dim_depth_cm": "21",
+            "blade_count": "4",
+            "diameter_cm": "40",
+            "material": "PP",
+            "color": "preto",
+            "rpm": "1350",
+            "mounting": "mesa",
+            "bearing_type": "esferas",
+            "remote_included": "on",
+            "specs_extra": "ncm: 84145990",
+        },
+    )
+    assert post_res.status_code == 302
+    product.refresh_from_db()
+    assert product.power_w == Decimal("150.00")
+    assert product.weight_kg == Decimal("3.100")
+    assert product.dimensions == {"height_cm": 41.0, "width_cm": 31.0, "depth_cm": 21.0}
+    assert product.specs["blade_count"] == 4
+    assert product.specs["material"] == "PP"
+    assert product.specs["remote_included"] is True
+    assert product.specs["ncm"] == 84145990

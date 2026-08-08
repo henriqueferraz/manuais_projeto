@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load money_tags %}
 {% block title %}Checkout — frete{% endblock %}
 {% block content %}
 <section
@@ -26,7 +27,7 @@
       <input type="radio" name="shipping_option_id" value="{{ opt.id }}" required class="mt-1" />
       <span class="flex-grow-1">
         <strong>{{ opt.carrier }} — {{ opt.service }}</strong><br />
-        <span class="font-technical">R$ {{ opt.price }} · {{ opt.eta_days }} dias úteis</span>
+        <span class="font-technical">{{ opt.price|brl }} · {{ opt.eta_days }} dias úteis</span>
         <span class="tp-badge tp-badge--draft ms-1">{{ opt.source }}</span>
       </span>
     </label>

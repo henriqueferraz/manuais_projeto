@@ -119,7 +119,11 @@ class Coupon(models.Model):
         if self.max_uses is not None and self.used_count >= self.max_uses:
             raise ValidationError("Cupom esgotado.")
         if subtotal < self.min_subtotal:
-            raise ValidationError(f"Pedido mínimo de R$ {self.min_subtotal} para este cupom.")
+            from apps.core.money import format_brl
+
+            raise ValidationError(
+                f"Pedido mínimo de {format_brl(self.min_subtotal)} para este cupom."
+            )
 
     def discount_for(self, subtotal):
         from decimal import Decimal
@@ -155,7 +159,9 @@ class ProductPromotion(models.Model):
         verbose_name_plural = "promoções"
 
     def __str__(self) -> str:
-        return f"Promo → R$ {self.promo_price}"
+        from apps.core.money import format_brl
+
+        return f"Promo → {format_brl(self.promo_price)}"
 
     def is_current(self) -> bool:
         now = timezone.now()

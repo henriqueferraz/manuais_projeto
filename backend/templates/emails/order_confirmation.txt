@@ -1,3 +1,4 @@
+{% load money_tags %}
 {{ brand_name }} — Pedido {{ order.number }} confirmado
 
 Olá{{ order.shipping_name|default:"" }},
@@ -6,11 +7,11 @@ Recebemos o pagamento do seu pedido {{ order.number }}.
 
 Itens:
 {% for item in order.items.all %}
-- {{ item.sku }} {{ item.name }} x{{ item.quantity }} = R$ {{ item.line_total }}
+- {{ item.sku }} {{ item.name }} x{{ item.quantity }} = {{ item.line_total|brl }}
 {% endfor %}
 
-Frete: {{ order.shipping_carrier }} {{ order.shipping_method }} — R$ {{ order.shipping_cost }}
-Total: R$ {{ order.total }}
+Frete: {{ order.shipping_carrier }} {{ order.shipping_method }} — {{ order.shipping_cost|brl }}
+Total: {{ order.total|brl }}
 
 Endereço:
 {{ order.shipping_street }}, {{ order.shipping_number }} {{ order.shipping_complement }}

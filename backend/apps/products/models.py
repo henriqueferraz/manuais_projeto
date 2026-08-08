@@ -41,7 +41,21 @@ class Product(models.Model):
         related_name="products",
     )
     brand = models.CharField(max_length=120, db_index=True)
+    brand_ref = models.ForeignKey(
+        "catalog.Brand",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="products",
+    )
     model_code = models.CharField(max_length=120, blank=True, db_index=True)
+    equipment_model = models.ForeignKey(
+        "catalog.EquipmentModel",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="products",
+    )
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default="BRL")
     voltage = models.CharField(max_length=32, blank=True, db_index=True)

@@ -1,3 +1,4 @@
+{% load money_tags %}
 {{ brand_name }} — Peças compatíveis para o pedido {{ order.number }}
 
 Olá,
@@ -5,7 +6,7 @@ Olá,
 Com base no seu pedido, estas peças podem interessar:
 
 {% for p in suggestions %}
-- {{ p.sku }} {{ p.name_pt }} — R$ {{ p.price }}
+- {{ p.sku }} {{ p.name_pt }} — {{ p.price|brl }}
   https://localhost/catalogo/{{ p.slug }}/
 {% endfor %}
 

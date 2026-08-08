@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="tp-section tp-section--flush-top">
+  <header class="tp-ops-hero">
+    <p class="font-label-caps tp-ops-hero__eyebrow">
+      <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+      Operação · Estoque e produtos
+    </p>
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start">
+      <div>
+        <h1 class="font-headline-md">
+          {% if product %}Editar produto{% else %}Novo produto{% endif %}
+        </h1>
+        <p class="tp-ops-hero__lead">
+          {% if product %}
+            SKU {{ product.sku }}.
+          {% else %}
+            Cadastro com tradução pt-BR, estoque e fotos.
+          {% endif %}
+        </p>
+      </div>
+      <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:products' %}">Voltar à lista</a>
+    </div>
+  </header>
+
+  <form method="post" enctype="multipart/form-data" class="mt-4">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <section class="tp-panel">
+          <div class="tp-panel__header"><h2>Dados do produto</h2></div>
+          <div class="tp-panel__body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label" for="{{ form.sku.id_for_label }}">{{ form.sku.label }}</label>
+                {{ form.sku }}
+                {% if form.sku.help_text %}
+                  <div class="form-text">{{ form.sku.help_text }}</div>
+                {% endif %}
+                {% if form.sku.errors %}
+                  <div class="text-danger small">{{ form.sku.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="{{ form.brand_ref.id_for_label }}">{{ form.brand_ref.label }}</label>
+                {{ form.brand_ref }}
+                {% if form.brand_ref.errors %}
+                  <div class="text-danger small">{{ form.brand_ref.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="{{ form.equipment_model.id_for_label }}">{{ form.equipment_model.label }}</label>
+                {{ form.equipment_model }}
+                {% if form.equipment_model.errors %}
+                  <div class="text-danger small">{{ form.equipment_model.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                  <div class="text-danger small">{{ form.name.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                  <div class="text-danger small">{{ form.description.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                {{ form.price }}
+                {% if form.price.errors %}
+                  <div class="text-danger small">{{ form.price.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="{{ form.voltage.id_for_label }}">{{ form.voltage.label }}</label>
+                {{ form.voltage }}
+                {% if form.voltage.errors %}
+                  <div class="text-danger small">{{ form.voltage.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="{{ form.product_kind.id_for_label }}">{{ form.product_kind.label }}</label>
+                {{ form.product_kind }}
+                {% if form.product_kind.errors %}
+                  <div class="text-danger small">{{ form.product_kind.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                  <div class="text-danger small">{{ form.status.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                  <div class="text-danger small">{{ form.category.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-lg-4">
+        <section class="tp-panel">
+          <div class="tp-panel__header"><h2>Estoque</h2></div>
+          <div class="tp-panel__body">
+            <div class="vstack gap-3">
+              <div>
+                <label class="form-label" for="{{ form.quantity_available.id_for_label }}">
+                  {{ form.quantity_available.label }}
+                </label>
+                {{ form.quantity_available }}
+                {% if form.quantity_available.errors %}
+                  <div class="text-danger small">{{ form.quantity_available.errors }}</div>
+                {% endif %}
+              </div>
+              <div>
+                <label class="form-label" for="{{ form.minimum_alert.id_for_label }}">
+                  {{ form.minimum_alert.label }}
+                </label>
+                {{ form.minimum_alert }}
+                {% if form.minimum_alert.errors %}
+                  <div class="text-danger small">{{ form.minimum_alert.errors }}</div>
+                {% endif %}
+              </div>
+              {% if stock %}
+                <div class="border rounded p-3 bg-light">
+                  <p class="font-label-caps small text-secondary mb-2">Somente leitura</p>
+                  <dl class="row mb-0 small">
+                    <dt class="col-7">Reservado</dt>
+                    <dd class="col-5 font-technical mb-1">{{ stock.quantity_reserved }}</dd>
+                    <dt class="col-7">Vendável</dt>
+                    <dd class="col-5 font-technical mb-0">{{ stock.sellable }}</dd>
+                  </dl>
+                  {% if stock.below_minimum %}
+                    <p class="tp-badge tp-badge--draft mt-2 mb-0">Abaixo do mínimo</p>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="tp-panel mt-4" aria-labelledby="product-specs-heading">
+      <div class="tp-panel__header">
+        <h2 id="product-specs-heading" class="mb-0">Especificações</h2>
+      </div>
+      <div class="tp-panel__body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.power_w.id_for_label }}">{{ form.power_w.label }}</label>
+            {{ form.power_w }}
+            {% if form.power_w.errors %}<div class="text-danger small">{{ form.power_w.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.weight_kg.id_for_label }}">{{ form.weight_kg.label }}</label>
+            {{ form.weight_kg }}
+            {% if form.weight_kg.errors %}<div class="text-danger small">{{ form.weight_kg.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.diameter_cm.id_for_label }}">{{ form.diameter_cm.label }}</label>
+            {{ form.diameter_cm }}
+            {% if form.diameter_cm.errors %}<div class="text-danger small">{{ form.diameter_cm.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.dim_height_cm.id_for_label }}">{{ form.dim_height_cm.label }}</label>
+            {{ form.dim_height_cm }}
+            {% if form.dim_height_cm.errors %}<div class="text-danger small">{{ form.dim_height_cm.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.dim_width_cm.id_for_label }}">{{ form.dim_width_cm.label }}</label>
+            {{ form.dim_width_cm }}
+            {% if form.dim_width_cm.errors %}<div class="text-danger small">{{ form.dim_width_cm.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="{{ form.dim_depth_cm.id_for_label }}">{{ form.dim_depth_cm.label }}</label>
+            {{ form.dim_depth_cm }}
+            {% if form.dim_depth_cm.errors %}<div class="text-danger small">{{ form.dim_depth_cm.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="{{ form.blade_count.id_for_label }}">{{ form.blade_count.label }}</label>
+            {{ form.blade_count }}
+            {% if form.blade_count.errors %}<div class="text-danger small">{{ form.blade_count.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="{{ form.material.id_for_label }}">{{ form.material.label }}</label>
+            {{ form.material }}
+            {% if form.material.errors %}<div class="text-danger small">{{ form.material.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="{{ form.color.id_for_label }}">{{ form.color.label }}</label>
+            {{ form.color }}
+            {% if form.color.errors %}<div class="text-danger small">{{ form.color.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="{{ form.rpm.id_for_label }}">{{ form.rpm.label }}</label>
+            {{ form.rpm }}
+            {% if form.rpm.errors %}<div class="text-danger small">{{ form.rpm.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.mounting.id_for_label }}">{{ form.mounting.label }}</label>
+            {{ form.mounting }}
+            {% if form.mounting.errors %}<div class="text-danger small">{{ form.mounting.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.bearing_type.id_for_label }}">{{ form.bearing_type.label }}</label>
+            {{ form.bearing_type }}
+            {% if form.bearing_type.errors %}<div class="text-danger small">{{ form.bearing_type.errors }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              {{ form.remote_included }}
+              <label class="form-check-label" for="{{ form.remote_included.id_for_label }}">
+                {{ form.remote_included.label }}
+              </label>
+            </div>
+            {% if form.remote_included.errors %}<div class="text-danger small">{{ form.remote_included.errors }}</div>{% endif %}
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="{{ form.specs_extra.id_for_label }}">{{ form.specs_extra.label }}</label>
+            {{ form.specs_extra }}
+            {% if form.specs_extra.help_text %}
+              <div class="form-text">{{ form.specs_extra.help_text }}</div>
+            {% endif %}
+            {% if form.specs_extra.errors %}<div class="text-danger small">{{ form.specs_extra.errors }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tp-panel mt-4 tp-product-photos" aria-labelledby="product-photos-heading">
+      <div class="tp-panel__header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h2 id="product-photos-heading" class="mb-0">Fotos do produto</h2>
+        <span class="tp-badge tp-badge--draft">{{ product_images|length }} / {{ image_max_count }}</span>
+      </div>
+      <div class="tp-panel__body">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <p class="tp-product-photos__lead mb-3">
+              Galeria do catálogo (máx. {{ image_max_count }}). Escolha a foto principal e marque as que deseja excluir ao salvar.
+            </p>
+            <p class="small text-secondary mb-3">
+              Ao salvar, cada foto enviada é <strong>alterada automaticamente</strong>
+              (crop central para quadrado, redimensionamento para 800×800&nbsp;px e compressão JPEG até 2&nbsp;MB).
+              Se o resultado não ficar como você espera, envie a imagem já no padrão:
+              JPG, PNG ou WEBP, entre 400×400 e 800×800&nbsp;px, proporção próxima do quadrado (entre 3:4 e 4:3) e até 2&nbsp;MB.
+            </p>
+
+            {% if product_images %}
+            <div class="tp-product-photos__grid">
+              {% for img in product_images %}
+              <article class="tp-product-photos__card{% if img.is_primary %} is-primary{% endif %}">
+                <div class="tp-product-photos__preview">
+                  {% if img.image %}
+                  <img
+                    src="{{ img.image.url }}"
+                    alt="{{ img.alt_text|default:product.sku }}"
+                    width="800"
+                    height="800"
+                    loading="lazy"
+                  />
+                  {% else %}
+                  <span class="material-symbols-outlined" aria-hidden="true">image</span>
+                  {% endif %}
+                  {% if img.is_primary %}
+                  <span class="tp-product-photos__pill">Principal</span>
+                  {% endif %}
+                </div>
+                <div class="tp-product-photos__meta">
+                  <label class="tp-product-photos__option">
+                    <input
+                      type="radio"
+                      name="primary_image"
+                      value="{{ img.pk }}"
+                      {% if img.is_primary %}checked{% endif %}
+                    />
+                    <span>Usar como principal</span>
+                  </label>
+                  <label class="tp-product-photos__option tp-product-photos__option--danger">
+                    <input
+                      type="checkbox"
+                      name="delete_images"
+                      value="{{ img.pk }}"
+                    />
+                    <span>Excluir ao salvar</span>
+                  </label>
+                </div>
+              </article>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="tp-product-photos__empty">
+              <span class="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
+              <p class="mb-0">Nenhuma foto ainda. Adicione arquivos ao lado.</p>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="col-lg-4">
+            <div class="tp-product-photos__upload">
+              <h3 class="h6 mb-2">Adicionar fotos</h3>
+              <label class="tp-product-photos__drop form-label" for="id_images">
+                <span class="material-symbols-outlined" aria-hidden="true">upload</span>
+                <span>Selecionar imagens</span>
+              </label>
+              <input
+                id="id_images"
+                class="form-control"
+                type="file"
+                name="images"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                multiple
+              />
+              <ul class="tp-product-photos__rules mb-0">
+                <li>Aceitos: JPG, PNG ou WEBP (envio até 25&nbsp;MB)</li>
+                <li>Serão convertidas para JPEG ~800×800</li>
+                <li>Crop central + compressão automática</li>
+                <li>Insatisfeito com o ajuste? Envie já em 400–800&nbsp;px, proporção 3:4 a 4:3 e ≤&nbsp;2&nbsp;MB</li>
+              </ul>
+              {% if image_errors %}
+              <div class="alert alert-danger small mt-3 mb-0">
+                {% for err in image_errors %}
+                  <div>{{ err }}</div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-primary">Salvar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'dashboard:products' %}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

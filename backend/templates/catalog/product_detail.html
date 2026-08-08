@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n_extras %}
+{% load static i18n_extras money_tags product_extras %}
 {% block title %}{{ product|name_for_locale:locale }} — {{ brand_name }}{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb" class="mb-3">
@@ -11,35 +11,126 @@
 
 <article class="row g-5">
   <div class="col-lg-6">
-    <div class="bg-white border rounded p-3 text-center tp-media-frame">
-      {% with img=images.0 %}
-      {% if img and img.image %}
-      <img
-        src="{{ img.image.url }}"
-        alt="{{ img.alt_text|default:product.name_pt }}"
-        class="img-fluid tp-media-img"
-        loading="eager"
-      />
-      {% else %}
-      <span class="material-symbols-outlined text-secondary tp-icon-xl" aria-hidden="true">precision_manufacturing</span>
+    {% with gallery=images %}
+    {% if gallery %}
+    <div class="tp-product-gallery">
+      <div
+        id="product-gallery"
+        class="carousel slide"
+        data-bs-ride="false"
+        data-bs-interval="false"
+        aria-label="Fotos do produto"
+      >
+        <div class="carousel-inner tp-product-gallery__viewport">
+          {% for img in gallery %}
+          <div class="carousel-item{% if forloop.first %} active{% endif %}">
+            <div class="tp-product-gallery__frame">
+              <button
+                type="button"
+                class="tp-product-gallery__zoom-hit"
+                data-tp-gallery-zoom
+                data-zoom-src="{{ img.image.url }}"
+                data-zoom-alt="{{ img.alt_text|default:product.name_pt }}"
+                aria-label="Ampliar foto"
+              >
+                <img
+                  src="{{ img.image.url }}"
+                  alt="{{ img.alt_text|default:product.name_pt }}"
+                  class="tp-product-gallery__img"
+                  width="800"
+                  height="800"
+                  {% if forloop.first %}loading="eager"{% else %}loading="lazy"{% endif %}
+                />
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <button
+          type="button"
+          class="tp-product-gallery__zoom"
+          data-tp-gallery-zoom-btn
+          aria-label="Ampliar foto"
+          title="Ampliar foto"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">zoom_in</span>
+        </button>
+
+        {% if gallery|length > 1 %}
+        <button
+          class="carousel-control-prev tp-product-gallery__nav"
+          type="button"
+          data-bs-target="#product-gallery"
+          data-bs-slide="prev"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+          <span class="visually-hidden">Imagem anterior</span>
+        </button>
+        <button
+          class="carousel-control-next tp-product-gallery__nav"
+          type="button"
+          data-bs-target="#product-gallery"
+          data-bs-slide="next"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+          <span class="visually-hidden">Próxima imagem</span>
+        </button>
+        {% endif %}
+      </div>
+
+      {% if gallery|length > 1 %}
+      <div class="tp-product-gallery__thumbs" role="tablist" aria-label="Miniaturas">
+        {% for img in gallery %}
+        <button
+          type="button"
+          class="tp-product-gallery__thumb{% if forloop.first %} is-active{% endif %}"
+          data-bs-target="#product-gallery"
+          data-bs-slide-to="{{ forloop.counter0 }}"
+          aria-label="Ver foto {{ forloop.counter }}"
+          aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+        >
+          <img
+            src="{{ img.image.url }}"
+            alt=""
+            width="72"
+            height="72"
+            loading="lazy"
+          />
+        </button>
+        {% endfor %}
+      </div>
       {% endif %}
-      {% endwith %}
+
+      <div
+        class="tp-product-lightbox"
+        id="product-lightbox"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-label="Foto ampliada"
+      >
+        <button type="button" class="tp-product-lightbox__backdrop" data-tp-lightbox-close aria-label="Fechar"></button>
+        <div class="tp-product-lightbox__panel">
+          <button type="button" class="tp-product-lightbox__close" data-tp-lightbox-close aria-label="Fechar ampliação">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+          <img class="tp-product-lightbox__img" src="" alt="" width="800" height="800" />
+        </div>
+      </div>
     </div>
-    {% if images|length > 1 %}
-    <div class="d-flex gap-2 mt-3 flex-wrap">
-      {% for img in images %}
-      {% if img.image %}
-      <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:product.name_pt }}" width="72" height="72" class="rounded border object-fit-cover" loading="lazy" />
-      {% endif %}
-      {% endfor %}
+    {% else %}
+    <div class="tp-product-gallery__frame tp-product-gallery__frame--empty">
+      <span class="material-symbols-outlined text-secondary tp-icon-xl" aria-hidden="true">precision_manufacturing</span>
     </div>
     {% endif %}
+    {% endwith %}
   </div>
 
   <div class="col-lg-6">
     <p class="font-label-caps text-secondary mb-1">{{ product.brand }}</p>
     <h1 class="font-headline-lg mb-2">{{ product|name_for_locale:locale }}</h1>
-    <p class="fs-3 fw-bold text-primary mb-2">R$ {{ product.price }}</p>
+    <p class="fs-3 fw-bold text-primary mb-2">{{ product.price|brl }}</p>
 
     {% if product.in_stock %}
     <span class="tp-badge tp-badge--stock mb-3">{{ product.quantity_sellable }} disponível</span>
@@ -81,15 +172,17 @@
     </div>
     {% endif %}
 
-    {% if product.specs %}
+    {% with spec_rows=product|product_specs %}
+    {% if spec_rows %}
     <h2 class="font-headline-sm mt-4">Especificações</h2>
     <dl class="row font-technical">
-      {% for key, value in product.specs.items %}
-      <dt class="col-5 text-secondary">{{ key }}</dt>
+      {% for label, value in spec_rows %}
+      <dt class="col-5 text-secondary">{{ label }}</dt>
       <dd class="col-7">{{ value }}</dd>
       {% endfor %}
     </dl>
     {% endif %}
+    {% endwith %}
 
     {% if product.description_pt %}
     <h2 class="font-headline-sm mt-4">Descrição</h2>
@@ -110,7 +203,7 @@
           <div class="tp-product-card__body">
             <span class="tp-badge tp-badge--compat mb-1">Cross-sell</span>
             <h3 class="tp-product-card__title">{{ related.name_pt }}</h3>
-            <p class="font-technical mb-0">{{ related.sku }} · R$ {{ related.price }}</p>
+            <p class="font-technical mb-0">{{ related.sku }} · {{ related.price|brl }}</p>
           </div>
         </a>
       </article>
@@ -119,4 +212,8 @@
   </div>
 </section>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/product-gallery.js' %}" defer></script>
 {% endblock %}
