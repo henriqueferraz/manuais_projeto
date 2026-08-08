@@ -155,7 +155,7 @@ def diagnose_question(
         tokens_in=tokens_in,
         tokens_out=tokens_out,
         cost_estimate=_estimate_cost(tokens_in, tokens_out),
-        model_name="langgraph-diagnosis-mock",
+        model_name=result.get("model_name") or "langgraph-diagnosis-mock",
         langsmith_trace_id=f"diag-{uuid.uuid4().hex[:12]}",
         diagnosis_card=card or {},
     )
@@ -193,6 +193,7 @@ def diagnose_question(
         "recommended_skus": result.get("recommended_skus") or [],
         "decision": result.get("decision") or "",
         "locale": locale,
+        "model_name": assistant.model_name,
     }
     return assistant, stream(), meta
 

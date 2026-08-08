@@ -21,3 +21,4 @@ class DiagnosisState(TypedDict, total=False):
     answer: str
     sources: list[dict[str, Any]]
     found_in_manual: bool
+    model_name: str

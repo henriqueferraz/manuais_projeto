@@ -11,7 +11,7 @@
 - **S-002:** 6/6 fluxos com **OpenAI** (chat/embeddings/foto) + **R2** para upload de foto; pagamento permanece mock.
 - **S-003:** 6/6 — upload PDF → `awaiting_review` → approve HITL → **draft** (sem auto-publish) → publish staff → catálogo.
 - Achado S-001: `embedding_vec` NULL engolia fallback JSON/hybrid → corrigido.
-- Observação S-002: diagnóstico LangGraph citou fonte corretamente; `model_name` ainda rotula `langgraph-diagnosis-mock` mesmo com `DIAGNOSIS_LLM_MODE=openai` (enriquecimento LLM não refletido no campo — P2).
+- Observação S-002: diagnóstico LangGraph citou fonte corretamente; **B-011 fechado** — `model_name` passa a refletir `OPENAI_CHAT_MODEL` quando o enriquecimento OpenAI roda.
 - DoD visual: checklist código ok; validação humana via proxy HTTP S-001/S-002/S-003 nas telas críticas.
 
 ## Sessões
@@ -58,9 +58,9 @@ Script: `backend/scripts_beta_s001.py`.
 - RAG citação ok?: **sim** — `found_in_manual=true`; fonte Manutenção pág. 12; CAP-35 3.5 uF; SKUs `['VTE-02','CAP-35']`
 - Alucinação / fallback: 0; resposta alinhada ao manual seed
 - Tempo percebido: checkout ~2s; chat/foto com OpenAI ~tens de segundos (aceitável em local)
-- Confiança no diagnóstico (1–5): **4,5** — citação + SKUs; label `model_name` ainda mock (B-011)
+- Confiança no diagnóstico (1–5): **4,5** — citação + SKUs; B-011 corrigido após S-002
 - Chamado sem repetir relato?: sim — `CH-260808-092D8` com descrição referenciando chat/foto
-- Issues: **B-011** (P2, aberto)
+- Issues: **B-011** (P2, **corrigido**)
 
 Evidências rápidas:
 
@@ -111,7 +111,7 @@ Script: `backend/scripts_beta_s003_hitl.py`.
 | B-008 | P2 | PWA | `/sw.js` 404 no browser | agente | **Corrigido** — rota `/sw.js` + registro na raiz |
 | B-009 | P2 | Chat | Card diagnóstico sem link de SKU / CTA chamado | agente | **Corrigido** — `recommendedProducts` + ticket CTA |
 | B-010 | P2 | Catálogo | Seed beta sem foto de produto | agente | **Corrigido** — PNG técnico no `seed_beta` |
-| B-011 | P2 | Diagnóstico | Com `DIAGNOSIS_LLM_MODE=openai`, `model_name` permanece `langgraph-diagnosis-mock` | agente | Abrir — propagar nome do modelo OpenAI no card/mensagem |
+| B-011 | P2 | Diagnóstico | Com `DIAGNOSIS_LLM_MODE=openai`, `model_name` permanecia `langgraph-diagnosis-mock` | agente | **Corrigido** — grafo propaga `OPENAI_CHAT_MODEL` após enriquecimento |
 
 ### Histórico (auditoria código/UI — T-P.3)
 
@@ -162,6 +162,5 @@ Perguntas-guia do seed: “Qual o capacitor de partida do VTE-02?” · “Venti
 
 ## Próximos passos
 
-1. Opcional: fechar **B-011** (rótulo de modelo no diagnóstico OpenAI).
-2. Go-live staging: checklist [`security-hardening.md`](security-hardening.md) + [`deploy.md`](deploy.md) com secrets reais (pagamento/NF-e se contrato).
-3. Conferência visual no browser humano (Assinaturas / Assistências / Garantia).
+1. Go-live staging: checklist [`security-hardening.md`](security-hardening.md) + [`deploy.md`](deploy.md) com secrets reais (pagamento/NF-e se contrato).
+2. Conferência visual no browser humano (Assinaturas / Assistências / Garantia).

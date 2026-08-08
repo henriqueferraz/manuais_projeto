@@ -92,6 +92,29 @@ def test_diagnosis_suggests_capacitor_with_source(indexed_diagnosis_manual):
     assert "CAP-35" in (assistant.diagnosis_card.get("recommendedSkus") or []) or spare.sku in text
     assert any(p.get("sku") == "CAP-35" and p.get("url") for p in products) or spare.sku in text
     assert meta.get("mode") == "diagnosis"
+    assert assistant.model_name == "langgraph-diagnosis-mock"
+
+
+@pytest.mark.django_db
+def test_diagnosis_model_name_openai_when_enriched(indexed_diagnosis_manual, settings, monkeypatch):
+    """B-011: com DIAGNOSIS_LLM_MODE=openai e enriquecimento ok, model_name = OPENAI_CHAT_MODEL."""
+    from apps.ai.models import ChatSession
+
+    settings.DIAGNOSIS_LLM_MODE = "openai"
+    settings.OPENAI_CHAT_MODEL = "gpt-4o-mini"
+    monkeypatch.setattr(
+        "apps.ai.graphs.diagnosis._enrich_diagnosis_openai",
+        lambda **kwargs: "Diagnóstico enriquecido. Fonte: Manutenção, pág. 12. Peças: CAP-35.",
+    )
+    _, equipment, _ = indexed_diagnosis_manual
+    session = ChatSession.objects.create(product=equipment, anonymous_key="diag-b011")
+    assistant, stream, meta = diagnose_question(
+        session,
+        "O ventilador VTE-02 faz barulho e não gira, parece capacitor",
+    )
+    "".join(stream)
+    assert assistant.model_name == "gpt-4o-mini"
+    assert meta.get("model_name") == "gpt-4o-mini"
 
 
 @pytest.mark.django_db

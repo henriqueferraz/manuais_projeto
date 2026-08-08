@@ -44,6 +44,7 @@ def understand_node(state: DiagnosisState) -> dict[str, Any]:
         out["ref_manual"] = ""
         out["sources"] = []
         out["cause"] = ""
+        out["model_name"] = "langgraph-diagnosis-mock"
     return out
 
 
@@ -95,6 +96,7 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
 
     chunks = state.get("chunks") or []
     symptom = state.get("symptom") or ""
+    model_name = "langgraph-diagnosis-mock"
     if not chunks:
         return {
             "answer": (
@@ -107,6 +109,7 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
             "recommended_skus": [],
             "found_in_manual": False,
             "sources": [],
+            "model_name": model_name,
         }
 
     best = chunks[0]
@@ -142,6 +145,7 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
         if enriched:
             answer = enriched
             cause = enriched[:240]
+            model_name = getattr(settings, "OPENAI_CHAT_MODEL", "gpt-4o-mini")
 
     conf = round(min(0.95, float(best.get("score") or 0) + 0.25), 3)
     return {
@@ -151,6 +155,7 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
         "recommended_skus": skus,
         "answer": answer,
         "found_in_manual": True,
+        "model_name": model_name,
         "sources": [
             {
                 "chunk_id": c.get("chunk_id"),
