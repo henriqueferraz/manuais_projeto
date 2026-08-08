@@ -55,7 +55,7 @@ class OpsAlert(models.Model):
         return f"[{self.severity}] {self.title}"
 
 
-def home_hero_image_upload_to(instance: "HomeHeroSlide", filename: str) -> str:
+def home_hero_image_upload_to(instance: HomeHeroSlide, filename: str) -> str:
     safe = filename.replace(" ", "_")
     uid = instance.pk or uuid.uuid4()
     return f"branding/hero/{uid}/{safe}"
