@@ -23,10 +23,7 @@ from django.utils import timezone
 from apps.manuals.models import ExtractionLog
 from apps.products.models import Product
 
-FIXTURE = (
-    Path(__file__).resolve().parent
-    / "apps/manuals/golden_set/fixtures/mondial_vt40.txt"
-)
+FIXTURE = Path(__file__).resolve().parent / "apps/manuals/golden_set/fixtures/mondial_vt40.txt"
 RESULTS: list[tuple[str, bool, str]] = []
 User = get_user_model()
 
@@ -79,16 +76,18 @@ def build_text_pdf(text: str) -> bytes:
     for off in offsets[1:]:
         out.write(f"{off:010d} 00000 n \n".encode("ascii"))
     out.write(
-        f"trailer<< /Size {len(offsets)} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode(
-            "ascii"
-        )
+        f"trailer<< /Size {len(offsets)} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode("ascii")
     )
     return out.getvalue()
 
 
 def main() -> int:
-    text = FIXTURE.read_text(encoding="utf-8") if FIXTURE.exists() else (
-        "Mondial\nVentilador de Coluna VT-40-NB\nModelo VT-40-NB\nPotencia 80W\nVoltagem 220V\n"
+    text = (
+        FIXTURE.read_text(encoding="utf-8")
+        if FIXTURE.exists()
+        else (
+            "Mondial\nVentilador de Coluna VT-40-NB\nModelo VT-40-NB\nPotencia 80W\nVoltagem 220V\n"
+        )
     )
     pdf = build_text_pdf(text)
     assert pdf.startswith(b"%PDF")
@@ -119,8 +118,7 @@ def main() -> int:
         ok(
             "1-upload",
             upload.status_code in (200, 302) and ExtractionLog.objects.count() > before,
-            f"http={upload.status_code} logs={ExtractionLog.objects.count()} "
-            f"(antes={before})",
+            f"http={upload.status_code} logs={ExtractionLog.objects.count()} " f"(antes={before})",
         )
 
         log = ExtractionLog.objects.order_by("-pk").first()

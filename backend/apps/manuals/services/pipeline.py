@@ -142,10 +142,7 @@ def approve_extraction(
                     notes=notes,
                 )
                 log.refresh_from_db()
-                if (
-                    log.status == ExtractionLog.Status.APPROVED
-                    and log.draft_product_id
-                ):
+                if log.status == ExtractionLog.Status.APPROVED and log.draft_product_id:
                     return log.draft_product
         except Exception:  # noqa: BLE001
             logger.warning(
