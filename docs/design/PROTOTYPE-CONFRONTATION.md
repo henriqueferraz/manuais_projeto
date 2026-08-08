@@ -8,7 +8,7 @@ Desvios aceitos: stack Django+Bootstrap vs Tailwind do protótipo; conteúdo din
 
 | Tela produção | Protótipo | Resultado | Notas / desvios conscientes |
 |---|---|---|---|
-| Home `/` | `code (cópia 4).html` / `code (cópia 3).html` (hero loja) | Sim | Hero marketing `tp-home-hero` (navy full-bleed, marca + 1 headline + CTAs catálogo/IA); sem carousel/overlays do protótipo (DoD / brand rules) |
+| Home `/` | `code (cópia 4).html` / `code (cópia 3).html` (hero loja) | Sim (rev. 2026-08-08) | Hero full-bleed com foto R2 + gradiente navy (sem carousel/overlays no hero); bloco `tp-home-ai` abaixo; bento; destaques; footer navy. **Header `tp-topnav` 100% protótipo** (logo forte, Catálogo/Suporte/Pedidos, busca inteligente, ícones carrinho+conta, underline/focus/dot cyan — exceção explícita à regra “cyan só IA” nesta superfície). |
 | Catálogo | `code (cópia 10).html` | Sim | `tp-product-card`, navy, mono em specs, empty+CTA |
 | PDP | `code (cópia 6).html` / `code (cópia 11).html` | Sim | Hierarquia título → preço → ação → specs; cyan só em CTA de compat/IA |
 | Carrinho | `code (cópia 1).html` | Sim | Painel + empty `tp-empty`; checkout navy |
@@ -23,7 +23,7 @@ Desvios aceitos: stack Django+Bootstrap vs Tailwind do protótipo; conteúdo din
 ## Decisões de marca vs protótipo antigo
 
 1. **Botão primary = Industrial Navy** (`DESIGN.md` / BRAND) — protótipos Tailwind às vezes usam cyan em CTA de compra; produção **não** replica isso.
-2. **Cyan só em IA** — chat, diagnóstico, badges de compat assistida, eyebrow Insights IA, upload de manual (extração).
+2. **Cyan só em IA** — regra geral; **exceção explícita (2026-08-08):** header `tp-topnav` segue protótipo `code (cópia 4)` 100% (underline ativo, focus da busca, dot do carrinho).
 3. **`docs/design/design.md`** (minúsculo) está **obsoleto** quanto a “Primary = AI Cyan”; seguir `DESIGN.md`.
 
 ## Checklist DoD (pós T-P.3)

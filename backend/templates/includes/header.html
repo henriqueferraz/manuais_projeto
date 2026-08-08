@@ -1,37 +1,124 @@
-<header class="border-bottom bg-white sticky-top" role="banner">
-  <div class="tp-container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-    <a href="{% url 'core:home' %}" class="text-decoration-none text-reset">
-      <span class="font-label-caps d-block">{{ brand_name }}</span>
-      <span class="font-headline-sm mb-0">{{ brand_tagline }}</span>
-    </a>
-    <nav aria-label="Principal" class="d-flex flex-wrap align-items-center gap-3 font-body-md">
-      <a href="{% url 'catalog:list' %}">Catálogo</a>
-      <a href="{% url 'ai:chat' %}">Assistente</a>
-      <a href="{% url 'compatibility:checker' %}">Compatibilidade</a>
-      <a href="{% url 'tickets:list' %}">Chamados</a>
-      <a href="{% url 'returns:list' %}">Devoluções</a>
-      <a href="{% url 'subscriptions:plans' %}">Assinaturas</a>
-      <a href="{% url 'partners:list' %}">Assistências</a>
-      <a href="{% url 'cart:detail' %}">
-        Carrinho{% if cart_item_count %} ({{ cart_item_count }}){% endif %}
-      </a>
-      {% if user.is_authenticated %}
-      {% if user.is_staff %}
-      <a href="{% url 'dashboard:insights' %}">Dashboard</a>
-      <a href="{% url 'dashboard:monitoring' %}">Monitoramento</a>
-      <a href="{% url 'tickets:support' %}">Suporte</a>
-      <a href="{% url 'returns:ops' %}">Trocas/ops</a>
-      <a href="{% url 'manuals:review_queue' %}">Revisão de manuais</a>
-      <a href="{% url 'compatibility:ops_list' %}">Operação</a>
-      {% endif %}
-      <a href="{% url 'admin:index' %}">Admin</a>
-      <form method="post" action="{% url 'logout' %}" class="d-inline">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-primary btn-sm">Sair</button>
+<header class="tp-topnav" role="banner">
+  <div class="tp-topnav__inner tp-container">
+    <a href="{% url 'core:home' %}" class="tp-topnav__brand">TechParts AI</a>
+
+    <button
+      class="tp-topnav__toggle d-lg-none"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#tp-topnav-collapse"
+      aria-controls="tp-topnav-collapse"
+      aria-expanded="false"
+      aria-label="Abrir menu"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+    </button>
+
+    <div class="collapse tp-topnav__collapse" id="tp-topnav-collapse">
+      <nav class="tp-topnav__nav" aria-label="Principal">
+        <a
+          href="{% url 'catalog:list' %}"
+          class="tp-topnav__link{% if request.resolver_match.app_name == 'catalog' %} tp-topnav__link--active{% endif %}"
+        >Catálogo</a>
+        <a
+          href="{% url 'ai:chat' %}"
+          class="tp-topnav__link{% if request.resolver_match.app_name == 'ai' %} tp-topnav__link--active{% endif %}"
+        >Assistente</a>
+        <a
+          href="{% url 'compatibility:checker' %}"
+          class="tp-topnav__link{% if request.resolver_match.app_name == 'compatibility' and request.resolver_match.url_name == 'checker' %} tp-topnav__link--active{% endif %}"
+        >Compatibilidade</a>
+        <a
+          href="{% url 'tickets:list' %}"
+          class="tp-topnav__link{% if request.resolver_match.app_name == 'tickets' and request.resolver_match.url_name != 'support' and request.resolver_match.url_name != 'update_status' %} tp-topnav__link--active{% endif %}"
+        >Chamados</a>
+        <a
+          href="{% url 'returns:list' %}"
+          class="tp-topnav__link{% if request.resolver_match.app_name == 'returns' and request.resolver_match.url_name != 'ops' and request.resolver_match.url_name != 'process' %} tp-topnav__link--active{% endif %}"
+        >Devoluções</a>
+        <a
+          href="{% url 'subscriptions:plans' %}"
+          class="tp-topnav__link{% if request.resolver_match.app_name == 'subscriptions' %} tp-topnav__link--active{% endif %}"
+        >Assinaturas</a>
+        <a
+          href="{% url 'partners:list' %}"
+          class="tp-topnav__link{% if request.resolver_match.app_name == 'partners' %} tp-topnav__link--active{% endif %}"
+        >Assistências</a>
+      </nav>
+    </div>
+
+    <div class="tp-topnav__tools">
+      <form
+        class="tp-topnav__search"
+        method="get"
+        action="{% url 'catalog:list' %}"
+        role="search"
+      >
+        <span class="material-symbols-outlined tp-topnav__search-icon" aria-hidden="true">search</span>
+        <label class="visually-hidden" for="tp-topnav-q">Busca inteligente</label>
+        <input
+          id="tp-topnav-q"
+          class="tp-topnav__search-input"
+          type="search"
+          name="q"
+          value="{{ request.GET.q|default:'' }}"
+          placeholder="Busca inteligente..."
+          autocomplete="off"
+        />
       </form>
-      {% else %}
-      <a class="btn btn-primary btn-sm" href="{% url 'two_factor:login' %}">Entrar</a>
-      {% endif %}
-    </nav>
+
+      <div class="tp-topnav__icons">
+        <a
+          href="{% url 'cart:detail' %}"
+          class="tp-topnav__icon-btn{% if request.resolver_match.app_name == 'cart' or request.resolver_match.app_name == 'checkout' %} tp-topnav__icon-btn--active{% endif %}"
+          aria-label="Carrinho{% if cart_item_count %} ({{ cart_item_count }} itens){% endif %}"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
+          <span class="tp-topnav__cart-dot{% if cart_item_count %} tp-topnav__cart-dot--on{% endif %}" aria-hidden="true"></span>
+        </a>
+
+        {% if user.is_authenticated %}
+        <div class="dropdown">
+          <button
+            class="tp-topnav__icon-btn dropdown-toggle"
+            type="button"
+            id="tp-topnav-account"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            aria-label="Conta"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end tp-topnav__menu" aria-labelledby="tp-topnav-account">
+            <li><h6 class="dropdown-header">{{ user.get_username }}</h6></li>
+            {% if user.is_staff %}
+            <li><a class="dropdown-item" href="{% url 'dashboard:insights' %}">Dashboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'dashboard:monitoring' %}">Monitoramento</a></li>
+            <li><a class="dropdown-item" href="{% url 'tickets:support' %}">Painel suporte</a></li>
+            <li><a class="dropdown-item" href="{% url 'returns:ops' %}">Trocas/ops</a></li>
+            <li><a class="dropdown-item" href="{% url 'manuals:review_queue' %}">Revisão de manuais</a></li>
+            <li><a class="dropdown-item" href="{% url 'compatibility:ops_list' %}">Operação</a></li>
+            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            {% endif %}
+            <li>
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item">Sair</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+        {% else %}
+        <a
+          href="{% url 'two_factor:login' %}"
+          class="tp-topnav__icon-btn"
+          aria-label="Entrar"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </header>

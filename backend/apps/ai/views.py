@@ -103,11 +103,13 @@ def chat_page(request: HttpRequest) -> HttpResponse:
     product = None
     if product_id and str(product_id).isdigit():
         product = Product.objects.filter(pk=int(product_id)).first()
+    initial_question = (request.GET.get("q") or "").strip()[:2000]
     return render(
         request,
         "ai/chat.html",
         {
             "product": product,
+            "initial_question": initial_question,
             "page_title": "Assistente de diagnóstico",
         },
     )

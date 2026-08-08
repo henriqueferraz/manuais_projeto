@@ -22,8 +22,41 @@ def test_home_renders_brand():
     assert response.status_code == 200
     assert b"TechParts AI" in response.content
     assert b"tp-home-hero" in response.content
+    assert b"tp-topnav" in response.content
+    assert b"Assistente" in response.content
+    assert b"Compatibilidade" in response.content
+    assert b"Assinaturas" in response.content
+    assert b"tp-home-ai" in response.content
+    assert b"tp-home-bento" in response.content
+    assert b"Produtos em destaque" in response.content
     assert b"Diagn" in response.content  # CTA diagnóstico
     assert b"catalogo" in response.content.lower() or b"Cat" in response.content
+    assert b"tp-footer" in response.content
+
+
+@pytest.mark.django_db
+def test_home_featured_products_when_published():
+    from decimal import Decimal
+
+    from apps.catalog.models import Category
+    from apps.products.models import Product, ProductTranslation
+
+    cat = Category.objects.create(name="Ventiladores de teto", slug="ventiladores-teto")
+    product = Product.objects.create(
+        sku="HOME-01",
+        brand="Mondial",
+        model_code="H1",
+        price=Decimal("99.90"),
+        status=Product.Status.PUBLISHED,
+        category=cat,
+    )
+    ProductTranslation.objects.create(product=product, locale="pt-BR", name="Peça home")
+
+    client = Client()
+    response = client.get(reverse("core:home"))
+    assert response.status_code == 200
+    assert b"HOME-01" in response.content
+    assert b"Pe" in response.content and b"home" in response.content
 
 
 @pytest.mark.django_db

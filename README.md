@@ -132,9 +132,15 @@ EMBEDDING_DIMS=1536          # alinhar ao modelo (ex.: text-embedding-3-small)
 
 Reinicie o `runserver` / containers.
 
-### Cloudflare R2 (manuais e fotos)
+### Cloudflare R2 (manuais, fotos, produtos e branding)
 
-Com `USE_R2_STORAGE=true`, uploads de manuais (`manuals/{uuid}/...`) e fotos (`photos/{uuid}/...`) vão para o bucket R2.
+Com `USE_R2_STORAGE=true`, **todo** `FileField`/`ImageField` (manuais, fotos de diagnóstico, imagens de produto) e os assets da home (`branding/home-*.jpg`) usam o bucket R2 — não há cópia em `backend/media/` nem `backend/static/img/`.
+
+Para reenviar arquivos locais (se existirem) para o bucket:
+
+```bash
+cd backend && python manage.py sync_media_to_r2
+```
 
 No `.env` (token em **R2 → Manage R2 API Tokens**):
 
