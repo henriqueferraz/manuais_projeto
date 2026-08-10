@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import F, Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -296,6 +297,7 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
                     "image_max_count": PRODUCT_IMAGE_MAX_COUNT,
                     "image_errors": image_errors,
                     "page_title": f"Editar {product.sku}" if product else "Novo produto",
+                    "ai_extract_url": reverse("dashboard:products_ai_extract"),
                 },
             )
 
@@ -327,6 +329,18 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
         stock.quantity_available = data["quantity_available"]
         stock.minimum_alert = data["minimum_alert"]
         stock.save()
+
+        extraction_raw = (request.POST.get("extraction_id") or "").strip()
+        if extraction_raw.isdigit():
+            from apps.dashboard.services.product_ai_assist import (
+                link_approved_extraction_to_product,
+            )
+
+            link_approved_extraction_to_product(
+                extraction_id=int(extraction_raw),
+                product=product,
+                user=request.user,
+            )
 
         if delete_ids:
             for image in product.images.filter(pk__in=delete_ids):
@@ -377,8 +391,63 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
             "image_max_count": PRODUCT_IMAGE_MAX_COUNT,
             "image_errors": [],
             "page_title": f"Editar {product.sku}" if product else "Novo produto",
+            "ai_extract_url": reverse("dashboard:products_ai_extract"),
         },
     )
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_POST
+def products_ai_extract(request: HttpRequest) -> JsonResponse:
+    """Upload PDF (com antivírus) + extração IA — sem aplicar ao formulário."""
+    from apps.dashboard.services.product_ai_assist import extract_manual_for_product_form
+
+    upload = request.FILES.get("manual") or request.FILES.get("file")
+    if upload is None:
+        return JsonResponse({"ok": False, "error": "Selecione um arquivo PDF."}, status=400)
+
+    try:
+        content = upload.read()
+        result = extract_manual_for_product_form(
+            content=content,
+            filename=upload.name or "manual.pdf",
+            user=request.user,
+            manufacturer=(request.POST.get("manufacturer") or "").strip(),
+        )
+    except ValidationError as exc:
+        msg = "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
+        return JsonResponse({"ok": False, "error": msg}, status=400)
+    except Exception as exc:  # noqa: BLE001
+        return JsonResponse(
+            {"ok": False, "error": f"Falha ao processar o PDF: {exc}"},
+            status=500,
+        )
+
+    status = 200 if result.get("ok") else 422
+    return JsonResponse(result, status=status)
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_POST
+def products_ai_discard(request: HttpRequest, extraction_id: int) -> JsonResponse:
+    """Descarta a proposta da IA (não aplica nada)."""
+    from apps.dashboard.services.product_ai_assist import discard_product_form_extraction
+    from apps.manuals.models import ExtractionLog
+
+    try:
+        discard_product_form_extraction(
+            extraction_id=extraction_id,
+            user=request.user,
+            notes=(request.POST.get("notes") or "Descartado no formulário de produto"),
+        )
+    except ExtractionLog.DoesNotExist:
+        return JsonResponse({"ok": False, "error": "Extração não encontrada."}, status=404)
+    except ValueError as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+
+    return JsonResponse({"ok": True, "extraction_id": extraction_id})
 
 
 @login_required

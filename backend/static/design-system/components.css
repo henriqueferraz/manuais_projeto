@@ -589,6 +589,30 @@
   padding: 0;
 }
 
+.tp-ai-agent {
+  border: 1px solid var(--tp-border, #d7dde5);
+  border-radius: var(--tp-radius-md, 0.5rem);
+  padding: var(--tp-space-4, 1rem);
+  background: rgba(11, 31, 51, 0.03);
+}
+
+.tp-ai-agent__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.tp-scroll-pre {
+  max-height: 18rem;
+  overflow: auto;
+  background: #0b1f33;
+  color: #e8eef5;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+}
+
 .tp-stat {
   background: var(--tp-surface-lowest);
   border: 1px solid var(--tp-border-subtle);

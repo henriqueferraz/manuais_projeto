@@ -58,13 +58,14 @@ def _sku_product_links(skus: list[str]) -> list[dict]:
     return links
 
 
-def load_diagnosis_prompt(version: str = "v1") -> str:
+def load_diagnosis_prompt(version: str = "v2") -> str:
     path = PROMPT_DIR / f"diagnosis_system_{version}.md"
     if path.exists():
         return path.read_text(encoding="utf-8")
     return (
         "Você é o motor de diagnóstico da TechParts AI. "
-        "Sempre cite o manual. Sugira SKUs só com evidência."
+        "Sempre cite o manual. Sugira SKUs só com evidência. "
+        "Não escreva código. Escopo: produto, peça, uso e conserto."
     )
 
 

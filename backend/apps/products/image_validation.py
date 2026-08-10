@@ -74,6 +74,8 @@ def prepare_product_image(upload: UploadedFile) -> InMemoryUploadedFile:
     Converte o upload para o padrão do catálogo:
     JPEG, ~800×800 (crop central), ≤ 2 MB, proporção entre 3:4 e 4:3.
     """
+    from apps.manuals.validators import scan_antivirus
+
     name = getattr(upload, "name", "") or "foto.jpg"
     ext = Path(name).suffix.lower()
     if ext and ext not in PRODUCT_IMAGE_ALLOWED_EXT:
@@ -91,6 +93,12 @@ def prepare_product_image(upload: UploadedFile) -> InMemoryUploadedFile:
         )
     if size is not None and size < 32:
         raise ValidationError("Arquivo de imagem inválido ou vazio.")
+
+    # Obrigatório: varredura antivírus em todo upload
+    upload.seek(0)
+    raw_bytes = upload.read()
+    upload.seek(0)
+    scan_antivirus(raw_bytes)
 
     try:
         upload.seek(0)

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ page_title }} — {{ brand_name }}{% endblock %}
 {% block content %}
 <section class="tp-section tp-section--flush-top">
@@ -24,8 +25,78 @@
     </div>
   </header>
 
-  <form method="post" enctype="multipart/form-data" class="mt-4">
+  <section
+    class="tp-panel mt-4"
+    id="product-ai-assist"
+    aria-labelledby="product-ai-assist-heading"
+    data-extract-url="{% url 'dashboard:products_ai_extract' %}"
+    data-discard-url-template="/dashboard/produtos/ia/extrair-manual/__ID__/descartar/"
+    data-csrf="{{ csrf_token }}"
+  >
+    <div class="tp-panel__header d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <h2 id="product-ai-assist-heading" class="mb-0">
+        <span class="material-symbols-outlined align-middle" aria-hidden="true">auto_awesome</span>
+        Assistente IA · Manual PDF
+      </h2>
+      <span class="tp-badge tp-badge--draft">Antivírus obrigatório</span>
+    </div>
+    <div class="tp-panel__body">
+      <p class="small text-secondary mb-3">
+        Envie o manual ou catálogo de peças em PDF. O arquivo passa por varredura antivírus
+        antes de qualquer processamento. A IA só propõe dados — <strong>nada é aplicado
+        ao formulário sem a sua aprovação</strong>.
+      </p>
+      <div class="row g-3 align-items-end">
+        <div class="col-md-8">
+          <label class="form-label" for="product-ai-pdf">Arquivo PDF</label>
+          <input
+            id="product-ai-pdf"
+            class="form-control"
+            type="file"
+            accept=".pdf,application/pdf"
+          />
+        </div>
+        <div class="col-md-4">
+          <button type="button" class="btn btn-outline-primary w-100" id="product-ai-analyze">
+            Analisar com IA
+          </button>
+        </div>
+      </div>
+      <div id="product-ai-status" class="small mt-3" role="status" aria-live="polite" hidden></div>
+
+      <div id="product-ai-agent" class="tp-ai-agent mt-4" hidden>
+        <div class="tp-ai-agent__header">
+          <div>
+            <p class="font-label-caps text-secondary mb-1">Proposta da IA (aguardando aprovação)</p>
+            <p class="mb-0" id="product-ai-agent-title">—</p>
+          </div>
+          <div class="d-flex flex-wrap gap-2" id="product-ai-badges"></div>
+        </div>
+        <p class="small text-secondary mt-2 mb-3" id="product-ai-agent-msg"></p>
+        <dl class="row small mb-3" id="product-ai-highlights"></dl>
+        <details class="mb-3">
+          <summary class="small">Ver JSON completo extraído</summary>
+          <pre class="small tp-scroll-pre mt-2 mb-0" id="product-ai-json"></pre>
+        </details>
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-primary" id="product-ai-approve">
+            Aprovar e preencher formulário
+          </button>
+          <button type="button" class="btn btn-outline-danger" id="product-ai-discard">
+            Descartar proposta
+          </button>
+        </div>
+        <p class="small text-secondary mt-2 mb-0">
+          Aprovar só copia os campos sugeridos para o formulário abaixo. O produto só é
+          gravado quando você clicar em <strong>Salvar</strong>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <form method="post" enctype="multipart/form-data" class="mt-4" id="product-main-form">
     {% csrf_token %}
+    <input type="hidden" name="extraction_id" id="id_extraction_id" value="" />
     {% if form.non_field_errors %}
       <div class="alert alert-danger">{{ form.non_field_errors }}</div>
     {% endif %}
@@ -352,4 +423,7 @@
     </div>
   </form>
 </section>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'dashboard/product_ai_assist.js' %}" defer></script>
 {% endblock %}

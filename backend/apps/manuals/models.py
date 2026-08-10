@@ -100,7 +100,7 @@ class ExtractionLog(models.Model):
         default=Status.PENDING,
         db_index=True,
     )
-    prompt_version = models.CharField(max_length=32, default="v1")
+    prompt_version = models.CharField(max_length=32, default="v3")
     raw_text_preview = models.TextField(blank=True)
     raw_json = models.JSONField(default=dict, blank=True)
     corrected_json = models.JSONField(default=dict, blank=True)

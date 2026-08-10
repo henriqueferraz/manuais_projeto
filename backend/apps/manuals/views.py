@@ -18,6 +18,7 @@ from apps.manuals.models import ExtractionLog
 from apps.manuals.services.pipeline import (
     approve_extraction,
     create_manual_from_upload,
+    extraction_review_summary,
     reject_extraction,
 )
 from apps.manuals.storage import signed_url
@@ -139,6 +140,8 @@ def review_detail(request: HttpRequest, pk: int) -> HttpResponse:
                 messages.error(request, str(exc))
 
     pdf_url = signed_url(log.manual.storage_key)
+    review_data = log.corrected_json or log.raw_json
+    summary = extraction_review_summary(review_data)
     return render(
         request,
         "manuals/review_detail.html",
@@ -147,5 +150,6 @@ def review_detail(request: HttpRequest, pk: int) -> HttpResponse:
             "form": form,
             "pdf_url": pdf_url,
             "raw_pretty": json.dumps(log.raw_json, ensure_ascii=False, indent=2),
+            "review_summary": summary,
         },
     )

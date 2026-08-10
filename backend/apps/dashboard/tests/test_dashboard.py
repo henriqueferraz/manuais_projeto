@@ -342,3 +342,100 @@ def test_products_edit_shows_and_saves_specs(staff_user, db):
     assert product.specs["material"] == "PP"
     assert product.specs["remote_included"] is True
     assert product.specs["ncm"] == 84145990
+
+
+def _pdf_bytes(extra: bytes = b"") -> bytes:
+    return b"%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n" + extra
+
+
+@pytest.mark.django_db
+def test_products_create_shows_ai_pdf_upload(staff_user):
+    client = Client()
+    client.force_login(staff_user)
+    res = client.get(reverse("dashboard:products_create"))
+    assert res.status_code == 200
+    assert b"product-ai-assist" in res.content
+    assert b"Assistente IA" in res.content
+    assert b"Antiv" in res.content
+    assert b'accept=".pdf,application/pdf"' in res.content
+
+
+@pytest.mark.django_db
+def test_products_ai_extract_requires_antivirus_and_awaits_approval(
+    staff_user, monkeypatch, settings
+):
+    settings.EXTRACTION_LLM_MODE = "mock"
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+
+    from apps.manuals.validators import EICAR_SIGNATURE
+    from apps.products.models import Product
+
+    client = Client()
+    client.force_login(staff_user)
+
+    # Antivírus bloqueia EICAR
+    bad = client.post(
+        reverse("dashboard:products_ai_extract"),
+        {"manual": ContentFile(_pdf_bytes(EICAR_SIGNATURE), name="evil.pdf")},
+    )
+    assert bad.status_code == 400
+    assert bad.json()["ok"] is False
+    assert "antiv" in bad.json()["error"].lower() or "malicios" in bad.json()["error"].lower()
+
+    sample_text = (
+        "Mondial\nVentilador de Teto\nModelo: VTE-02\nPotência: 120 W\n"
+        "Voltagem: Bivolt 127/220V\n"
+    )
+
+    class FakePdf:
+        text = sample_text
+        page_count = 1
+        used_ocr = False
+        tables = []
+
+    monkeypatch.setattr(
+        "apps.manuals.graphs.extraction.extract_pdf_text",
+        lambda content, **kwargs: FakePdf(),
+    )
+
+    ok = client.post(
+        reverse("dashboard:products_ai_extract"),
+        {"manual": ContentFile(_pdf_bytes(), name="Manual-VTE-02.pdf")},
+    )
+    assert ok.status_code == 200
+    payload = ok.json()
+    assert payload["ok"] is True
+    assert payload["awaiting_approval"] is True
+    assert payload["extraction_id"]
+    assert payload["form_suggestions"]["name"]
+    assert "VTE-02" in (payload["extracted"].get("model_code") or "")
+
+    # Não criou produto ainda
+    assert not Product.objects.filter(sku__icontains="VTE").exists()
+    log = ExtractionLog.objects.get(pk=payload["extraction_id"])
+    assert log.status == ExtractionLog.Status.AWAITING_REVIEW
+
+    # Descartar
+    discard = client.post(
+        reverse("dashboard:products_ai_discard", args=[payload["extraction_id"]])
+    )
+    assert discard.status_code == 200
+    log.refresh_from_db()
+    assert log.status == ExtractionLog.Status.REJECTED
+
+
+@pytest.mark.django_db
+def test_prepare_product_image_rejects_eicar(settings):
+    from django.core.exceptions import ValidationError
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    from apps.manuals.validators import EICAR_SIGNATURE
+    from apps.products.image_validation import prepare_product_image
+
+    upload = SimpleUploadedFile(
+        "evil.jpg",
+        EICAR_SIGNATURE + b"\xff\xd8\xff",
+        content_type="image/jpeg",
+    )
+    with pytest.raises(ValidationError, match="antiv|malicios"):
+        prepare_product_image(upload)

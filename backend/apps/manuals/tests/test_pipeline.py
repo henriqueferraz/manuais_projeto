@@ -175,6 +175,169 @@ def test_golden_set_command():
 
 
 @pytest.mark.django_db
+def test_approve_materializes_sellable_parts_only(staff_user, settings):
+    """Peça com código vira Product+Compatibility; sem código fica só composição."""
+    settings.EXTRACTION_LLM_MODE = "mock"
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+
+    from apps.compatibility.models import Compatibility
+    from apps.manuals.models import Manual
+
+    manual = Manual.objects.create(
+        original_filename="parts.pdf",
+        mime_type="application/pdf",
+        manufacturer="Philco",
+        sha256="a" * 64,
+        size_bytes=10,
+        scan_status="skipped",
+    )
+    log = ExtractionLog.objects.create(
+        manual=manual,
+        status=ExtractionLog.Status.AWAITING_REVIEW,
+        prompt_version="v2",
+        raw_json={
+            "brand": "Philco",
+            "model_code": "PB120N",
+            "name": "Rádio CD Player Philco PB120N",
+            "sku_suggestion": "PHILCO-PB120N",
+            "product_kind": "finished_good",
+            "category": "áudio portátil",
+            "source_doc_types": ["exploded_view", "parts_catalog"],
+            "ean": "7891234567890",
+            "frequency_hz": 60,
+            "capacity": "",
+            "low_confidence_fields": ["weight_kg"],
+            "document_conflicts": [
+                {
+                    "field": "voltage",
+                    "values": ["127V", "Bivolt"],
+                    "sources": ["capa", "tabela elétrica"],
+                    "notes": "divergência ilustrativa",
+                }
+            ],
+            "spare_parts": [
+                {
+                    "product_kind": "spare_part",
+                    "code": "706452",
+                    "name": "Alto-falante 8 Ohm 3W Domo PR",
+                    "sku_suggestion": "PHILCO-706452",
+                    "category": "peça de reposição — alto-falante",
+                    "ref_number": "11",
+                    "qty_per_unit": 2,
+                    "compatible_with": ["PB120N"],
+                    "sellable_separately": True,
+                },
+                {
+                    "product_kind": "spare_part",
+                    "code": "",
+                    "name": "Embalagem PB120N",
+                    "sku_suggestion": "",
+                    "category": "acessório — embalagem",
+                    "ref_number": "",
+                    "qty_per_unit": 1,
+                    "compatible_with": ["PB120N"],
+                    "sellable_separately": False,
+                },
+            ],
+            "accessories": [],
+            "confidence": 0.8,
+        },
+    )
+
+    product = approve_extraction(log, reviewer=staff_user, skip_graph_resume=True)
+    assert product.status == Product.Status.DRAFT
+    assert product.sku == "PHILCO-PB120N"
+    assert product.specs.get("ean") == "7891234567890"
+    assert product.specs.get("frequency_hz") == 60
+    assert "weight_kg" in (product.specs.get("low_confidence_fields") or [])
+    assert product.specs.get("document_conflicts")
+    assert product.specs["document_conflicts"][0]["field"] == "voltage"
+
+    parts = Product.objects.filter(product_kind=Product.Kind.SPARE_PART)
+    assert parts.count() == 1
+    part = parts.get()
+    assert part.sku == "PHILCO-706452"
+    assert part.model_code == "706452"
+    assert part.status == Product.Status.DRAFT
+    assert part.specs.get("ref_number") == "11"
+    assert part.specs.get("qty_per_unit") == 2
+
+    # Embalagem sem código não vira produto
+    assert not Product.objects.filter(translations__name__icontains="Embalagem").exists()
+
+    compat = Compatibility.objects.filter(part_product=part)
+    assert compat.count() == 1
+    assert compat.get().equipment_brand == "Philco"
+    assert compat.get().equipment_model == "PB120N"
+    assert "ref=11" in compat.get().notes
+    assert "qty=2" in compat.get().notes
+
+    # Re-approve não duplica
+    log.status = ExtractionLog.Status.AWAITING_REVIEW
+    log.save(update_fields=["status"])
+    approve_extraction(log, reviewer=staff_user, skip_graph_resume=True)
+    assert Product.objects.filter(product_kind=Product.Kind.SPARE_PART).count() == 1
+    assert Compatibility.objects.filter(part_product=part).count() == 1
+
+
+def test_structure_mock_guesses_spare_parts():
+    text = (
+        "Itatiaia FOGAO STAR NEW 6Q Modelo: 3700000474\n"
+        "207 1000014182 QUEIMADOR 1,7 KW BRILHO ITA003689 4\n"
+        "224 3200002826 MESA ACO INOX STAR NEW 6Q EST 1\n"
+        "Embalagem caixa externa\n"
+    )
+    result = structure_manual_text(
+        text, manufacturer_hint="Itatiaia", filename="FOGAO-STAR.pdf"
+    )
+    assert result.prompt_version == "v3"
+    assert len(result.product.spare_parts) >= 2
+    sellable = [p for p in result.product.spare_parts if p.sellable_separately]
+    composition = [p for p in result.product.spare_parts if not p.sellable_separately]
+    assert sellable
+    assert sellable[0].code
+    assert composition  # embalagem
+    assert "parts_catalog" in result.product.source_doc_types
+
+
+def test_extraction_prompt_v3_loaded():
+    from apps.manuals.services.structure import PROMPT_VERSION, load_system_prompt
+
+    assert PROMPT_VERSION == "v3"
+    prompt = load_system_prompt()
+    assert "Parte 0" in prompt
+    assert "alteração de código" in prompt.lower()
+
+
+def test_document_conflicts_schema_and_summary():
+    from apps.manuals.schemas import DocumentConflictHint, ExtractedProduct
+    from apps.manuals.services.pipeline import extraction_review_summary
+
+    product = ExtractedProduct(
+        brand="Philco",
+        model_code="PB120N",
+        name="Rádio PB120N",
+        document_conflicts=[
+            DocumentConflictHint(
+                field="voltage",
+                values=["127V", "220V"],
+                sources=["tabela p.3", "ficha p.1"],
+                notes="variantes de tensão",
+            )
+        ],
+    )
+    summary = extraction_review_summary(product)
+    assert summary["document_conflicts"] == 1
+
+
+def test_related_part_empty_code_forces_not_sellable():
+    from apps.manuals.schemas import RelatedPartHint
+
+    part = RelatedPartHint(code="", name="Embalagem", sellable_separately=True)
+    assert part.sellable_separately is False
+
+
+@pytest.mark.django_db
 def test_extraction_failure_insufficient_text(staff_user, monkeypatch):
     class FakePdf:
         text = "x"

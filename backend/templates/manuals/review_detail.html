@@ -29,6 +29,28 @@
           <dt class="col-4">Prompt</dt>
           <dd class="col-8 font-monospace">{{ log.prompt_version }}</dd>
         </dl>
+        {% if review_summary %}
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          {% if review_summary.sellable_parts %}
+          <span class="badge text-bg-success">{{ review_summary.sellable_parts }} peças vendáveis</span>
+          {% endif %}
+          {% if review_summary.composition_only %}
+          <span class="badge text-bg-secondary">{{ review_summary.composition_only }} só composição</span>
+          {% endif %}
+          {% if review_summary.document_conflicts %}
+          <span class="badge text-bg-warning">{{ review_summary.document_conflicts }} divergência{{ review_summary.document_conflicts|pluralize }}</span>
+          {% endif %}
+          {% for doc_type in review_summary.source_doc_types %}
+          <span class="badge text-bg-light border">{{ doc_type }}</span>
+          {% endfor %}
+        </div>
+        {% if review_summary.low_confidence_fields %}
+        <div class="alert alert-warning mt-3 mb-0 py-2 small" role="status">
+          Baixa confiança:
+          <span class="font-monospace">{{ review_summary.low_confidence_fields|join:", " }}</span>
+        </div>
+        {% endif %}
+        {% endif %}
         {% if pdf_url %}
         <a class="btn btn-outline-primary btn-sm mt-2" href="{{ pdf_url }}" target="_blank" rel="noopener">Abrir PDF</a>
         {% endif %}
@@ -84,7 +106,8 @@
             <a class="btn btn-ghost" href="{% url 'manuals:review_queue' %}">Voltar</a>
           </div>
           <p class="small text-secondary mt-3 mb-0">
-            Aprovação cria produto com status <code>draft</code>. Publicação automática é proibida (P02/P09).
+            Aprovação cria produto com status <code>draft</code> e materializa peças
+            vendáveis (<code>spare_part</code> + compatibilidade). Publicação automática é proibida (P02/P09).
           </p>
         </form>
       </div>

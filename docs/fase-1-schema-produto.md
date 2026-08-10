@@ -132,10 +132,25 @@ Populada pela extração + revisão; consulta do verificador = ORM, sem LLM.
 | Potência (W) | `power_w` |
 | Dimensões / peso | `dimensions`, `weight_kg` |
 | Características numeradas | `specs` (+ descrição) |
-| Lista de peças de reposição | novos `Product` (`spare_part`) + `Compatibility` |
-| Esquemas / segurança | **não** viram spec de venda; vão para chunks RAG (F5) |
+| EAN / NCM / freq. / capacidade / garantia / variantes | `Product.specs` (merge no approve; sem colunas dedicadas) |
+| Lista de peças/acessórios vendáveis (`sellable_separately` + `code`) | novos `Product` (`spare_part`, status `draft`) + `Compatibility` |
+| Itens só de composição (sem código / `sellable_separately=false`) | permanecem no `ExtractionLog` JSON (BOM); **não** viram produto de venda |
+| BOM (`ref_number`, `qty_per_unit`) | `Compatibility.notes` (ex.: `ref=11; qty=2`) |
+| Divergências entre trechos/documentos | `document_conflicts` → merge em `Product.specs` (HITL; não escolher em silêncio) |
+| Esquemas / segurança | resumos podem ir a `specs`; texto completo segue nos chunks RAG (F5) |
 
-Saída da IA: JSON validado contra schema Pydantic espelhando esta tabela **antes** de gravar rascunho.
+Saída da IA: JSON validado contra schema Pydantic (`ExtractedProduct` / prompt `extraction_v3`) **antes** de gravar rascunho.
+
+### Status da materialização no approve (HITL)
+
+- [x] Produto principal → `Product` draft + `ProductTranslation`
+- [x] Campos órfãos do prompt v3 → merge em `Product.specs` (incl. `document_conflicts`)
+- [x] Peças/acessórios vendáveis → `Product(spare_part)` draft + `Compatibility`
+- [x] Itens sem código → composição apenas (JSON do log)
+- [x] Prompt de extração `v3` (Parte 0: escopo produto/peça/uso/conserto; sem alteração de código; só sugestões)
+- [x] Chat/diagnóstico alinhados aos guardrails da Parte 0 (`chat_system_v2`, `diagnosis_system_v2`)
+- [ ] Modelo BOM dedicado / estoque automático — fora do escopo atual
+- [ ] Publicação automática de peças — **proibida** (P02/P09)
 
 ---
 
@@ -145,6 +160,7 @@ Saída da IA: JSON validado contra schema Pydantic espelhando esta tabela **ante
 - `SubscriptionPlan`, `PartnerService` — F8  
 - `ManualChunk` + embedding — F5  
 - Carrinho/pedido — models de `cart` / `orders` na F4a–F4b  
+- Modelo BOM dedicado (qty/ref fora de `Compatibility.notes`)  
 
 ---
 
@@ -153,3 +169,5 @@ Saída da IA: JSON validado contra schema Pydantic espelhando esta tabela **ante
 - [x] Campos mínimos para vender documentados  
 - [x] i18n previsto via `ProductTranslation`  
 - [x] Mapeamento manual → schema explícito para F3/F4a  
+- [x] Materialização de peças no approve alinhada ao prompt v3  
+- [x] Campo `document_conflicts` + guardrails Parte 0  
