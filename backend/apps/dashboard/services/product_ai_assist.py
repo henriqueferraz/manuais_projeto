@@ -286,9 +286,9 @@ def link_approved_extraction_to_product(
     """
     from django.utils import timezone
 
+    from apps.accounts.models import SensitiveActionLog
     from apps.manuals.services.pipeline import _materialize_related_parts, _merge_product_specs
     from apps.manuals.services.structure import dump_product_json
-    from apps.accounts.models import SensitiveActionLog
 
     try:
         log = ExtractionLog.objects.select_related("manual").get(pk=extraction_id)
