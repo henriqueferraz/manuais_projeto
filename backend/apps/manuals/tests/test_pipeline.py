@@ -287,9 +287,7 @@ def test_structure_mock_guesses_spare_parts():
         "224 3200002826 MESA ACO INOX STAR NEW 6Q EST 1\n"
         "Embalagem caixa externa\n"
     )
-    result = structure_manual_text(
-        text, manufacturer_hint="Itatiaia", filename="FOGAO-STAR.pdf"
-    )
+    result = structure_manual_text(text, manufacturer_hint="Itatiaia", filename="FOGAO-STAR.pdf")
     assert result.prompt_version == "v3"
     assert len(result.product.spare_parts) >= 2
     sellable = [p for p in result.product.spare_parts if p.sellable_separately]

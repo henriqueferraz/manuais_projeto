@@ -46,6 +46,7 @@ _ORPHAN_SPEC_KEYS = (
     "manufacturer",
 )
 
+
 def create_manual_from_upload(
     *,
     content: bytes,
@@ -186,9 +187,7 @@ def approve_extraction(
     data = corrected if corrected is not None else (log.corrected_json or log.raw_json)
     product_schema = ExtractedProduct.model_validate(data)
 
-    category = _resolve_category(
-        product_schema.category or product_schema.category_hint
-    )
+    category = _resolve_category(product_schema.category or product_schema.category_hint)
     sku = product_schema.sku_suggestion or f"DRAFT-{log.pk}-{product_schema.model_code}"
     sku = sku[:64]
     dimensions = product_schema.dimensions_mm or product_schema.dimensions or {}
@@ -364,8 +363,7 @@ def _merge_product_specs(schema: ExtractedProduct) -> dict[str, Any]:
         specs[key] = value
     if schema.troubleshooting:
         specs["troubleshooting"] = [
-            t.model_dump() if hasattr(t, "model_dump") else t
-            for t in schema.troubleshooting
+            t.model_dump() if hasattr(t, "model_dump") else t for t in schema.troubleshooting
         ]
     if schema.assembly_summary is not None:
         dumped = schema.assembly_summary.model_dump()
@@ -414,12 +412,15 @@ def _materialize_related_parts(
             )
             if created_compat:
                 compatibilities += 1
-            elif bom_notes and not Compatibility.objects.filter(
-                equipment_brand=parent.brand[:120],
-                equipment_model=model_code[:120],
-                part_product=part_product,
-                notes=bom_notes[:255],
-            ).exists():
+            elif (
+                bom_notes
+                and not Compatibility.objects.filter(
+                    equipment_brand=parent.brand[:120],
+                    equipment_model=model_code[:120],
+                    part_product=part_product,
+                    notes=bom_notes[:255],
+                ).exists()
+            ):
                 Compatibility.objects.filter(
                     equipment_brand=parent.brand[:120],
                     equipment_model=model_code[:120],
@@ -568,9 +569,7 @@ def extraction_review_summary(data: dict | ExtractedProduct | None) -> dict[str,
         return empty
     try:
         schema = (
-            data
-            if isinstance(data, ExtractedProduct)
-            else ExtractedProduct.model_validate(data)
+            data if isinstance(data, ExtractedProduct) else ExtractedProduct.model_validate(data)
         )
     except Exception:  # noqa: BLE001
         # JSON parcial na UI — conta o que der

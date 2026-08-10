@@ -416,9 +416,7 @@ def test_products_ai_extract_requires_antivirus_and_awaits_approval(
     assert log.status == ExtractionLog.Status.AWAITING_REVIEW
 
     # Descartar
-    discard = client.post(
-        reverse("dashboard:products_ai_discard", args=[payload["extraction_id"]])
-    )
+    discard = client.post(reverse("dashboard:products_ai_discard", args=[payload["extraction_id"]]))
     assert discard.status_code == 200
     log.refresh_from_db()
     assert log.status == ExtractionLog.Status.REJECTED
