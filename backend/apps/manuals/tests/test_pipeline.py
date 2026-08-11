@@ -80,6 +80,114 @@ def test_structure_mock_mondial():
     assert result.model_name == "mock-heuristic"
 
 
+def test_ensure_sales_description_when_missing():
+    from apps.manuals.schemas import ExtractedProduct
+    from apps.manuals.services.structure import ensure_sales_description
+
+    product = ExtractedProduct(
+        brand="Mondial",
+        model_code="VTE-02",
+        name="Ventilador de Teto VTE-02",
+        description="",
+        category="ventiladores-teto",
+        voltage="Bivolt",
+        power_w=120,
+        specs={"blade_count": 3, "diameter_cm": 96},
+    )
+    filled = ensure_sales_description(product)
+    lines = [ln for ln in filled.description.splitlines() if ln.strip()]
+    assert 1 <= len(lines) <= 4
+    assert "Mondial" in filled.description or "VTE-02" in filled.description
+    assert "Bivolt" in filled.description or "120" in filled.description
+
+    already = ensure_sales_description(
+        ExtractedProduct(
+            brand="X",
+            model_code="Y",
+            name="Z",
+            description="Linha 1\nLinha 2\nLinha 3\nLinha 4\nLinha 5 extra",
+        )
+    )
+    assert len([ln for ln in already.description.splitlines() if ln.strip()]) == 4
+
+
+def test_promote_canonical_fields_moves_potencia_from_specs():
+    from apps.manuals.schemas import ExtractedProduct
+    from apps.manuals.services.structure import promote_canonical_fields
+
+    product = ExtractedProduct(
+        brand="Mondial",
+        model_code="X-1",
+        name="Liquidificador",
+        description="Linha 1\nLinha 2",
+        voltage="127V",
+        power_w=None,
+        specs={"color": "Preto", "material": "Plástico", "Potencia": "400W"},
+    )
+    fixed = promote_canonical_fields(product)
+    assert fixed.power_w == 400.0
+    assert "Potencia" not in fixed.specs
+    assert fixed.specs.get("color") == "Preto"
+    assert fixed.specs.get("material") == "Plástico"
+
+    # Se power_w já existe, só remove a duplicata em specs
+    with_power = product.model_copy(update={"power_w": 350})
+    deduped = promote_canonical_fields(with_power)
+    assert deduped.power_w == 350
+    assert "Potencia" not in deduped.specs
+
+
+def test_promote_canonical_fields_accent_and_idempotent():
+    from apps.manuals.schemas import ExtractedProduct
+    from apps.manuals.services.structure import promote_canonical_fields
+
+    product = ExtractedProduct(
+        brand="Philco",
+        model_code="Y-2",
+        name="Mixer",
+        description="A",
+        specs={"potência": "120 W"},
+    )
+    once = promote_canonical_fields(product)
+    twice = promote_canonical_fields(once)
+    assert once.power_w == 120.0
+    assert twice.power_w == 120.0
+    assert once.specs == twice.specs == {}
+
+
+def test_guess_brand_prefers_philco_over_britania():
+    from apps.manuals.services.structure import _guess_brand, _structure_mock
+
+    text = (
+        "PHILCO Liquidificador Turbo Power\n"
+        "Fabricado por Britânia Eletrodomésticos S.A.\n"
+        "Potência: 400W\nVoltagem: 127V\n"
+    )
+    assert _guess_brand(text, "manual-philco.pdf") == "Philco"
+    result = _structure_mock(text, filename="manual-philco.pdf")
+    assert result.product.brand == "Philco"
+    assert result.product.manufacturer == "Britânia"
+    assert result.product.power_w == 400
+
+
+def test_normalize_brand_britania_name_philco():
+    from apps.manuals.schemas import ExtractedProduct
+    from apps.manuals.services.structure import promote_canonical_fields
+
+    product = ExtractedProduct(
+        brand="Britânia",
+        manufacturer="Britânia",
+        model_code="PH800",
+        name="Liquidificador Philco PH800",
+        description="Produto Philco fabricado pela Britânia.",
+        sku_suggestion="BRITANIA-PH800",
+    )
+    fixed = promote_canonical_fields(product)
+    assert fixed.brand == "Philco"
+    assert fixed.manufacturer == "Britânia"
+    assert fixed.sku_suggestion.startswith("PHILCO-")
+
+
 @pytest.mark.django_db
 def test_pipeline_upload_extract_approve(staff_user, monkeypatch, settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
@@ -257,7 +365,10 @@ def test_approve_materializes_sellable_parts_only(staff_user, settings):
     assert parts.count() == 1
     part = parts.get()
     assert part.sku == "PHILCO-706452"
-    assert part.model_code == "706452"
+    assert part.model_code == "PB120N"  # herda o modelo do produto pai
+    assert part.specs.get("part_code") == "706452"
+    assert part.category is not None
+    assert part.category.name == "Peça de reposição"
     assert part.status == Product.Status.DRAFT
     assert part.specs.get("ref_number") == "11"
     assert part.specs.get("qty_per_unit") == 2
@@ -336,7 +447,9 @@ def test_related_part_empty_code_forces_not_sellable():
 
 
 @pytest.mark.django_db
-def test_extraction_failure_insufficient_text(staff_user, monkeypatch):
+def test_extraction_failure_insufficient_text(staff_user, monkeypatch, settings):
+    settings.MANUAL_OCR_ENABLED = False
+
     class FakePdf:
         text = "x"
         page_count = 1
@@ -357,3 +470,76 @@ def test_extraction_failure_insufficient_text(staff_user, monkeypatch):
     log.refresh_from_db()
     assert log.status == ExtractionLog.Status.FAILED
     assert log.error_message
+    assert "MANUAL_OCR_ENABLED" in (log.error_message or "")
+
+
+def test_try_ocr_disabled_returns_empty(settings):
+    from apps.manuals.services.pdf_extract import _try_ocr
+
+    settings.MANUAL_OCR_ENABLED = False
+    assert _try_ocr(b"%PDF-1.4") == ""
+
+
+def test_try_ocr_runs_tesseract_when_enabled(settings, monkeypatch):
+    from types import ModuleType
+
+    from apps.manuals.services import pdf_extract
+
+    settings.MANUAL_OCR_ENABLED = True
+    settings.MANUAL_OCR_LANGS = "por"
+    settings.MANUAL_OCR_SCALE = 1.0
+
+    class FakePage:
+        def render(self, scale=2.0):
+            class Bitmap:
+                def to_pil(self):
+                    from PIL import Image
+
+                    return Image.new("RGB", (40, 20), color=(255, 255, 255))
+
+            return Bitmap()
+
+        def close(self):
+            return None
+
+    class FakeDoc:
+        def __len__(self):
+            return 1
+
+        def __getitem__(self, index):
+            return FakePage()
+
+        def close(self):
+            return None
+
+    fake_pdfium = ModuleType("pypdfium2")
+    fake_pdfium.PdfDocument = lambda content: FakeDoc()
+    monkeypatch.setitem(__import__("sys").modules, "pypdfium2", fake_pdfium)
+
+    fake_tess = ModuleType("pytesseract")
+
+    def _image_to_string(img, lang="eng", config=""):
+        return "Ventilador Mondial Modelo VTE-02"
+
+    fake_tess.image_to_string = _image_to_string
+    fake_tess.TesseractNotFoundError = type("TesseractNotFoundError", (Exception,), {})
+    monkeypatch.setitem(__import__("sys").modules, "pytesseract", fake_tess)
+
+    text = pdf_extract._try_ocr(b"%PDF-fake")
+    assert "Mondial" in text
+    assert "VTE-02" in text
+
+
+def test_preprocess_ocr_image_grayscale_and_upsizes_small_pages():
+    from PIL import Image
+
+    from apps.manuals.services.pdf_extract import preprocess_ocr_image
+
+    tiny = Image.new("RGB", (200, 100), color=(210, 210, 210))
+    # “texto” escuro para o deskew não quebrar
+    for x in range(20, 180):
+        tiny.putpixel((x, 40), (20, 20, 20))
+        tiny.putpixel((x, 41), (20, 20, 20))
+    out = preprocess_ocr_image(tiny)
+    assert out.mode == "L"
+    assert min(out.size) >= 1200

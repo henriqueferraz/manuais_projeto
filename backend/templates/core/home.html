@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static money_tags %}
 
-{% block title %}{{ brand_name }} — Peças com precisão industrial{% endblock %}
+{% block title %}{{ brand_name }} — Catálogo técnico de peças com IA{% endblock %}
 
 {% block main_class %}p-0{% endblock %}
 
@@ -40,8 +40,8 @@
         <p class="tp-home-hero__lead">{{ slide.lead }}</p>
         {% endif %}
         <div class="tp-home-hero__actions">
-          <a class="btn btn-primary btn-lg" href="{% url 'catalog:list' %}">Ver catálogo</a>
-          <a class="btn btn-ai btn-lg" href="{% url 'ai:chat' %}">Diagnóstico com IA</a>
+          <a class="btn btn-primary btn-lg" href="{% url 'catalog:list' %}">Buscar no catálogo</a>
+          <a class="btn btn-ai btn-lg" href="{% url 'ai:chat' %}">Diagnosticar com IA</a>
         </div>
       </div>
     </div>
@@ -66,16 +66,16 @@
       fetchpriority="high" />
     {% endif %}
   </div>
-  <!-- #Fallback dos slides -->
   <div class="tp-home-hero__inner tp-container">
     <p class="tp-home-hero__brand">TechParts AI</p>
-    <h1 class="tp-home-hero__title" id="home-brand">Peças certas. Diagnóstico sem chute.</h1>
+    <h1 class="tp-home-hero__title" id="home-brand">A peça certa, ligada ao equipamento certo.</h1>
     <p class="tp-home-hero__lead">
-      Catálogo técnico com IA que cita o manual — da peça ao suporte, sem inventar especificação.
+      Catálogo técnico com produto e peças de reposição vindos do manual — compatibilidade explícita e diagnóstico que
+      cita a fonte.
     </p>
     <div class="tp-home-hero__actions">
-      <a class="btn btn-primary btn-lg" href="{% url 'catalog:list' %}">Ver catálogo</a>
-      <a class="btn btn-ai btn-lg" href="{% url 'ai:chat' %}">Diagnóstico com IA</a>
+      <a class="btn btn-primary btn-lg" href="{% url 'catalog:list' %}">Buscar no catálogo</a>
+      <a class="btn btn-ai btn-lg" href="{% url 'ai:chat' %}">Diagnosticar com IA</a>
     </div>
   </div>
 </section>
@@ -88,13 +88,14 @@
       Diagnóstico por IA
     </h2>
     <p class="tp-home-ai__lead">
-      Descreva o sintoma ou o modelo — a IA busca no manual e sugere o SKU.
+      Informe o sintoma, a marca ou o modelo. A IA consulta o manual indexado e sugere o SKU compatível — sem inventar
+      especificação.
     </p>
     <div class="tp-home-ai__row">
       <label class="visually-hidden" for="home-ai-q">Relato para diagnóstico</label>
       <input id="home-ai-q" class="form-control tp-home-ai__input" type="search" name="q" maxlength="500"
-        placeholder="Ex.: Motor compressor Embraco 1/4…" enterkeyhint="go" autocomplete="off" />
-      <button type="submit" class="btn btn-ai">Analisar</button>
+        placeholder="Ex.: Ventilador Mondial VTE-02 não liga — capacitor…" enterkeyhint="go" autocomplete="off" />
+      <button type="submit" class="btn btn-ai">Analisar agora</button>
     </div>
   </form>
 </section>
@@ -129,7 +130,7 @@
           </div>
 
           <div class="tp-home-filters__group">
-            <p class="tp-home-filters__label" id="home-filter-cat-label">Categoria de peça</p>
+            <p class="tp-home-filters__label" id="home-filter-cat-label">Categoria de produtos</p>
             <div class="tp-home-filters__cats" role="group" aria-labelledby="home-filter-cat-label">
               {% for category in filter_categories %}
               <label class="tp-home-filters__check">
@@ -148,11 +149,13 @@
         </form>
 
         <div class="tp-home-filters__cta">
-          <p class="tp-home-filters__cta-eyebrow font-label-caps">Canal direto</p>
-          <p class="tp-home-filters__cta-text">Dúvidas sobre o SKU ou especificações técnicas?</p>
+          <p class="tp-home-filters__cta-eyebrow font-label-caps">Suporte técnico</p>
+          <p class="tp-home-filters__cta-text">
+            Não achou o SKU? Descreva o equipamento e a falha — a IA aponta a peça compatível.
+          </p>
           <a class="btn btn-ai w-100" href="{% url 'ai:chat' %}">
             <span class="material-symbols-outlined" aria-hidden="true">engineering</span>
-            Consultar técnico
+            Consultar assistente
           </a>
         </div>
       </div>
@@ -163,12 +166,12 @@
         <div>
           <h2 id="home-featured" class="font-headline-md mb-1">Produtos em destaque</h2>
           <p class="font-body-md text-tech-gray mb-0">
-            Equipamentos e peças publicados no catálogo TechParts AI
+            Equipamentos e peças de reposição publicados — com vínculo de modelo e disponibilidade.
           </p>
         </div>
         {% if featured_total %}
         <span class="tp-home-featured__count font-technical">
-          {{ featured_shown }} / {{ featured_total }} peças
+          {{ featured_shown }} / {{ featured_total }} itens
         </span>
         {% endif %}
       </div>
@@ -216,9 +219,11 @@
       {% else %}
       <div class="tp-empty">
         <span class="material-symbols-outlined tp-empty__icon" aria-hidden="true">inventory_2</span>
-        <h3 class="tp-empty__title">Catálogo ainda vazio</h3>
-        <p class="tp-empty__text">Publique produtos ou rode o seed local para ver destaques aqui.</p>
-        <a class="btn btn-primary" href="{% url 'catalog:list' %}">Ir ao catálogo</a>
+        <h3 class="tp-empty__title">Catálogo ainda em montagem</h3>
+        <p class="tp-empty__text">
+          Em breve: equipamentos com peças de reposição vinculadas ao modelo. Enquanto isso, use o diagnóstico por IA.
+        </p>
+        <a class="btn btn-primary" href="{% url 'ai:chat' %}">Começar diagnóstico</a>
       </div>
       {% endif %}
     </div>

@@ -23,14 +23,14 @@ from apps.dashboard.models import HomeHeroSlide
 _HOME_CATEGORY_TILES = (
     {
         "title": "Linha HVAC",
-        "subtitle": "Compressores, placas e filtros de alta precisão",
+        "subtitle": "Equipamentos e peças de reposição com vínculo de modelo",
         "image_key": HOME_CAT_HVAC_KEY,
         "wide": True,
         "slugs": ("ventiladores-teto", "ventiladores-mesa", "pecas-eletricas"),
     },
     {
         "title": "Cozinha",
-        "subtitle": "Sensores de temperatura e motores",
+        "subtitle": "Peças compatíveis a partir do manual do equipamento",
         "image_key": HOME_CAT_KITCHEN_KEY,
         "wide": False,
         "slugs": ("liquidificadores", "aspiradores", "ferros"),

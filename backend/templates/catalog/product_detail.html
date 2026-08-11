@@ -192,18 +192,56 @@
 </article>
 
 {% if cross_sell %}
-<section class="tp-section mt-5">
-  <h2 class="font-headline-sm">Peças relacionadas</h2>
-  <p class="text-secondary small">Sugestões por compatibilidade (sem IA).</p>
+<section class="tp-section mt-5" id="pecas-relacionadas">
+  <h2 class="font-headline-sm">
+    {% if product.product_kind == "finished_good" %}
+      Peças de reposição
+    {% else %}
+      Peças relacionadas
+    {% endif %}
+  </h2>
+  <p class="text-secondary small">
+    {% if product.product_kind == "finished_good" %}
+      Clique em uma peça para abrir a página dela em uma nova aba.
+    {% else %}
+      Sugestões por compatibilidade (sem IA). Clique para abrir em nova aba.
+    {% endif %}
+  </p>
   <div class="row g-3">
     {% for related in cross_sell %}
     <div class="col-md-3">
       <article class="tp-product-card">
-        <a href="{% url 'catalog:detail' related.slug %}?from={{ product.slug }}" class="text-decoration-none text-reset">
+        <a
+          href="{% url 'catalog:detail' related.slug %}?from={{ product.slug }}"
+          class="text-decoration-none text-reset"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <div class="tp-product-card__media">
+            {% with img=related.primary_image %}
+            {% if img and img.image %}
+            <img
+              src="{{ img.image.url }}"
+              alt="{{ related.name_pt }}"
+              width="400"
+              height="400"
+              loading="lazy"
+            />
+            {% else %}
+            <span class="material-symbols-outlined text-secondary" aria-hidden="true">build</span>
+            {% endif %}
+            {% endwith %}
+          </div>
           <div class="tp-product-card__body">
-            <span class="tp-badge tp-badge--compat mb-1">Cross-sell</span>
+            <span class="tp-badge tp-badge--compat mb-1">
+              {% if product.product_kind == "finished_good" %}Peça{% else %}Cross-sell{% endif %}
+            </span>
             <h3 class="tp-product-card__title">{{ related.name_pt }}</h3>
             <p class="font-technical mb-0">{{ related.sku }} · {{ related.price|brl }}</p>
+            <p class="small text-primary mb-0 mt-2">
+              Abrir peça
+              <span class="material-symbols-outlined align-middle tp-icon-sm" aria-hidden="true">open_in_new</span>
+            </p>
           </div>
         </a>
       </article>

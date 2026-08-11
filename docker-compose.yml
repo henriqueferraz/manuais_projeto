@@ -145,6 +145,23 @@ services:
       web:
         condition: service_healthy
 
+  # Só sobe com: docker compose --profile clamav up -d clamav
+  # (não sobe db/web). Host local: CLAMAV_HOST=127.0.0.1
+  clamav:
+    profiles: ["clamav"]
+    image: clamav/clamav:1.4
+    ports:
+      - "${CLAMAV_PUBLISH_PORT:-3310}:3310"
+    volumes:
+      - clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
 volumes:
   pgdata:
   media_data:
+  clamav_data:

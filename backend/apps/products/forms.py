@@ -8,6 +8,16 @@ from typing import Any
 from django import forms
 
 from apps.catalog.models import Brand, Category, EquipmentModel
+from apps.products.libraries.field_style import (
+    collapse_spaces,
+    initial_cap,
+    initial_cap_lines,
+    normalize_color,
+    normalize_material,
+    normalize_sku,
+    normalize_specs_extra,
+    normalize_voltage,
+)
 from apps.products.models import Product
 
 _SKU_RE = re.compile(r"^[A-Z0-9-]+$")
@@ -33,31 +43,46 @@ def _dim_value(dimensions: dict[str, Any], *keys: str) -> Any:
 
 
 def format_specs_extra(specs: dict[str, Any] | None) -> str:
+    """Textarea do admin: chaves técnicas canônicas (snake_case)."""
+    from apps.products.specs_display import canonicalize_spec_key
+
     if not specs:
         return ""
     lines: list[str] = []
+    seen: set[str] = set()
     for key, value in specs.items():
         if key in KNOWN_SPEC_KEYS:
             continue
-        lines.append(f"{key}: {value}")
+        if isinstance(value, dict):
+            continue
+        canon = canonicalize_spec_key(str(key))
+        if not canon or canon in seen or canon in KNOWN_SPEC_KEYS:
+            continue
+        seen.add(canon)
+        if isinstance(value, list):
+            value = "; ".join(str(v) for v in value if v not in (None, ""))
+        lines.append(f"{canon}={value}")
     return "\n".join(lines)
 
 
 def parse_specs_extra(text: str) -> dict[str, Any]:
+    from apps.products.specs_display import canonicalize_spec_key
+
     result: dict[str, Any] = {}
-    for raw_line in (text or "").splitlines():
+    normalized = normalize_specs_extra(text) if text else ""
+    for raw_line in normalized.splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
-        if ":" in line:
-            key, value = line.split(":", 1)
-        elif "=" in line:
+        if "=" in line:
             key, value = line.split("=", 1)
+        elif ":" in line:
+            key, value = line.split(":", 1)
         else:
             raise forms.ValidationError(
                 f'Linha inválida em specs extras: "{line}". Use "chave: valor".'
             )
-        key = key.strip()
+        key = canonicalize_spec_key(key.strip())
         value = value.strip()
         if not key:
             raise forms.ValidationError("Chave vazia em specs extras.")
@@ -270,13 +295,9 @@ class InternalProductForm(forms.Form):
 
     def clean_sku(self) -> str:
         raw = self.cleaned_data.get("sku") or ""
-        sku = raw.strip().upper()
+        sku = normalize_sku(raw)
         if not sku:
             raise forms.ValidationError("Informe o SKU.")
-        if any(ch.isspace() for ch in sku):
-            raise forms.ValidationError(
-                "O SKU não pode conter espaços. Use apenas letras maiúsculas, números e hífen (-)."
-            )
         if not _SKU_RE.fullmatch(sku):
             raise forms.ValidationError(
                 "Use apenas letras maiúsculas, números e hífen (-). "
@@ -284,8 +305,35 @@ class InternalProductForm(forms.Form):
             )
         return sku
 
+    def clean_name(self) -> str:
+        name = initial_cap(self.cleaned_data.get("name") or "")
+        if not name:
+            raise forms.ValidationError("Informe o nome do produto.")
+        return name
+
+    def clean_description(self) -> str:
+        return initial_cap_lines(self.cleaned_data.get("description") or "", max_lines=4)
+
+    def clean_voltage(self) -> str:
+        return normalize_voltage(self.cleaned_data.get("voltage") or "")
+
+    def clean_material(self) -> str:
+        return normalize_material(self.cleaned_data.get("material") or "")
+
+    def clean_color(self) -> str:
+        return normalize_color(self.cleaned_data.get("color") or "")
+
+    def clean_mounting(self) -> str:
+        return initial_cap(self.cleaned_data.get("mounting") or "")
+
+    def clean_bearing_type(self) -> str:
+        return initial_cap(self.cleaned_data.get("bearing_type") or "")
+
+    def clean_rpm(self) -> str:
+        return collapse_spaces(self.cleaned_data.get("rpm") or "")
+
     def clean_specs_extra(self) -> str:
-        text = self.cleaned_data.get("specs_extra") or ""
+        text = normalize_specs_extra(self.cleaned_data.get("specs_extra") or "")
         parsed = parse_specs_extra(text)
         overlap = sorted(set(parsed) & set(KNOWN_SPEC_KEYS))
         if overlap:

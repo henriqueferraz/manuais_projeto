@@ -93,7 +93,7 @@ def notify_ticket_status(ticket: Ticket, *, previous: str) -> None:
         log.save(update_fields=["status", "error_message", "updated_at"])
 
 
-def cross_sell_for_product(product: Product, *, limit: int = 4) -> list[Product]:
+def cross_sell_for_product(product: Product, *, limit: int = 12) -> list[Product]:
     """Sugestões na PDP a partir da tabela de compatibilidade."""
     if product.product_kind == Product.Kind.SPARE_PART:
         # outras peças do mesmo equipamento

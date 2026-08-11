@@ -46,7 +46,7 @@ Evidências rápidas:
 | 5 Chamado | `CH-260807-4D0A5` + 1 evento |
 | 6 Dashboard | `/dashboard/` + monitoramento 200 com `tp-stat` |
 
-Script: `backend/scripts_beta_s001.py`.
+Script (removido): `backend/scripts_beta_s001.py` — one-shot histórico.
 
 ### S-002 — 2026-08-08 — proxy interno (OpenAI + R2)
 
@@ -73,7 +73,7 @@ Evidências rápidas:
 | 5 Chamado | `CH-260808-092D8` + 1 evento |
 | 6 Dashboard | `/dashboard/` + monitoramento 200 com `tp-stat` |
 
-Script: `backend/scripts_beta_s002.py`.
+Script (removido): `backend/scripts_beta_s002.py` — one-shot histórico.
 
 ### S-003 — 2026-08-08 — staff HITL (upload → draft → publish)
 
@@ -84,7 +84,7 @@ Script: `backend/scripts_beta_s002.py`.
 - Evidências: extração `#5`; SKU `MONDIAL-VT-40-NB`; `/catalogo/?q=MONDIAL-VT-40-NB` 200 com SKU no HTML
 - Fixes de caminho: structured output OpenAI via `function_calling`; `index_manual` após `on_commit`; savepoint no DDL pgvector (não abortar TX do approve)
 
-Script: `backend/scripts_beta_s003_hitl.py`.
+Script (removido): `backend/scripts_beta_s003_hitl.py` — one-shot histórico.
 
 ### Template de sessão (copiar)
 

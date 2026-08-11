@@ -273,15 +273,19 @@ def approve_extraction(
     )
 
     # F5: indexar após commit — evita DDL/embed abortar a TX do approve (Postgres).
-    manual_id = log.manual_id
+    enqueue_manual_rag_index(log.manual_id)
+    return product
 
-    def _enqueue_index() -> None:
+
+def enqueue_manual_rag_index(manual_id: int) -> None:
+    """Agenda chunk+embed do manual para o chat RAG (após commit da TX atual)."""
+
+    def _enqueue() -> None:
         from apps.ai.tasks import index_manual_task
 
         index_manual_task.delay(manual_id)
 
-    transaction.on_commit(_enqueue_index)
-    return product
+    transaction.on_commit(_enqueue)
 
 
 @transaction.atomic
@@ -349,6 +353,22 @@ def _resolve_category(hint: str) -> Category | None:
     return category
 
 
+SPARE_PART_CATEGORY_NAME = "Peça de reposição"
+
+
+def _spare_part_category() -> Category:
+    """Categoria canônica para peças materializadas a partir do produto pai."""
+    slug = slugify(SPARE_PART_CATEGORY_NAME)[:140] or "peca-de-reposicao"
+    category, created = Category.objects.get_or_create(
+        slug=slug,
+        defaults={"name": SPARE_PART_CATEGORY_NAME},
+    )
+    if not created and category.name != SPARE_PART_CATEGORY_NAME:
+        category.name = SPARE_PART_CATEGORY_NAME
+        category.save(update_fields=["name"])
+    return category
+
+
 def _merge_product_specs(schema: ExtractedProduct) -> dict[str, Any]:
     """Combina specs livres do LLM com campos órfãos do schema v2."""
     specs: dict[str, Any] = dict(schema.specs or {})
@@ -375,21 +395,29 @@ def _merge_product_specs(schema: ExtractedProduct) -> dict[str, Any]:
 def _materialize_related_parts(
     parent: Product,
     schema: ExtractedProduct,
-) -> dict[str, int]:
+    *,
+    selected_codes: set[str] | None = None,
+) -> dict[str, Any]:
     """
     Cria Product(spare_part) draft + Compatibility para itens vendáveis.
 
     Itens com sellable_separately=false (ou sem code) ficam só no JSON do log.
+    Se `selected_codes` for informado, só materializa peças cujo code está no conjunto.
     """
     created = reused = compatibilities = 0
+    part_products: list[Product] = []
     items: list[RelatedPartHint] = list(schema.spare_parts) + list(schema.accessories)
+    selected = {c.strip() for c in selected_codes} if selected_codes is not None else None
 
     for part in items:
         code = (part.code or "").strip()
         if not part.sellable_separately or not code:
             continue
+        if selected is not None and code not in selected:
+            continue
 
         part_product, was_created = _get_or_create_part_product(parent, schema, part)
+        part_products.append(part_product)
         if was_created:
             created += 1
         else:
@@ -438,6 +466,7 @@ def _materialize_related_parts(
         "created": created,
         "reused": reused,
         "compatibilities": compatibilities,
+        "part_products": part_products,
     }
 
 
@@ -455,18 +484,27 @@ def _get_or_create_part_product(
     if existing is None:
         existing = Product.objects.filter(
             brand=brand,
+            product_kind=Product.Kind.SPARE_PART,
+            specs__part_code=code,
+            specs__parent_sku=parent.sku,
+        ).first()
+    if existing is None:
+        # legado: peças antigas usavam o código da peça em model_code
+        existing = Product.objects.filter(
+            brand=brand,
             model_code=code,
             product_kind=Product.Kind.SPARE_PART,
         ).first()
 
-    category = _resolve_category(part.category) if part.category else None
+    category = _spare_part_category()
+    parent_model_code = (parent.model_code or "").strip()[:120]
     price = _coerce_price(part.unit_price)
     part_specs: dict[str, Any] = {
         "part_code": code,
         "ref_number": part.ref_number or "",
         "qty_per_unit": part.qty_per_unit,
         "parent_sku": parent.sku,
-        "parent_model_code": parent.model_code,
+        "parent_model_code": parent_model_code,
     }
     if part.ean:
         part_specs["ean"] = part.ean
@@ -481,11 +519,12 @@ def _get_or_create_part_product(
     if existing is not None:
         existing.product_kind = Product.Kind.SPARE_PART
         existing.brand = brand
-        existing.model_code = code[:120]
+        existing.brand_ref = parent.brand_ref
+        existing.model_code = parent_model_code
+        existing.equipment_model = parent.equipment_model
+        existing.category = category
         existing.status = Product.Status.DRAFT
         existing.published_at = None
-        if category:
-            existing.category = category
         if price is not None and existing.price == 0:
             existing.price = price
         merged = dict(existing.specs or {})
@@ -517,7 +556,9 @@ def _get_or_create_part_product(
         product_kind=Product.Kind.SPARE_PART,
         category=category,
         brand=brand,
-        model_code=code[:120],
+        brand_ref=parent.brand_ref,
+        model_code=parent_model_code,
+        equipment_model=parent.equipment_model,
         price=price if price is not None else Decimal("0"),
         specs=part_specs,
         manual=parent.manual,

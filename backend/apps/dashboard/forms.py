@@ -21,10 +21,27 @@ class HomeHeroSlideForm(forms.ModelForm):
         )
         widgets = {
             "badge": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "TECNOLOGIA AI"}
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "CATÁLOGO TÉCNICO",
+                }
             ),
-            "title": forms.TextInput(attrs={"class": "form-control"}),
-            "lead": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "title": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "A peça certa, ligada ao equipamento certo.",
+                }
+            ),
+            "lead": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": (
+                        "Produto e peças de reposição a partir do manual — "
+                        "com compatibilidade e diagnóstico que cita a fonte."
+                    ),
+                }
+            ),
             "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "alt_text": forms.TextInput(attrs={"class": "form-control"}),
             "sort_order": forms.NumberInput(attrs={"class": "form-control", "min": 0}),

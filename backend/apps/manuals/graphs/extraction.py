@@ -56,9 +56,18 @@ def extract_and_structure_node(state: ExtractionGraphState) -> dict[str, Any]:
     pdf = extract_pdf_text(content)
     cleaned = sanitize_manual_text(pdf.text)
     if len(cleaned) < 40:
+        from django.conf import settings
+
+        if not getattr(settings, "MANUAL_OCR_ENABLED", False):
+            raise ValueError(
+                "Texto insuficiente no PDF (provável scan/imagem). "
+                "Habilite MANUAL_OCR_ENABLED=true no .env, instale tesseract-ocr "
+                "(e o idioma português) e tente de novo — ou envie um PDF com texto selecionável."
+            )
         raise ValueError(
-            "Texto insuficiente no PDF (possível scan sem OCR). "
-            "Habilite MANUAL_OCR_ENABLED ou envie PDF com texto."
+            "Texto insuficiente mesmo após OCR. "
+            "Verifique se o Tesseract está instalado (tesseract-ocr + tesseract-ocr-por), "
+            "se a qualidade do scan permite leitura, ou envie um PDF com texto selecionável."
         )
 
     result = structure_manual_text(

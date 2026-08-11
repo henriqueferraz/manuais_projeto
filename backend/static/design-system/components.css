@@ -960,6 +960,24 @@
   padding-block: clamp(2.5rem, 6vw, 4rem);
 }
 
+.tp-home-value__item {
+  height: 100%;
+  padding: 1.25rem 0;
+}
+
+.tp-home-value__icon {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 1.75rem;
+  color: var(--tp-accent, #00e5ff);
+}
+
+.tp-home-value__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .tp-home-bento {
   display: grid;
   grid-template-columns: 1fr;

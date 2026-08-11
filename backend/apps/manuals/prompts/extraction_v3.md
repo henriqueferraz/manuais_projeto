@@ -110,23 +110,39 @@ de um tipo de conteúdo:
 4. Se um campo não estiver presente, use string vazia `""`, lista vazia `[]` ou `null`,
    conforme o tipo do schema — nunca omita a chave.
 5. Um mesmo arquivo pode descrever **um produto principal com variantes/modelos** (ex.:
-   "ME3BC / ME3BP / ME23B..."). Nesse caso, preencha `model_code` com o código principal (ou
-   uma lista) e registre as variantes em `model_variants`.
+   "ME3BC / ME3BP / ME23B..." ou uma tabela com vários liquidificadores da mesma linha).
+   Nesse caso:
+   - preencha `model_variants` com **todos** os códigos de modelo citados no documento
+     (obrigatório quando houver 2+ modelos);
+   - preencha `model_code` com o código da capa/título principal, o mais frequente nas
+     tabelas, ou o primeiro da lista — **nunca omita** as demais variantes;
+   - inclua `model_code` em `low_confidence_fields` enquanto houver ambiguidade
+     (vários modelos no mesmo PDF);
+   - **não invente** um único SKU genérico para a família inteira.
 6. Um mesmo arquivo pode conter **múltiplas seções de tipos diferentes** (manual + vista
    explodida + lista de peças, por exemplo). Extraia tudo num único registro do produto,
    preenchendo cada campo com a informação vinda de qualquer seção aplicável, e marque em
-   `source_doc_types` quais tipos de conteúdo foram identificados.
+   `source_doc_types` quais tipos de conteúdo foram identificados. Inclua sempre que
+   existirem no documento: `specs` (características), `safety_warnings`, `key_usage_steps`,
+   `installation_requirements` e `warranty`.
 7. `product_kind` deve ser `finished_good` (aparelho/móvel completo) ou `spare_part` (peça
    avulsa sendo o próprio objeto do documento — raro; normalmente peças aparecem dentro de
    `spare_parts`/`accessories` de um `finished_good`).
 8. Prefira português brasileiro em `name` e `description`, mesmo que o documento tenha
    seções em outros idiomas (inglês/espanhol/francês são comuns em manuais de montagem de
    móveis). Preserve nomes próprios, códigos, siglas e unidades como aparecem no original.
+   Em `description`, se não houver texto comercial no documento, redija até 4 linhas de
+   vitrine (por que comprar) só com fatos já extraídos — nunca invente potência, voltagem
+   ou dimensões. Em textos livres (`name`, `description`, `material`, cor em `specs`),
+   use **inicial maiúscula** em cada valor/linha (ex.: `Ventilador de teto`, não
+   `ventilador de teto`). SKU e códigos de modelo ficam em maiúsculas técnicas.
 9. `sku_suggestion` pode combinar marca + linha/modelo (ex.: BRITANIA-BFR11PG,
    PHILCO-PB120N, ELECTROLUX-ERC10).
 10. `confidence` (0–1) reflete sua certeza geral sobre a qualidade e completude da extração;
     preencha `low_confidence_fields` com os nomes dos campos extraídos com baixa certeza
-    (ex.: inferidos por contexto, texto degradado por OCR, tabela cortada).
+    (ex.: inferidos por contexto, texto degradado por OCR, tabela cortada, múltiplos
+    modelos no mesmo PDF). Com marca + specs elétricas + descrição sólidas, não use
+    `0.5` por padrão — reserve ~0.5 só quando a cobertura for realmente fraca.
 11. Se o mesmo campo aparecer com valores conflitantes em partes diferentes do documento
     (ex.: tensão listada como 127V numa tabela e 220V noutra, por variante), registre ambos
     em `specs` com uma chave que diferencie o contexto (ex.: `tensao_127v`, `tensao_220v`) em
@@ -140,16 +156,27 @@ de um tipo de conteúdo:
 - `category`: categoria livre em pt-BR (ex.: "áudio portátil", "batedeira planetária",
   "fritadeira air fryer", "cortador de cabelo", "lava e seca", "guarda-roupa", "panela de
   arroz elétrica", "micro-ondas", "ventilador")
-- `brand`
+- `brand`: marca **comercial** do produto (nome na vitrine/embalagem), ex.: Philco,
+  Mondial. **Não** use o nome do grupo industrial/fabricante se a marca do produto for
+  outra (ex.: produto Philco fabricado pela Britânia → `brand` = "Philco").
+- `manufacturer`: fabricante ou grupo industrial quando o documento citar razão social /
+  "fabricado por" e for **diferente** de `brand` (ex.: "Britânia"). Se for a mesma
+  empresa, pode repetir `brand` ou deixar vazio.
 - `model_code` (string ou lista, se houver variantes)
 - `model_variants`: lista de códigos de modelos irmãos citados no mesmo documento
 - `name`: nome comercial do produto em pt-BR
-- `description`: descrição curta (1–3 frases) baseada no texto do manual
+- `description`: texto de venda em português brasileiro, **obrigatório**, no máximo
+  **4 linhas**. Se o documento não trouxer descrição comercial, **crie** uma com base nos
+  dados extraídos (marca, modelo, categoria, voltagem, potência, specs relevantes). O tom
+  é de vitrine: diga por que o cliente deveria escolher esse produto (benefício + diferencial
+  técnico), sem inventar especificações que não estejam no documento. Não use bullets —
+  frases curtas, uma ideia por linha.
 - `sku_suggestion`
 
 ### Elétrico / mecânico
 - `voltage` (ex.: "127V", "220V", "Bivolt")
-- `power_w`
+- `power_w`: número em watts **sem unidade** (ex.: `400`, não `"400W"`). **Nunca** coloque
+  potência em `specs` (nem como `potencia`/`Potencia`/`power`) — use só este campo.
 - `frequency_hz`
 - `consumption_kwh` (quando informado, ex.: cortadores de cabelo)
 
@@ -163,9 +190,10 @@ de um tipo de conteúdo:
 - `packaging_qty` (unidades por caixa master, se aplicável)
 
 ### Specs livres
-- `specs`: objeto chave-valor para qualquer especificação adicional presente e não coberta
-  acima (ex.: rpm, material, cor, tipo de lâmina, nível de ruído, capacidade do tambor,
-  temperatura máxima, WiFi/conectividade)
+- `specs`: objeto chave-valor para qualquer especificação adicional presente e **não coberta**
+  pelos campos canônicos acima (ex.: rpm, material, cor, tipo de lâmina, nível de ruído,
+  capacidade do tambor, temperatura máxima, WiFi/conectividade). **Proibido** repetir aqui
+  `voltage`, `power_w` / potência, `weight_kg`, dimensões já mapeadas.
 
 ### Estrutura do produto (quando houver vista explodida / catálogo de peças)
 - `components`: lista de componentes/controles nomeados e numerados como aparecem em
@@ -249,6 +277,7 @@ Documentos como vista explodida, catálogo de peças e lista de acessórios semp
 {
   "product_kind": "finished_good",
   "brand": "Philco",
+  "manufacturer": "Britânia",
   "model_code": "PB120N",
   "name": "Rádio CD Player Philco PB120N",
   "sku_suggestion": "PHILCO-PB120N",

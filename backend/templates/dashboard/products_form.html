@@ -45,6 +45,8 @@
         Envie o manual ou catálogo de peças em PDF. O arquivo passa por varredura antivírus
         antes de qualquer processamento. A IA só propõe dados — <strong>nada é aplicado
         ao formulário sem a sua aprovação</strong>.
+        PDFs escaneados (só imagem) usam OCR automático quando
+        <code>MANUAL_OCR_ENABLED=true</code> e o Tesseract estiver instalado no servidor.
       </p>
       <div class="row g-3 align-items-end">
         <div class="col-md-8">
@@ -64,6 +66,32 @@
       </div>
       <div id="product-ai-status" class="small mt-3" role="status" aria-live="polite" hidden></div>
 
+      <div
+        class="modal fade"
+        id="product-ai-loading-modal"
+        tabindex="-1"
+        aria-labelledby="product-ai-loading-title"
+        aria-hidden="true"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-body text-center py-5 px-4">
+              <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
+              <h2 id="product-ai-loading-title" class="h5 mb-2">Analisando com IA</h2>
+              <p class="mb-0 text-secondary">
+                O processo pode demorar de acordo com a conexão com a internet.
+                Aguarde enquanto o sistema processa as informações.
+              </p>
+              <p class="small text-secondary mt-3 mb-0" id="product-ai-loading-step" aria-live="polite">
+                Enviando PDF e iniciando análise…
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="product-ai-agent" class="tp-ai-agent mt-4" hidden>
         <div class="tp-ai-agent__header">
           <div>
@@ -72,8 +100,55 @@
           </div>
           <div class="d-flex flex-wrap gap-2" id="product-ai-badges"></div>
         </div>
-        <p class="small text-secondary mt-2 mb-3" id="product-ai-agent-msg"></p>
+        <p class="small text-secondary mb-3" id="product-ai-agent-msg"></p>
+
+        <div id="product-ai-model-picker" class="mb-3" hidden>
+          <label class="form-label font-label-caps text-secondary" for="product-ai-model-select">
+            Qual modelo cadastrar agora?
+          </label>
+          <select id="product-ai-model-select" class="form-select form-select-sm"></select>
+          <p class="form-text mb-0">
+            Manuais de família listam vários códigos. Escolha um para este cadastro —
+            isso remove a baixa confiança de <code>model_code</code> e ajusta o SKU.
+          </p>
+        </div>
+
         <dl class="row small mb-3" id="product-ai-highlights"></dl>
+
+        <div id="product-ai-sections" class="mb-3" hidden></div>
+
+        <div id="product-ai-parts" class="mb-3" hidden>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+            <p class="font-label-caps text-secondary mb-0">Peças e acessórios detectados</p>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="product-ai-parts-all">
+                Marcar vendáveis
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="product-ai-parts-none">
+                Desmarcar todas
+              </button>
+            </div>
+          </div>
+          <p class="small text-secondary mb-2">
+            Marque as peças que devem ser cadastradas junto com o produto (status rascunho).
+            Itens sem código ficam só na composição e não viram produto de venda.
+          </p>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 2.5rem"></th>
+                  <th scope="col">Código</th>
+                  <th scope="col">Nome</th>
+                  <th scope="col">SKU</th>
+                  <th scope="col">Tipo</th>
+                </tr>
+              </thead>
+              <tbody id="product-ai-parts-body"></tbody>
+            </table>
+          </div>
+        </div>
+
         <details class="mb-3">
           <summary class="small">Ver JSON completo extraído</summary>
           <pre class="small tp-scroll-pre mt-2 mb-0" id="product-ai-json"></pre>
@@ -87,8 +162,9 @@
           </button>
         </div>
         <p class="small text-secondary mt-2 mb-0">
-          Aprovar só copia os campos sugeridos para o formulário abaixo. O produto só é
-          gravado quando você clicar em <strong>Salvar</strong>.
+          Aprovar só copia os campos sugeridos para o formulário abaixo. Ao
+          <strong>Salvar</strong>: grava o produto, usa a 1ª página do PDF como foto
+          (se ainda não houver) e cadastra as peças marcadas em rascunho.
         </p>
       </div>
     </div>
@@ -97,6 +173,7 @@
   <form method="post" enctype="multipart/form-data" class="mt-4" id="product-main-form">
     {% csrf_token %}
     <input type="hidden" name="extraction_id" id="id_extraction_id" value="" />
+    <input type="hidden" name="selected_part_codes" id="id_selected_part_codes" value="" />
     {% if form.non_field_errors %}
       <div class="alert alert-danger">{{ form.non_field_errors }}</div>
     {% endif %}
@@ -325,6 +402,8 @@
           <div class="col-lg-8">
             <p class="tp-product-photos__lead mb-3">
               Galeria do catálogo (máx. {{ image_max_count }}). Escolha a foto principal e marque as que deseja excluir ao salvar.
+              Se você aprovou um manual via IA e ainda não houver fotos, a
+              <strong>1ª página do PDF</strong> vira automaticamente a foto principal ao salvar.
             </p>
             <p class="small text-secondary mb-3">
               Ao salvar, cada foto enviada é <strong>alterada automaticamente</strong>
@@ -417,6 +496,66 @@
       </div>
     </section>
 
+    {% if related_parts %}
+    <section class="tp-panel mt-4" aria-labelledby="related-parts-heading" id="product-related-parts">
+      <div class="tp-panel__header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h2 id="related-parts-heading" class="mb-0">Peças de reposição vinculadas</h2>
+        <span class="tp-badge tp-badge--draft">{{ related_parts|length }}</span>
+      </div>
+      <div class="tp-panel__body">
+        <p class="small text-secondary mb-3">
+          Clique em uma peça para ver as informações sem sair desta tela.
+        </p>
+        <div class="list-group" id="related-parts-list">
+          {% for part in related_parts %}
+          <button
+            type="button"
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-3 text-start"
+            data-related-part-id="{{ part.pk }}"
+          >
+            <span>
+              <strong>{{ part.name_pt|default:part.sku }}</strong>
+              <span class="font-technical text-secondary d-block small">
+                {{ part.sku }}
+                {% if part.specs.part_code %} · cód. {{ part.specs.part_code }}{% endif %}
+                · {{ part.get_status_display }}
+              </span>
+            </span>
+            <span class="material-symbols-outlined text-secondary" aria-hidden="true">info</span>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <div
+      class="modal fade"
+      id="related-part-modal"
+      tabindex="-1"
+      aria-labelledby="related-part-modal-title"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title h5" id="related-part-modal-title">Peça vinculada</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <p class="font-label-caps text-secondary mb-1" id="related-part-modal-brand">—</p>
+            <p class="fs-5 mb-3" id="related-part-modal-name">—</p>
+            <dl class="row small mb-0" id="related-part-modal-fields"></dl>
+            <p class="small text-secondary mt-3 mb-0" id="related-part-modal-description" hidden></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{ related_parts_payload|json_script:"related-parts-data" }}
+    {% endif %}
+
     <div class="d-flex gap-2 mt-4">
       <button type="submit" class="btn btn-primary">Salvar</button>
       <a class="btn btn-outline-secondary" href="{% url 'dashboard:products' %}">Cancelar</a>
@@ -426,4 +565,7 @@
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'dashboard/product_ai_assist.js' %}" defer></script>
+{% if related_parts %}
+<script src="{% static 'dashboard/related_parts_modal.js' %}" defer></script>
+{% endif %}
 {% endblock %}

@@ -286,6 +286,12 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
                     break
 
         if image_errors:
+            from apps.dashboard.services.product_ai_assist import (
+                related_part_modal_payload,
+                related_spare_parts_for_product,
+            )
+
+            related = related_spare_parts_for_product(product) if product else []
             return render(
                 request,
                 "dashboard/products_form.html",
@@ -296,6 +302,8 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
                     "product_images": product_images,
                     "image_max_count": PRODUCT_IMAGE_MAX_COUNT,
                     "image_errors": image_errors,
+                    "related_parts": related,
+                    "related_parts_payload": [related_part_modal_payload(p) for p in related],
                     "page_title": f"Editar {product.sku}" if product else "Novo produto",
                     "ai_extract_url": reverse("dashboard:products_ai_extract"),
                 },
@@ -331,15 +339,25 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
         stock.save()
 
         extraction_raw = (request.POST.get("extraction_id") or "").strip()
+        link_result = None
         if extraction_raw.isdigit():
             from apps.dashboard.services.product_ai_assist import (
                 link_approved_extraction_to_product,
             )
 
-            link_approved_extraction_to_product(
+            codes_raw = request.POST.get("selected_part_codes")
+            if codes_raw is None:
+                selected_codes = None
+            else:
+                selected_codes = {
+                    c.strip() for c in codes_raw.split(",") if c.strip()
+                }
+
+            link_result = link_approved_extraction_to_product(
                 extraction_id=int(extraction_raw),
                 product=product,
                 user=request.user,
+                selected_part_codes=selected_codes,
             )
 
         if delete_ids:
@@ -378,7 +396,29 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
             product.images.filter(pk=chosen).update(is_primary=True)
 
         messages.success(request, f"Produto {product.sku} salvo.")
+        if link_result:
+            parts_n = int(link_result.get("parts_created") or 0) + int(
+                link_result.get("parts_reused") or 0
+            )
+            bits = []
+            if link_result.get("cover_attached"):
+                bits.append("capa do PDF como foto principal")
+            if parts_n:
+                bits.append(f"{parts_n} peça(s) em rascunho")
+            if bits:
+                messages.info(
+                    request,
+                    "Extração vinculada: " + " · ".join(bits) + ". "
+                    "Veja as peças na lista abaixo (mesmo formulário).",
+                )
         return redirect("dashboard:products_edit", pk=product.pk)
+
+    from apps.dashboard.services.product_ai_assist import (
+        related_part_modal_payload,
+        related_spare_parts_for_product,
+    )
+
+    related_parts = related_spare_parts_for_product(product) if product else []
 
     return render(
         request,
@@ -390,6 +430,8 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
             "product_images": product_images,
             "image_max_count": PRODUCT_IMAGE_MAX_COUNT,
             "image_errors": [],
+            "related_parts": related_parts,
+            "related_parts_payload": [related_part_modal_payload(p) for p in related_parts],
             "page_title": f"Editar {product.sku}" if product else "Novo produto",
             "ai_extract_url": reverse("dashboard:products_ai_extract"),
         },

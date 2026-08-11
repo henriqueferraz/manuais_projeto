@@ -64,7 +64,8 @@ def scan_antivirus(content: bytes) -> str:
         except ImportError as exc:
             raise ValidationError("CLAMAV habilitado mas pacote 'clamd' não instalado.") from exc
         try:
-            host = getattr(settings, "CLAMAV_HOST", "") or ""
+            # django-environ/dotenv podem incluir comentário inline no valor
+            host = (getattr(settings, "CLAMAV_HOST", "") or "").split("#", 1)[0].strip()
             port = int(getattr(settings, "CLAMAV_PORT", 3310) or 3310)
             if host:
                 cd = clamd.ClamdNetworkSocket(host=host, port=port)
