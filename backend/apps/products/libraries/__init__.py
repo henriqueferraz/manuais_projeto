@@ -1,9 +1,9 @@
 """Bibliotecas de referência do catálogo (cores, estilo de campos, etc.)."""
 
 from apps.products.libraries.colors import (
-    COLORS,
     COLOR_BY_CODE,
     COLOR_BY_NAME,
+    COLORS,
     abbreviate_color,
     color_choices,
     color_name,

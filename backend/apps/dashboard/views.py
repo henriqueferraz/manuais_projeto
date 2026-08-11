@@ -349,9 +349,7 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
             if codes_raw is None:
                 selected_codes = None
             else:
-                selected_codes = {
-                    c.strip() for c in codes_raw.split(",") if c.strip()
-                }
+                selected_codes = {c.strip() for c in codes_raw.split(",") if c.strip()}
 
             link_result = link_approved_extraction_to_product(
                 extraction_id=int(extraction_raw),

@@ -62,8 +62,10 @@ def normalize_voltage(value: str) -> str:
     if not raw:
         return ""
     # Bivolt antes de casar 220V isolado (ex.: "127/220V")
-    if _VOLTAGE_BIVOLT.search(raw) or re.search(r"(?i)\b127\s*/\s*220", raw) or re.search(
-        r"(?i)\b110\s*/\s*220", raw
+    if (
+        _VOLTAGE_BIVOLT.search(raw)
+        or re.search(r"(?i)\b127\s*/\s*220", raw)
+        or re.search(r"(?i)\b110\s*/\s*220", raw)
     ):
         return "Bivolt"
     if re.search(r"(?i)\b220\s*v\b", raw):
@@ -136,9 +138,7 @@ def apply_field_style(suggestions: dict[str, Any]) -> dict[str, Any]:
         suggestions["name"] = initial_cap(str(suggestions["name"]))
 
     if "description" in suggestions and suggestions["description"]:
-        suggestions["description"] = initial_cap_lines(
-            str(suggestions["description"]), max_lines=4
-        )
+        suggestions["description"] = initial_cap_lines(str(suggestions["description"]), max_lines=4)
 
     if "voltage" in suggestions and suggestions["voltage"]:
         suggestions["voltage"] = normalize_voltage(str(suggestions["voltage"]))

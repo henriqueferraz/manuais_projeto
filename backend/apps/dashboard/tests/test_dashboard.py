@@ -547,8 +547,9 @@ def test_pdf_cover_render_and_link_materializes_selected_parts(
     settings.MEDIA_ROOT = tmp_path
     settings.MANUAL_AV_STUB_OK = True
 
-    from django.core.files.base import ContentFile
     from unittest.mock import patch
+
+    from django.core.files.base import ContentFile
 
     from apps.compatibility.models import Compatibility
     from apps.dashboard.services.product_ai_assist import (
@@ -692,6 +693,7 @@ def test_products_edit_lists_related_parts_with_modal(staff_user, db):
     assert b'target="_blank"' not in res.content
     assert b"data-related-part-id" in res.content
     assert str(part.pk).encode() in res.content
+
 
 @pytest.mark.django_db
 def test_products_ai_extract_returns_parts_for_review(staff_user, monkeypatch, settings):

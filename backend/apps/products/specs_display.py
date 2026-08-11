@@ -230,14 +230,18 @@ def product_spec_rows(product) -> list[tuple[str, str]]:
         if canon in warranty_keys_from_object:
             continue
         # flats de garantia mesmo sem objeto
-        if canon in {
-            "warranty_legal_days",
-            "warranty_additional_days",
-            "warranty_total_days",
-            "legal_days",
-            "additional_days",
-            "total_days",
-        } and warranty_keys_from_object:
+        if (
+            canon
+            in {
+                "warranty_legal_days",
+                "warranty_additional_days",
+                "warranty_total_days",
+                "legal_days",
+                "additional_days",
+                "total_days",
+            }
+            and warranty_keys_from_object
+        ):
             continue
         add(str(key), value)
 

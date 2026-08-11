@@ -131,9 +131,7 @@ def parts_for_review(data: ExtractedProduct | dict[str, Any]) -> list[dict[str, 
         for idx, raw in enumerate(raw_items):
             try:
                 part = (
-                    raw
-                    if isinstance(raw, RelatedPartHint)
-                    else RelatedPartHint.model_validate(raw)
+                    raw if isinstance(raw, RelatedPartHint) else RelatedPartHint.model_validate(raw)
                 )
             except Exception:  # noqa: BLE001
                 continue
@@ -373,9 +371,7 @@ def _specs_extra_lines(dump: dict[str, Any]) -> str:
 
     specs = dump.get("specs") or {}
     if isinstance(specs, dict):
-        if "warranty" in specs or any(
-            canonicalize_spec_key(str(k)) == "warranty" for k in specs
-        ):
+        if "warranty" in specs or any(canonicalize_spec_key(str(k)) == "warranty" for k in specs):
             raw_w = specs.get("warranty")
             if raw_w is None:
                 for k, v in specs.items():
@@ -575,9 +571,7 @@ def build_proposal_sections(data: ExtractedProduct | dict[str, Any]) -> dict[str
         "components": components,
         "safety_warnings": _list_from_dump_or_specs("safety_warnings", limit=10),
         "key_usage_steps": _list_from_dump_or_specs("key_usage_steps", limit=10),
-        "installation_requirements": _list_from_dump_or_specs(
-            "installation_requirements", limit=8
-        ),
+        "installation_requirements": _list_from_dump_or_specs("installation_requirements", limit=8),
         "warranty": warranty_lines,
         "model_variants": variants,
         "certifications": _list_from_dump_or_specs("certifications", limit=8),
@@ -644,6 +638,7 @@ def collect_model_options(
             }
         )
     return options
+
 
 def discard_product_form_extraction(
     *,

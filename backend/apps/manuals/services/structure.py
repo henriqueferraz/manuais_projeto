@@ -539,6 +539,7 @@ def _normalize_brand_vs_manufacturer(product: ExtractedProduct) -> ExtractedProd
             updates["sku_suggestion"] = f"PHILCO-{rest}"[:64]
     return product.model_copy(update=updates)
 
+
 def ensure_sales_description(product: ExtractedProduct) -> ExtractedProduct:
     """Preenche `description` de venda se estiver vazia; limita a 4 linhas se vier longa."""
     product = promote_canonical_fields(product)
