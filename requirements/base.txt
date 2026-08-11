@@ -47,3 +47,6 @@ openai==2.53.0
 
 # Fase 6 — diagnóstico LangGraph / HITL / vision (R1, 2026-08-06)
 langgraph==1.2.10
+
+# Cadastro — busca de fotos na web (HITL; modo mock na CI)
+ddgs==9.14.4

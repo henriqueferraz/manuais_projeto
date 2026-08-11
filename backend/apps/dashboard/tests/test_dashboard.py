@@ -629,9 +629,11 @@ def test_pdf_cover_render_and_link_materializes_selected_parts(
         mock_delay.assert_called_once_with(manual.pk)
 
     assert result is not None
-    assert result["cover_attached"] is True
+    assert result["cover_attached"] is False
+    assert result["manual_linked"] is True
     assert result["parts_created"] == 1
-    assert ProductImage.objects.filter(product=product, is_primary=True).exists()
+    assert product.manual_id == manual.pk
+    assert not ProductImage.objects.filter(product=product).exists()
     assert Product.objects.filter(sku="PHILCO-706452").exists()
     assert not Product.objects.filter(sku="PHILCO-706999").exists()
     assert Compatibility.objects.filter(part_product__sku="PHILCO-706452").exists()
@@ -643,7 +645,7 @@ def test_pdf_cover_render_and_link_materializes_selected_parts(
     assert related[0].category.name == "Peça de reposição"
     assert related[0].specs.get("part_code") == "706452"
 
-    # Segunda chamada não duplica capa
+    # Capa do manual não é anexada como foto
     assert attach_manual_cover_as_product_image(product, manual) is None
 
 
@@ -885,3 +887,159 @@ def test_recompute_extraction_confidence_multi_model_and_solid():
     single = recompute_extraction_confidence(single)
     assert "model_code" not in single.low_confidence_fields
     assert single.confidence >= 0.7
+
+
+@pytest.mark.django_db
+def test_products_create_shows_web_photo_search_ui(staff_user):
+    client = Client()
+    client.force_login(staff_user)
+    res = client.get(reverse("dashboard:products_create"))
+    assert res.status_code == 200
+    assert b"product-web-photos" in res.content
+    assert b"product-web-photos-search" in res.content
+    assert b"product-web-photos-hidden" in res.content
+    assert b"product_web_images.js" in res.content
+    assert b"data-max-select" in res.content
+
+
+@pytest.mark.django_db
+def test_products_web_image_search_mock(staff_user, settings):
+    from apps.catalog.models import Brand, Category, EquipmentModel
+
+    settings.WEB_IMAGE_SEARCH_MODE = "mock"
+    brand = Brand.objects.create(name="Mondial", slug="mondial-web")
+    cat = Category.objects.create(name="Ventilador de teto", slug="vent-teto-web")
+    model = EquipmentModel.objects.create(code="VTE-02", brand="Mondial", slug="vte-02-web")
+
+    client = Client()
+    client.force_login(staff_user)
+    res = client.post(
+        reverse("dashboard:products_web_image_search"),
+        {
+            "brand_ref": brand.pk,
+            "equipment_model": model.pk,
+            "category": cat.pk,
+            "name": "Hélice reposição",
+        },
+    )
+    assert res.status_code == 200
+    payload = res.json()
+    assert payload["ok"] is True
+    assert payload["mode"] == "mock"
+    assert "Mondial" in payload["query"]
+    assert "VTE-02" in payload["query"]
+    assert len(payload["candidates"]) == 5
+    assert payload["candidates"][0]["image_url"].startswith("https://example.invalid/")
+
+
+@pytest.mark.django_db
+def test_products_create_attaches_selected_web_images(staff_user, settings, db):
+    from apps.catalog.models import Brand, Category, EquipmentModel
+    from apps.products.models import Product
+
+    settings.WEB_IMAGE_SEARCH_MODE = "mock"
+    settings.MANUAL_AV_STUB_OK = True
+
+    cat = Category.objects.create(name="Cat web", slug="cat-web")
+    brand = Brand.objects.create(name="Philco", slug="philco-web")
+    model = EquipmentModel.objects.create(code="PB120", brand="Philco", slug="pb120-web")
+
+    client = Client()
+    client.force_login(staff_user)
+    search = client.post(
+        reverse("dashboard:products_web_image_search"),
+        {"brand_ref": brand.pk, "equipment_model": model.pk, "category": cat.pk},
+    )
+    urls = [c["image_url"] for c in search.json()["candidates"][:3]]
+
+    res = client.post(
+        reverse("dashboard:products_create"),
+        {
+            "sku": "WEB-IMG-01",
+            "brand_ref": brand.pk,
+            "equipment_model": model.pk,
+            "name": "Produto com foto web",
+            "description": "",
+            "price": "99.90",
+            "voltage": "220V",
+            "product_kind": "finished_good",
+            "status": "draft",
+            "category": cat.pk,
+            "quantity_available": 1,
+            "minimum_alert": 1,
+            "web_image_urls": urls,
+        },
+    )
+    assert res.status_code == 302
+    product = Product.objects.get(sku="WEB-IMG-01")
+    assert product.images.count() == 3
+    assert product.images.filter(is_primary=True).count() == 1
+
+
+@pytest.mark.django_db
+def test_products_create_attaches_selected_web_image(staff_user, settings, db):
+    from apps.catalog.models import Brand, Category, EquipmentModel
+    from apps.products.models import Product
+
+    settings.WEB_IMAGE_SEARCH_MODE = "mock"
+    settings.MANUAL_AV_STUB_OK = True
+
+    cat = Category.objects.create(name="Cat web2", slug="cat-web-2")
+    brand = Brand.objects.create(name="Britania", slug="britania-web")
+    model = EquipmentModel.objects.create(code="BT-1", brand="Britania", slug="bt-1-web")
+
+    client = Client()
+    client.force_login(staff_user)
+    search = client.post(
+        reverse("dashboard:products_web_image_search"),
+        {"brand_ref": brand.pk, "equipment_model": model.pk, "category": cat.pk},
+    )
+    image_url = search.json()["candidates"][0]["image_url"]
+
+    res = client.post(
+        reverse("dashboard:products_create"),
+        {
+            "sku": "WEB-IMG-02",
+            "brand_ref": brand.pk,
+            "equipment_model": model.pk,
+            "name": "Produto uma foto web",
+            "description": "",
+            "price": "49.90",
+            "voltage": "110V",
+            "product_kind": "finished_good",
+            "status": "draft",
+            "category": cat.pk,
+            "quantity_available": 1,
+            "minimum_alert": 1,
+            "web_image_url": image_url,
+        },
+    )
+    assert res.status_code == 302
+    product = Product.objects.get(sku="WEB-IMG-02")
+    assert product.images.count() == 1
+    assert product.images.filter(is_primary=True).exists()
+
+
+def test_build_image_search_query_and_ssrf_guard():
+    from django.core.exceptions import ValidationError
+
+    from apps.dashboard.services.web_product_images import (
+        _assert_safe_image_url,
+        build_image_search_query,
+    )
+
+    q = build_image_search_query(
+        brand="Mondial",
+        model="VTE-02",
+        appliance_type="Ventilador de teto",
+    )
+    assert "Mondial" in q and "VTE-02" in q
+
+    with pytest.raises(ValidationError):
+        build_image_search_query()
+
+    with pytest.raises(ValidationError):
+        _assert_safe_image_url("http://127.0.0.1/secret.jpg")
+
+    with pytest.raises(ValidationError):
+        _assert_safe_image_url("ftp://example.com/a.jpg")

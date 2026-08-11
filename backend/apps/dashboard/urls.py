@@ -21,6 +21,11 @@ urlpatterns = [
         views.products_ai_discard,
         name="products_ai_discard",
     ),
+    path(
+        "produtos/ia/buscar-fotos/",
+        views.products_web_image_search,
+        name="products_web_image_search",
+    ),
     path("produtos/<int:pk>/", views.products_edit, name="products_edit"),
     path("produtos/<int:pk>/excluir/", views.products_delete, name="products_delete"),
     path("home-hero/", views.home_hero_list, name="home_hero"),

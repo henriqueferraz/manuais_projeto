@@ -163,8 +163,8 @@
         </div>
         <p class="small text-secondary mt-2 mb-0">
           Aprovar só copia os campos sugeridos para o formulário abaixo. Ao
-          <strong>Salvar</strong>: grava o produto, usa a 1ª página do PDF como foto
-          (se ainda não houver) e cadastra as peças marcadas em rascunho.
+          <strong>Salvar</strong>: grava o produto, vincula o manual PDF para download
+          na página pública e cadastra as peças marcadas em rascunho.
         </p>
       </div>
     </div>
@@ -395,15 +395,16 @@
     <section class="tp-panel mt-4 tp-product-photos" aria-labelledby="product-photos-heading">
       <div class="tp-panel__header d-flex flex-wrap justify-content-between align-items-center gap-2">
         <h2 id="product-photos-heading" class="mb-0">Fotos do produto</h2>
-        <span class="tp-badge tp-badge--draft">{{ product_images|length }} / {{ image_max_count }}</span>
+        <span class="tp-badge tp-badge--draft">{{ gallery_count|default:0 }} / {{ image_max_count }}</span>
       </div>
       <div class="tp-panel__body">
         <div class="row g-4">
           <div class="col-lg-8">
             <p class="tp-product-photos__lead mb-3">
-              Galeria do catálogo (máx. {{ image_max_count }}). Escolha a foto principal e marque as que deseja excluir ao salvar.
-              Se você aprovou um manual via IA e ainda não houver fotos, a
-              <strong>1ª página do PDF</strong> vira automaticamente a foto principal ao salvar.
+              Galeria do catálogo (máx. {{ image_max_count }} fotos de vitrine).
+              Escolha a foto principal e marque as que deseja excluir ao salvar.
+              O <strong>manual PDF não conta como foto</strong> — ele fica vinculado
+              para download na página do produto.
             </p>
             <p class="small text-secondary mb-3">
               Ao salvar, cada foto enviada é <strong>alterada automaticamente</strong>
@@ -411,6 +412,33 @@
               Se o resultado não ficar como você espera, envie a imagem já no padrão:
               JPG, PNG ou WEBP, entre 400×400 e 800×800&nbsp;px, proporção próxima do quadrado (entre 3:4 e 4:3) e até 2&nbsp;MB.
             </p>
+
+            <div
+              class="tp-web-photos mb-4"
+              id="product-web-photos"
+              data-search-url="{% url 'dashboard:products_web_image_search' %}"
+              data-csrf="{{ csrf_token }}"
+              data-max-select="{{ image_max_count }}"
+            >
+              <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                <div>
+                  <h3 class="h6 mb-1">
+                    <span class="material-symbols-outlined align-middle" aria-hidden="true">travel_explore</span>
+                    Fotos na internet
+                  </h3>
+                  <p class="small text-secondary mb-0">
+                    Usa marca, modelo e categoria (tipo de aparelho) do formulário.
+                    Marque uma ou mais fotos (até {{ image_max_count }}); elas só entram no cadastro ao salvar.
+                  </p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="product-web-photos-search">
+                  Buscar fotos
+                </button>
+              </div>
+              <div id="product-web-photos-status" class="small mb-2" role="status" aria-live="polite" hidden></div>
+              <div id="product-web-photos-results" class="tp-web-photos__grid" hidden></div>
+              <div id="product-web-photos-hidden"></div>
+            </div>
 
             {% if product_images %}
             <div class="tp-product-photos__grid">
@@ -565,6 +593,7 @@
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'dashboard/product_ai_assist.js' %}" defer></script>
+<script src="{% static 'dashboard/product_web_images.js' %}" defer></script>
 {% if related_parts %}
 <script src="{% static 'dashboard/related_parts_modal.js' %}" defer></script>
 {% endif %}

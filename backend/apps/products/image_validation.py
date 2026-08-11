@@ -23,6 +23,28 @@ PRODUCT_IMAGE_OUTPUT_MIME = "image/jpeg"
 PRODUCT_IMAGE_ALLOWED_EXT = {".jpg", ".jpeg", ".png", ".webp"}
 PRODUCT_IMAGE_ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
 PRODUCT_IMAGE_INPUT_MAX_BYTES = 25 * 1024 * 1024  # limite bruto antes de processar
+# Capas geradas a partir do PDF não contam como foto de vitrine (R21).
+MANUAL_COVER_ALT_PREFIX = "Capa do manual"
+
+
+def is_manual_cover_image(*, alt_text: str = "") -> bool:
+    return (alt_text or "").startswith(MANUAL_COVER_ALT_PREFIX)
+
+
+def gallery_images_queryset(product):
+    """Imagens de vitrine: exclui capa do manual e arquivos vazios."""
+    return (
+        product.images.exclude(image="")
+        .exclude(alt_text__startswith=MANUAL_COVER_ALT_PREFIX)
+        .order_by("-is_primary", "sort_order", "id")
+    )
+
+
+def gallery_image_count(product, *, exclude_pks: set[int] | None = None) -> int:
+    qs = gallery_images_queryset(product)
+    if exclude_pks:
+        qs = qs.exclude(pk__in=exclude_pks)
+    return qs.count()
 
 
 def validate_product_image(upload: UploadedFile) -> None:

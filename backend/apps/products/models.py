@@ -123,8 +123,10 @@ class Product(models.Model):
 
     @property
     def primary_image(self):
-        """Primeira imagem com arquivo; prioriza `is_primary`."""
-        with_file = self.images.exclude(image="").order_by("sort_order", "id")
+        """Primeira imagem de vitrine com arquivo; prioriza `is_primary` (ignora capa de manual)."""
+        from apps.products.image_validation import gallery_images_queryset
+
+        with_file = gallery_images_queryset(self).order_by("sort_order", "id")
         primary = with_file.filter(is_primary=True).first()
         return primary or with_file.first()
 

@@ -19,6 +19,7 @@ from apps.dashboard.services.monitoring import collect_monitoring, simulate_inci
 from apps.products.forms import InternalProductForm, initial_specs_from_product
 from apps.products.image_validation import (
     PRODUCT_IMAGE_MAX_COUNT,
+    gallery_image_count,
     prepare_product_image,
 )
 from apps.products.models import Product, ProductImage, ProductTranslation, Stock
@@ -215,9 +216,11 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
     product = get_object_or_404(Product, pk=pk) if pk else None
     stock = None
     product_images: list[ProductImage] = []
+    gallery_count = 0
     initial = {}
     if product:
         product_images = list(product.images.order_by("sort_order", "id"))
+        gallery_count = gallery_image_count(product)
         tr = product.translations.filter(locale="pt-BR").first()
         try:
             stock = product.stock
@@ -265,13 +268,31 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
         primary_raw = request.POST.get("primary_image") or ""
         primary_id = int(primary_raw) if primary_raw.isdigit() else None
         uploads = [f for f in request.FILES.getlist("images") if f]
+        web_image_urls = [
+            u.strip() for u in request.POST.getlist("web_image_urls") if str(u).strip()
+        ]
+        # Compat: seleção única antiga
+        single = (request.POST.get("web_image_url") or "").strip()
+        if single and single not in web_image_urls:
+            web_image_urls.append(single)
+        # Dedup preservando ordem
+        seen_urls: set[str] = set()
+        unique_web_urls: list[str] = []
+        for url in web_image_urls:
+            if url in seen_urls:
+                continue
+            seen_urls.add(url)
+            unique_web_urls.append(url)
+        web_image_urls = unique_web_urls[:PRODUCT_IMAGE_MAX_COUNT]
 
         kept_count = 0
         if product:
-            kept_count = product.images.exclude(pk__in=delete_ids).count()
+            kept_count = gallery_image_count(product, exclude_pks=delete_ids)
         remaining_slots = PRODUCT_IMAGE_MAX_COUNT - kept_count
         prepared_uploads = []
-        if len(uploads) > remaining_slots:
+        web_images_attached = 0
+        planned_count = len(uploads) + len(web_image_urls)
+        if planned_count > remaining_slots:
             image_errors.append(
                 f"Limite de {PRODUCT_IMAGE_MAX_COUNT} fotos. "
                 f"Você pode adicionar no máximo {max(0, remaining_slots)} agora."
@@ -284,6 +305,24 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
                     msg = "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
                     image_errors.append(f"{upload.name}: {msg}")
                     break
+            if not image_errors and web_image_urls:
+                from apps.dashboard.services.web_product_images import (
+                    fetch_web_image_as_upload,
+                )
+
+                sku_stem = data.get("sku") or "produto"
+                for idx, web_image_url in enumerate(web_image_urls, start=1):
+                    try:
+                        remote = fetch_web_image_as_upload(
+                            web_image_url,
+                            filename=f"{sku_stem}-web-{idx}.jpg",
+                        )
+                        prepared_uploads.append(prepare_product_image(remote))
+                        web_images_attached += 1
+                    except ValidationError as exc:
+                        msg = "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
+                        image_errors.append(f"Foto da internet #{idx}: {msg}")
+                        break
 
         if image_errors:
             from apps.dashboard.services.product_ai_assist import (
@@ -300,12 +339,14 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
                     "product": product,
                     "stock": stock,
                     "product_images": product_images,
+                    "gallery_count": gallery_image_count(product) if product else 0,
                     "image_max_count": PRODUCT_IMAGE_MAX_COUNT,
                     "image_errors": image_errors,
                     "related_parts": related,
                     "related_parts_payload": [related_part_modal_payload(p) for p in related],
                     "page_title": f"Editar {product.sku}" if product else "Novo produto",
                     "ai_extract_url": reverse("dashboard:products_ai_extract"),
+                    "web_image_search_url": reverse("dashboard:products_web_image_search"),
                 },
             )
 
@@ -394,13 +435,22 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
             product.images.filter(pk=chosen).update(is_primary=True)
 
         messages.success(request, f"Produto {product.sku} salvo.")
+        if web_images_attached:
+            messages.info(
+                request,
+                (
+                    f"{web_images_attached} foto(s) da internet anexada(s) ao produto."
+                    if web_images_attached > 1
+                    else "Foto da internet anexada ao produto (você escolheu uma das sugestões)."
+                ),
+            )
         if link_result:
             parts_n = int(link_result.get("parts_created") or 0) + int(
                 link_result.get("parts_reused") or 0
             )
             bits = []
-            if link_result.get("cover_attached"):
-                bits.append("capa do PDF como foto principal")
+            if link_result.get("manual_linked"):
+                bits.append("manual PDF vinculado (download na página do produto)")
             if parts_n:
                 bits.append(f"{parts_n} peça(s) em rascunho")
             if bits:
@@ -426,12 +476,14 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
             "product": product,
             "stock": stock,
             "product_images": product_images,
+            "gallery_count": gallery_count,
             "image_max_count": PRODUCT_IMAGE_MAX_COUNT,
             "image_errors": [],
             "related_parts": related_parts,
             "related_parts_payload": [related_part_modal_payload(p) for p in related_parts],
             "page_title": f"Editar {product.sku}" if product else "Novo produto",
             "ai_extract_url": reverse("dashboard:products_ai_extract"),
+            "web_image_search_url": reverse("dashboard:products_web_image_search"),
         },
     )
 
@@ -488,6 +540,53 @@ def products_ai_discard(request: HttpRequest, extraction_id: int) -> JsonRespons
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
 
     return JsonResponse({"ok": True, "extraction_id": extraction_id})
+
+
+@login_required
+@user_passes_test(_is_ops)
+@require_POST
+def products_web_image_search(request: HttpRequest) -> JsonResponse:
+    """Busca até 5 fotos na internet a partir de marca, modelo e tipo de aparelho."""
+    from apps.catalog.models import Brand, Category, EquipmentModel
+    from apps.dashboard.services.web_product_images import search_product_web_images
+
+    brand = (request.POST.get("brand") or "").strip()
+    model = (request.POST.get("model") or "").strip()
+    appliance_type = (request.POST.get("appliance_type") or "").strip()
+    name = (request.POST.get("name") or "").strip()
+
+    brand_ref = (request.POST.get("brand_ref") or "").strip()
+    equipment_model = (request.POST.get("equipment_model") or "").strip()
+    category = (request.POST.get("category") or "").strip()
+
+    if brand_ref.isdigit() and not brand:
+        brand = Brand.objects.filter(pk=int(brand_ref)).values_list("name", flat=True).first() or ""
+    if equipment_model.isdigit() and not model:
+        eq = EquipmentModel.objects.filter(pk=int(equipment_model)).first()
+        if eq:
+            model = (eq.code or eq.name or "").strip()
+    if category.isdigit() and not appliance_type:
+        appliance_type = (
+            Category.objects.filter(pk=int(category)).values_list("name", flat=True).first() or ""
+        )
+
+    try:
+        result = search_product_web_images(
+            brand=brand,
+            model=model,
+            appliance_type=appliance_type,
+            name=name,
+        )
+    except ValidationError as exc:
+        msg = "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
+        return JsonResponse({"ok": False, "error": msg}, status=400)
+    except Exception as exc:  # noqa: BLE001
+        return JsonResponse(
+            {"ok": False, "error": f"Falha ao buscar fotos: {exc}"},
+            status=500,
+        )
+
+    return JsonResponse(result)
 
 
 @login_required

@@ -115,8 +115,8 @@ def extract_manual_for_product_form(
             "A IA leu o PDF e propôs os dados abaixo. "
             "Nada foi aplicado ao formulário nem ao catálogo — aguarde sua aprovação. "
             "Se houver vários modelos, escolha qual cadastrar agora. "
-            "Ao salvar, a 1ª página do PDF vira foto do produto e as peças marcadas "
-            "são cadastradas em rascunho."
+            "Ao salvar, o manual PDF fica vinculado ao produto (download na página) "
+            "e as peças marcadas são cadastradas em rascunho."
         ),
     }
 
@@ -191,6 +191,9 @@ def build_form_suggestions(data: ExtractedProduct | dict[str, Any]) -> dict[str,
     category_id = None
     cat_hint = (p.category or p.category_hint or "").strip()
     if cat_hint:
+        from apps.products.libraries.field_style import initial_cap
+
+        cat_hint = initial_cap(cat_hint)
         category = Category.objects.filter(name__iexact=cat_hint).first()
         if category is None:
             slug = slugify(cat_hint)[:140]
@@ -202,6 +205,9 @@ def build_form_suggestions(data: ExtractedProduct | dict[str, Any]) -> dict[str,
                 name=cat_hint[:120],
                 slug=_unique_slug(Category, cat_hint, max_len=140),
             )
+        elif category.name != cat_hint and category.name.casefold() == cat_hint.casefold():
+            category.name = cat_hint
+            category.save(update_fields=["name", "updated_at"])
         category_id = category.pk
         cat_hint = category.name
 
@@ -669,8 +675,8 @@ def link_approved_extraction_to_product(
 ) -> dict[str, Any] | None:
     """
     Após o humano aprovar a aplicação no formulário e salvar o produto,
-    vincula o Manual, materializa peças selecionadas e usa a capa do PDF
-    como foto do produto principal (se ainda não houver imagens).
+    vincula o Manual e materializa peças selecionadas.
+    O PDF do manual NÃO vira foto de vitrine (R21) — fica disponível para download.
     """
     from django.utils import timezone
 
@@ -692,7 +698,7 @@ def link_approved_extraction_to_product(
         ExtractionLog.Status.APPROVED,
         ExtractionLog.Status.REJECTED,
     }:
-        return {"log": log, "parts": [], "cover_attached": False}
+        return {"log": log, "parts": [], "manual_linked": False, "cover_attached": False}
 
     data = log.corrected_json or log.raw_json or {}
     try:
@@ -706,7 +712,6 @@ def link_approved_extraction_to_product(
         "compatibilities": 0,
         "part_products": [],
     }
-    cover_attached = False
 
     # Merge specs órfãos sem sobrescrever o que o usuário editou no form
     if schema is not None:
@@ -728,8 +733,9 @@ def link_approved_extraction_to_product(
             }
         materialized = _materialize_related_parts(product, schema, selected_codes=codes)
         log.corrected_json = dump_product_json(schema)
-
-    cover_attached = bool(attach_manual_cover_as_product_image(product, log.manual))
+    else:
+        product.manual = log.manual
+        product.save(update_fields=["manual", "updated_at"])
 
     log.status = ExtractionLog.Status.APPROVED
     log.reviewed_by = user if getattr(user, "is_authenticated", False) else None
@@ -755,61 +761,28 @@ def link_approved_extraction_to_product(
             "product_id": product.pk,
             "parts_created": materialized.get("created", 0),
             "parts_reused": materialized.get("reused", 0),
-            "cover_attached": cover_attached,
+            "manual_linked": True,
+            "cover_attached": False,
         },
     )
     return {
         "log": log,
         "parts": list(materialized.get("part_products") or []),
-        "cover_attached": cover_attached,
+        "manual_linked": True,
+        "cover_attached": False,
         "parts_created": materialized.get("created", 0),
         "parts_reused": materialized.get("reused", 0),
     }
 
 
 def attach_manual_cover_as_product_image(product: Product, manual) -> Any | None:
-    """Usa a 1ª página do PDF do manual como foto principal, se o produto não tiver fotos."""
-    from apps.manuals.services.pdf_cover import pdf_cover_as_upload
-    from apps.products.image_validation import prepare_product_image
-    from apps.products.models import ProductImage
+    """
+    Legado: não usar no fluxo de cadastro.
 
-    if product.images.exclude(image="").exists():
-        return None
-    if not manual or not getattr(manual, "file", None):
-        return None
-
-    try:
-        manual.file.open("rb")
-        content = manual.file.read()
-    except Exception:  # noqa: BLE001
-        return None
-    finally:
-        try:
-            manual.file.close()
-        except Exception:  # noqa: BLE001  # nosec B110
-            pass
-
-    upload = pdf_cover_as_upload(
-        content,
-        filename=f"{product.sku or 'manual'}-capa.jpg",
-    )
-    if upload is None:
-        return None
-
-    try:
-        prepared = prepare_product_image(upload)
-    except Exception:  # noqa: BLE001
-        return None
-
-    img = ProductImage(
-        product=product,
-        alt_text=f"Capa do manual — {product.sku}"[:255],
-        sort_order=0,
-        is_primary=True,
-    )
-    img.image.save(prepared.name, prepared, save=True)
-    product.images.exclude(pk=img.pk).update(is_primary=False)
-    return img
+    A capa do PDF não conta como foto de vitrine (R21). O manual fica
+    vinculado em ``product.manual`` para download na página do produto.
+    """
+    return None
 
 
 def related_spare_parts_for_product(product: Product) -> list[Product]:

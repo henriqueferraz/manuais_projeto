@@ -31,6 +31,9 @@ class Category(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        from apps.products.libraries.field_style import initial_cap
+
+        self.name = initial_cap(self.name or "")[:120]
         if not self.slug:
             self.slug = slugify(self.name)[:140]
         super().save(*args, **kwargs)

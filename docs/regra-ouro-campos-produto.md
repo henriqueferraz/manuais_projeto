@@ -77,6 +77,11 @@ ser gerada pela regra de vitrine a partir dos fatos já conhecidos).
 | R19 | Preço nunca vem da IA sem revisão humana | Risco comercial |
 | R20 | Status inicial da proposta: `draft` | HITL |
 
+### R21 — Manual não é foto
+O PDF do manual **não conta** como foto de vitrine e **não** deve ser anexado
+como `ProductImage`. Fotos = uploads/web escolhidos. O manual fica em
+`product.manual` e pode ser baixado na página pública do produto.
+
 ---
 
 ## Exemplos

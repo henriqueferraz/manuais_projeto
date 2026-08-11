@@ -156,6 +156,16 @@
         Adicionar ao carrinho
       </button>
       <a class="btn btn-ai" href="{% url 'compatibility:checker' %}?model={{ product.model_code }}">Diagnóstico / compatibilidade</a>
+      {% if has_manual %}
+      <a
+        class="btn btn-outline-secondary"
+        href="{% url 'catalog:manual_download' product.slug %}"
+        download
+      >
+        <span class="material-symbols-outlined align-middle" aria-hidden="true">download</span>
+        Baixar manual PDF
+      </a>
+      {% endif %}
     </form>
     <div id="cart-toast" aria-live="polite"></div>
 

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from django.core.paginator import Paginator
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.http import FileResponse, Http404, HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET
 
 from apps.catalog.services import autocomplete, cached_filter_count, filter_catalog
 from apps.compatibility.services import compat_labels_for_product
+from apps.products.image_validation import gallery_images_queryset
 from apps.products.models import Product
 from apps.tickets.services import cross_sell_for_product
 
@@ -58,18 +61,30 @@ def product_list(request: HttpRequest) -> HttpResponse:
     return response
 
 
+def _manual_for_product(product: Product):
+    """Manual vinculado ao produto (FK direta ou linked_product)."""
+    from apps.manuals.models import Manual
+
+    if product.manual_id:
+        return product.manual
+    return (
+        Manual.objects.filter(linked_product_id=product.pk).exclude(file="").order_by("-id").first()
+    )
+
+
 @require_GET
 def product_detail(request: HttpRequest, slug: str) -> HttpResponse:
     from apps.core.i18n import resolve_locale
 
     product = get_object_or_404(
-        Product.objects.select_related("category", "stock").prefetch_related(
+        Product.objects.select_related("category", "stock", "manual").prefetch_related(
             "translations", "images"
         ),
         slug=slug,
         status=Product.Status.PUBLISHED,
     )
     locale = resolve_locale(request)
+    manual = _manual_for_product(product)
     return render(
         request,
         "catalog/product_detail.html",
@@ -77,11 +92,50 @@ def product_detail(request: HttpRequest, slug: str) -> HttpResponse:
             "product": product,
             "locale": locale,
             "compat_labels": compat_labels_for_product(product),
-            "images": list(
-                product.images.exclude(image="").order_by("-is_primary", "sort_order", "id")
-            ),
+            "images": list(gallery_images_queryset(product)),
             "cross_sell": cross_sell_for_product(product),
+            "has_manual": bool(
+                manual and (getattr(manual, "file", None) or getattr(manual, "storage_key", ""))
+            ),
         },
+    )
+
+
+@require_GET
+def product_manual_download(request: HttpRequest, slug: str) -> HttpResponse:
+    """Download do manual PDF do produto (URL assinada ou arquivo local)."""
+    from apps.manuals.storage import signed_url
+
+    product = get_object_or_404(
+        Product.objects.select_related("manual"),
+        slug=slug,
+        status=Product.Status.PUBLISHED,
+    )
+    manual = _manual_for_product(product)
+    if manual is None:
+        raise Http404("Manual não disponível para este produto.")
+
+    storage_key = (manual.storage_key or "").strip() or (
+        getattr(manual.file, "name", "") if manual.file else ""
+    )
+    if not storage_key:
+        raise Http404("Arquivo do manual não encontrado.")
+
+    url = signed_url(storage_key)
+    if url and "://" in url:
+        return redirect(url)
+
+    if not manual.file:
+        raise Http404("Arquivo do manual não encontrado.")
+    filename = Path(manual.original_filename or storage_key).name or f"{product.sku}-manual.pdf"
+    if not filename.lower().endswith(".pdf"):
+        filename = f"{filename}.pdf"
+    handle = manual.file.open("rb")
+    return FileResponse(
+        handle,
+        as_attachment=True,
+        filename=filename,
+        content_type="application/pdf",
     )
 
 

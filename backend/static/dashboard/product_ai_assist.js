@@ -527,7 +527,7 @@
     if (extractionField) extractionField.value = String(current.extraction_id || "");
     syncSelectedPartsField();
     setStatus(
-      "Proposta aprovada e copiada para o formulário. Revise os campos e as peças marcadas; ao Salvar, a capa do PDF vira foto e as peças selecionadas são cadastradas.",
+      "Proposta aprovada e copiada para o formulário. Revise os campos e as peças marcadas; ao Salvar, o manual PDF fica vinculado para download e as peças selecionadas são cadastradas.",
       "ok"
     );
     const form = document.getElementById("product-main-form");

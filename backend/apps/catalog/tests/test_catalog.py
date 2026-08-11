@@ -20,6 +20,16 @@ def category(db):
     return Category.objects.create(name="Ventiladores", slug="ventiladores")
 
 
+@pytest.mark.django_db
+def test_category_name_always_initial_cap():
+    cat = Category.objects.create(name="ventilador de teto", slug="ventilador-de-teto")
+    assert cat.name == "Ventilador de teto"
+    cat.name = "peças elétricas"
+    cat.save()
+    cat.refresh_from_db()
+    assert cat.name == "Peças elétricas"
+
+
 @pytest.fixture
 def published_product(category):
     p = Product.objects.create(
@@ -118,6 +128,49 @@ def test_catalog_list_and_detail(client, published_product):
     r2 = client.get(reverse("catalog:detail", kwargs={"slug": published_product.slug}))
     assert r2.status_code == 200
     assert b"Adicionar ao carrinho" in r2.content
+
+
+@pytest.mark.django_db
+def test_product_manual_download_and_gallery_excludes_cover(client, published_product, settings):
+    from django.core.files.base import ContentFile
+
+    from apps.manuals.models import Manual
+    from apps.products.image_validation import gallery_image_count, gallery_images_queryset
+    from apps.products.models import ProductImage
+
+    settings.MANUAL_AV_STUB_OK = True
+    manual = Manual.objects.create(
+        original_filename="vte-manual.pdf",
+        mime_type="application/pdf",
+        sha256="c" * 64,
+        size_bytes=32,
+        scan_status=Manual.ScanStatus.CLEAN,
+        linked_product=published_product,
+    )
+    manual.file.save("vte-manual.pdf", ContentFile(b"%PDF-1.4\n%%EOF\n"), save=True)
+    published_product.manual = manual
+    published_product.save(update_fields=["manual", "updated_at"])
+
+    ProductImage.objects.create(
+        product=published_product,
+        alt_text=f"Capa do manual — {published_product.sku}",
+        sort_order=0,
+        is_primary=True,
+        image=ContentFile(b"not-a-real-image", name="capa.jpg"),
+    )
+    # Contagem de vitrine ignora capa
+    assert gallery_image_count(published_product) == 0
+    assert gallery_images_queryset(published_product).count() == 0
+
+    detail = client.get(reverse("catalog:detail", kwargs={"slug": published_product.slug}))
+    assert detail.status_code == 200
+    assert b"Baixar manual PDF" in detail.content
+    assert b"capa.jpg" not in detail.content
+
+    dl = client.get(reverse("catalog:manual_download", kwargs={"slug": published_product.slug}))
+    assert dl.status_code == 200
+    assert dl["Content-Type"].startswith("application/pdf")
+    assert "attachment" in dl.get("Content-Disposition", "")
 
 
 @pytest.mark.django_db
