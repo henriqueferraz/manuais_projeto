@@ -45,7 +45,7 @@ def render_pdf_first_page_jpeg(content: bytes, *, scale: float = 2.0) -> bytes |
     finally:
         try:
             doc.close()
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001  # nosec B110
             pass
 
 

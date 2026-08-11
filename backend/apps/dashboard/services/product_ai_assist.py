@@ -133,7 +133,7 @@ def parts_for_review(data: ExtractedProduct | dict[str, Any]) -> list[dict[str, 
                 part = (
                     raw if isinstance(raw, RelatedPartHint) else RelatedPartHint.model_validate(raw)
                 )
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001  # nosec B112
                 continue
             code = (part.code or "").strip()
             sellable = bool(part.sellable_separately and code)
@@ -786,7 +786,7 @@ def attach_manual_cover_as_product_image(product: Product, manual) -> Any | None
     finally:
         try:
             manual.file.close()
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001  # nosec B110
             pass
 
     upload = pdf_cover_as_upload(
