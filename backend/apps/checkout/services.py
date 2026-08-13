@@ -244,7 +244,6 @@ def start_mercadopago_preference_checkout(*, order: Order) -> str:
             provider=Payment.Provider.MERCADOPAGO,
             amount=order.total,
             currency=order.currency,
-            payment_token="",
             status=Payment.Status.PENDING,
             provider_intent_id=pref.preference_id,
             raw_webhook=pref.raw or {},
