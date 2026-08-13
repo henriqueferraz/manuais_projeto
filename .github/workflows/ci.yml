@@ -43,6 +43,22 @@ jobs:
       - name: Bandit
         run: bandit -q -r backend -x '*/tests/*,*/migrations/*'
 
+      - name: Docstring coverage (interrogate)
+        run: |
+          interrogate \
+            --ignore-magic --ignore-nested-classes --ignore-nested-functions \
+            --ignore-semiprivate --ignore-private --ignore-property-decorators \
+            --ignore-regex '^Meta$$' --style google -f 80 \
+            backend/apps/products/models.py \
+            backend/apps/catalog/models.py \
+            backend/apps/catalog/services.py \
+            backend/apps/ai/services \
+            backend/apps/cart/coupons.py \
+            backend/apps/cart/services.py \
+            backend/apps/checkout/services.py \
+            backend/apps/manuals/services/pipeline.py \
+            backend/apps/dashboard/services
+
       - name: pip-audit
         run: pip-audit -r requirements/base.txt
 

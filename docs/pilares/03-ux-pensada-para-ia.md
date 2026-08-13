@@ -24,16 +24,18 @@ Streaming de respostas; estados de carregamento; design para incerteza; fallback
 | Busca por foto | Upload com loading; candidatos ranqueados |
 | Revisão humana (admin) | Fila de rascunhos com confiança da extração |
 
-## Protótipos e referências de UI
+## UI vigente
 
-- `code.html`, `code (cópia 9).html` — Assistente de Diagnóstico AI
-- `src/components/DiagnosticChatView.tsx`
-- `src/components/HeroSection.tsx` — entrada por sintoma
-- `design.md` — Feedback Mechanism (👍/👎)
+- Chat: `/assistente/chat/` → [`../pages/assistente-chat.md`](../pages/assistente-chat.md)
+- Home / sintoma: `core/home.html`
+- Foto: `/assistente/foto/`
+- HITL: `/manuais/revisao/`
+- Inventário: [`../pages/inventory.md`](../pages/inventory.md)
+- Tokens: [`../design/DESIGN.md`](../design/DESIGN.md)
 
 ## Fontes
 
 - `pilares-app-ia-vendas-pecas.md` — Pilar 3
 - `specify.md` — §4.3
-- `plano-ecommerce-ia-pecas.md` — Diagnóstico, Feedback do chat
+- `plano-ecommerce-ia-pecas.md` — Diagnóstico, Feedback do chat (histórico)
 - `DESIGN.md` — AI Chat Interface

@@ -64,6 +64,7 @@ def _sku_product_links(skus: list[str]) -> list[dict]:
 
 
 def load_diagnosis_prompt(version: str = "v2") -> str:
+    """Carrega o system prompt de diagnóstico; fallback embutido se faltar arquivo."""
     path = PROMPT_DIR / f"diagnosis_system_{version}.md"
     if path.exists():
         return path.read_text(encoding="utf-8")

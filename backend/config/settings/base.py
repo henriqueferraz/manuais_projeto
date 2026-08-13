@@ -350,6 +350,10 @@ OPS_ALERT_EMAILS = env("OPS_ALERT_EMAILS")
 # --- F4b: checkout / pagamento / frete / NF-e ---
 PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="mock")
 PAYMENT_WEBHOOK_SECRET = env("PAYMENT_WEBHOOK_SECRET", default="dev-webhook-secret")
+# Base pública para back_urls / notification_url do Checkout Pro (Preference).
+PUBLIC_BASE_URL = env("PUBLIC_BASE_URL", default="http://127.0.0.1:8000").rstrip("/")
+# preference = Checkout Pro (redirect); token = Payments API com card token.
+MERCADOPAGO_CHECKOUT_MODE = env("MERCADOPAGO_CHECKOUT_MODE", default="preference").lower()
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY", default="")
 STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default="")
 MERCADOPAGO_ACCESS_TOKEN = env("MERCADOPAGO_ACCESS_TOKEN", default="")

@@ -2,6 +2,8 @@
 
 Stack: Python + Django + htmx + Bootstrap + PostgreSQL + Cloudflare R2 + LangChain/LangGraph
 
+> **Nota:** este arquivo é o índice conceitual dos 24 pilares. Stack LLM vigente = **OpenAI** (`*_LLM_MODE`); telas = [`pages/inventory.md`](pages/inventory.md). Detalhe por pilar em [`pilares/`](pilares/).
+
 ---
 
 ## Parte 1 — Pilares Gerais para Apps de IA

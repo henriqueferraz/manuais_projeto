@@ -2,7 +2,9 @@
 
 Consolidação do conteúdo de `docs/` organizado segundo `pilares-app-ia-vendas-pecas.md` (24 pilares).
 
-Cada arquivo reúne a **definição do pilar** e o **conteúdo extraído** de constitution, specify, plan, plano-ecommerce, brief, design system e referências aos protótipos (HTML/`src`).
+Cada arquivo reúne a **definição do pilar** e o conteúdo extraído dos docs de produto.  
+**UI vigente:** Django templates — [`../pages/inventory.md`](../pages/inventory.md).  
+**LLM vigente:** OpenAI via `*_LLM_MODE` (CI = `mock`). Referências a Claude/`src/components/*.tsx` em textos antigos são históricas.
 
 ## Como usar
 
@@ -10,8 +12,9 @@ Cada arquivo reúne a **definição do pilar** e o **conteúdo extraído** de co
 2. Abra o arquivo do pilar em que for trabalhar
 3. As seções **Fontes** apontam de volta aos documentos originais
 4. Para executar o desenvolvimento, siga o plano de tarefas em [`../plano-tarefas.md`](../plano-tarefas.md) (fases 0–8, subtarefas, matriz pilar × fase e DoD visual/UX)
-5. Escopo e schema do MVP (Fase 1): [`../fase-1-escopo-mvp.md`](../fase-1-escopo-mvp.md) · [`../fase-1-schema-produto.md`](../fase-1-schema-produto.md)
+5. Escopo e schema do MVP (Fase 1): [`../fase-1-escopo-mvp.md`](../fase-1-escopo-mvp.md) · [`../fase-1-schema-produto.md`](../fase-1-schema-produto.md) (nota: multi-categoria pós-F1)
 6. Design system (Fase 0): [`../../design-system/`](../../design-system/) · [`../../design-system/docs/VISUAL-REVIEW-CHECKLIST.md`](../../design-system/docs/VISUAL-REVIEW-CHECKLIST.md)
+7. Telas: [`../pages/`](../pages/)
 
 ## Parte 1 — Gerais para Apps de IA
 

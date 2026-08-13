@@ -38,21 +38,25 @@ Separação frontend/backend/IA; cache; rate limiting e custos; tratamento de er
                Cloudflare R2
 ```
 
+> **Stack vigente:** LLM = **OpenAI** via `*_LLM_MODE=mock|openai` (CI em mock).
+> O diagrama acima é o esboço histórico do plano; ver nota em [`../plan.md`](../plan.md).
+
 ## Stack oficial
 
 | Camada | Tecnologia |
 |---|---|
 | Backend | Python 3.13+, Django, DRF, Celery, Redis |
-| Frontend | Django Templates, htmx, Bootstrap 5, Alpine.js |
+| Frontend | Django Templates, htmx, Bootstrap 5, Alpine.js, design-system |
 | Banco | PostgreSQL + pgvector |
 | Storage | Cloudflare R2 |
-| IA | Claude (Anthropic), LangChain, LangGraph |
+| IA | OpenAI (`*_LLM_MODE`), LangChain, LangGraph |
 | PDFs | pdfplumber, Unstructured |
 | Cache | Redis (broker Celery + django-redis) |
+| Auth | Django session + django-two-factor (2FA staff); sem JWT |
 
 ## Organização de apps
 
-`accounts`, `catalog`, `products`, `cart`, `checkout`, `orders`, `tickets`, `ai`, `manuals`, `compatibility`, `dashboard`, `notifications`
+`accounts`, `catalog`, `products`, `cart`, `checkout`, `orders`, `tickets`, `ai`, `manuals`, `compatibility`, `dashboard`, `notifications`, `subscriptions`, `partners`, `channels`, `warranty`, `core`
 
 ## Princípios de separação
 
@@ -69,5 +73,5 @@ Para “pergunta → busca → resposta”, chamada direta basta. LangGraph entr
 ## Fontes
 
 - `plan.md` — Arquitetura e decisão final
-- `plano-ecommerce-ia-pecas.md` — Stack tecnológico, Orquestração
-- `src/components/ArchitectureView.tsx`
+- `plano-ecommerce-ia-pecas.md` — Stack tecnológico (histórico)
+- Telas: [`../pages/inventory.md`](../pages/inventory.md)

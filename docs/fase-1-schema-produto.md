@@ -3,8 +3,8 @@
 > Entrega da tarefa **T-1.2** · Pilares **P01, P11** · Branch `fase/1-escopo-mvp`  
 > Alinhado a F3 (extração) e F4a (catálogo). Implementação Django na F2/F4a.
 
-**Status:** aprovado para modelagem inicial  
-**Data:** 2026-08-04
+**Status:** schema F1 aprovado; **evoluído** com multi-categoria (`categories` M2M) — ver seção abaixo.  
+**Data:** 2026-08-04 · atualização categorias: 2026-08-13
 
 ---
 
@@ -40,7 +40,7 @@ ExtractionLog        # F3
 | `slug` | string único | sim | gerado | URL |
 | `status` | enum | sim | workflow | `draft` \| `published` \| `archived` |
 | `product_kind` | enum | sim | classificação | `finished_good` \| `spare_part` |
-| `category_id` | FK | sim | revisão humana | ex.: ventiladores / hélices |
+| `category_id` | FK nullable | sim* | revisão humana | *Schema F1: FK única. **Evolução atual:** ver nota abaixo |
 | `brand` | string | sim | manual | Mondial, Britânia… |
 | `model_code` | string | sim | manual | VTE-02, VT-40-NB… |
 | `name` | string | sim* | manual | *via translation `pt` no MVP |
@@ -56,6 +56,18 @@ ExtractionLog        # F3
 | `extraction_confidence` | float | não | IA | UI de revisão |
 | `published_at` | datetime | não | publicação | |
 | `created_at` / `updated_at` | datetime | sim | sistema | |
+
+### Evolução pós-F1 — múltiplas categorias (2026-08)
+
+O schema F1 acima previa **uma** categoria (`category` FK). O código vigente também tem:
+
+| Campo | Tipo | Papel |
+|---|---|---|
+| `categories` | M2M → `catalog.Category` | Todas as categorias (ex.: Peça de reposição + Móveis) |
+| `category` | FK nullable | Categoria **principal** (sync: primeira marcada no form) |
+
+Formulário dashboard: checkboxes `categories` — ver [`pages/dashboard-produto.md`](pages/dashboard-produto.md).  
+Migration: `products.0009_product_categories_m2m`.
 
 ### `ProductTranslation` (i18n desde o início)
 

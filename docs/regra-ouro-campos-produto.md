@@ -2,6 +2,9 @@
 
 > Aplicável à proposta da IA, ao botão **Aprovar e preencher formulário** e à revisão humana.
 > Objetivo: catálogo legível, consistente e pronto para venda.
+>
+> **Meta:** após qualquer mudança nestas regras ou no form de produto, atualizar também
+> a documentação geral — ver [`regra-ouro-documentacao.md`](regra-ouro-documentacao.md) (R-DOC.1).
 
 ## Princípio
 
@@ -55,9 +58,15 @@ Códigos, marcas e unidades técnicas permanecem como no original.
 Se o manual não trouxer o dado, deixar o campo vazio (exceto `description`, que pode
 ser gerada pela regra de vitrine a partir dos fatos já conhecidos).
 
-### R11 — Selects do catálogo
-`brand_ref`, `equipment_model`, `category` recebem o **ID** da opção canônica
+### R11 — Selects / multi-select do catálogo
+`brand_ref` e `equipment_model` recebem o **ID** da opção canônica
 (criar no catálogo se ainda não existir), nunca o texto solto no select.
+
+`categories` (M2M) recebe **um ou mais IDs** (checkboxes no dashboard).
+A FK legada `category` **não** é campo do formulário: ao salvar, fica com a
+primeira categoria marcada (categoria principal para RAG/cupons).
+Sugestão da IA preenche/marca `name="categories"` — ver
+[`pages/dashboard-produto.md`](pages/dashboard-produto.md).
 
 ### R12 — Booleanos
 `remote_included` e similares: `true`/`false` explícitos; nunca `sim`/`não` no JSON interno.
@@ -81,6 +90,14 @@ ser gerada pela regra de vitrine a partir dos fatos já conhecidos).
 O PDF do manual **não conta** como foto de vitrine e **não** deve ser anexado
 como `ProductImage`. Fotos = uploads/web escolhidos. O manual fica em
 `product.manual` e pode ser baixado na página pública do produto.
+
+### R22 — Documentação junto com a mudança
+Toda alteração destas regras, do `InternalProductForm`, de categorias (M2M) ou do
+fluxo de sugestão da IA deve, **na mesma entrega**:
+
+1. Atualizar este arquivo e [`pages/dashboard-produto.md`](pages/dashboard-produto.md) se o comportamento de UI/campo mudou.
+2. Atualizar docstring do símbolo público tocado (`forms`, `models`, services).
+3. Seguir o checklist de [`regra-ouro-documentacao.md`](regra-ouro-documentacao.md).
 
 ---
 

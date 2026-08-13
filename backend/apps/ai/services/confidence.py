@@ -208,10 +208,12 @@ def answer_confidence(
 
 
 def is_below_answer_threshold(confidence: float) -> bool:
+    """True se a confiança está abaixo do mínimo configurável."""
     return float(confidence or 0.0) < min_answer_confidence()
 
 
 def format_low_confidence_message(ticket_code: str) -> str:
+    """Mensagem de recusa + código do chamado aberto automaticamente."""
     pct = int(round(min_answer_confidence() * 100))
     code = (ticket_code or "").strip() or "—"
     return (

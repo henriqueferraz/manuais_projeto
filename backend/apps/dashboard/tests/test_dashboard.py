@@ -236,7 +236,7 @@ def test_products_dashboard_create(staff_user, db):
             "voltage": "110V",
             "product_kind": "spare_part",
             "status": "draft",
-            "category": cat.pk,
+            "categories": cat.pk,
             "quantity_available": 5,
             "minimum_alert": 1,
         },
@@ -314,7 +314,7 @@ def test_products_edit_shows_and_saves_specs(staff_user, db):
             "voltage": "220V",
             "product_kind": "finished_good",
             "status": "draft",
-            "category": cat.pk,
+            "categories": cat.pk,
             "quantity_available": 2,
             "minimum_alert": 1,
             "power_w": "150",
@@ -964,7 +964,7 @@ def test_products_create_attaches_selected_web_images(staff_user, settings, db):
             "voltage": "220V",
             "product_kind": "finished_good",
             "status": "draft",
-            "category": cat.pk,
+            "categories": cat.pk,
             "quantity_available": 1,
             "minimum_alert": 1,
             "web_image_urls": urls,
@@ -1008,7 +1008,7 @@ def test_products_create_attaches_selected_web_image(staff_user, settings, db):
             "voltage": "110V",
             "product_kind": "finished_good",
             "status": "draft",
-            "category": cat.pk,
+            "categories": cat.pk,
             "quantity_available": 1,
             "minimum_alert": 1,
             "web_image_url": image_url,
@@ -1018,6 +1018,53 @@ def test_products_create_attaches_selected_web_image(staff_user, settings, db):
     product = Product.objects.get(sku="WEB-IMG-02")
     assert product.images.count() == 1
     assert product.images.filter(is_primary=True).exists()
+
+
+@pytest.mark.django_db
+def test_products_edit_saves_multiple_categories(staff_user, db):
+    from decimal import Decimal
+
+    from apps.catalog.models import Brand, Category
+    from apps.products.models import Product, ProductTranslation, Stock
+
+    brand = Brand.objects.create(name="MultiCat", slug="multicat")
+    spare = Category.objects.create(name="Peça de reposição", slug="peca-reposicao-dash")
+    moveis = Category.objects.create(name="Móveis", slug="moveis-dash")
+    product = Product.objects.create(
+        sku="MULTI-CAT-01",
+        brand="MultiCat",
+        brand_ref=brand,
+        price=Decimal("30.00"),
+        status=Product.Status.DRAFT,
+        category=spare,
+    )
+    product.categories.set([spare])
+    ProductTranslation.objects.create(product=product, locale="pt-BR", name="Produto multi")
+    Stock.objects.create(product=product, quantity_available=1, minimum_alert=1)
+
+    client = Client()
+    client.force_login(staff_user)
+    res = client.post(
+        reverse("dashboard:products_edit", args=[product.pk]),
+        {
+            "sku": "MULTI-CAT-01",
+            "brand_ref": brand.pk,
+            "name": "Produto multi",
+            "description": "",
+            "price": "30.00",
+            "voltage": "",
+            "product_kind": "spare_part",
+            "status": "draft",
+            "categories": [spare.pk, moveis.pk],
+            "quantity_available": 1,
+            "minimum_alert": 1,
+        },
+    )
+    assert res.status_code == 302
+    product.refresh_from_db()
+    assert set(product.categories.values_list("pk", flat=True)) == {spare.pk, moveis.pk}
+    # Principal = primeira na ordem do queryset (nome): Móveis antes de Peça…
+    assert product.category_id == moveis.pk
 
 
 def test_build_image_search_query_and_ssrf_guard():

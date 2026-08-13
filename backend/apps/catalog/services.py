@@ -14,6 +14,7 @@ CACHE_TTL = int(getattr(settings, "CATALOG_CACHE_TTL", 60))
 
 
 def published_products(*, locale: str = "pt-BR") -> QuerySet[Product]:
+    """Produtos publicados com tradução, categoria, estoque e imagens."""
     locales = [locale]
     if locale != "pt-BR":
         locales.append("pt-BR")
@@ -56,10 +57,25 @@ def filter_catalog(
     locale: str = "pt-BR",
     sort: str = "",
 ) -> QuerySet[Product]:
+    """Filtra o catálogo publicado.
+
+    Args:
+        category: slug ou nome; casa FK `category` ou M2M `categories`.
+        q: busca full-text (Postgres) ou icontains.
+        sort: chave de `CATALOG_SORT_CHOICES` (nome/preço).
+
+    Returns:
+        QuerySet de produtos published (distinct se filtro M2M).
+    """
     qs = published_products(locale=locale)
 
     if category:
-        qs = qs.filter(Q(category__slug=category) | Q(category__name__iexact=category))
+        qs = qs.filter(
+            Q(category__slug=category)
+            | Q(category__name__iexact=category)
+            | Q(categories__slug=category)
+            | Q(categories__name__iexact=category)
+        ).distinct()
     if voltage:
         qs = qs.filter(voltage__iexact=voltage)
     if model:
@@ -173,6 +189,7 @@ def cached_filter_count(cache_key: str, qs: QuerySet[Product]) -> int:
 
 
 def autocomplete(q: str, *, limit: int = 8) -> list[dict]:
+    """Sugestões leves para a busca (sku, nome, preço, thumb); cacheia o resultado."""
     q = (q or "").strip()
     if len(q) < 2:
         return []

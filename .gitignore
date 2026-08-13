@@ -13,6 +13,7 @@ __pycache__/
 .ruff_cache/
 htmlcov/
 .coverage
+site/
 *.sqlite3
 db.sqlite3
 

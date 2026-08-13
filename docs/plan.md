@@ -43,6 +43,11 @@ Arquitetura baseada em monólito modular.
                Cloudflare R2
 ```
 
+> **Atualização (stack vigente):** o provedor de LLM em produção/dev é **OpenAI**
+> (`CHAT_LLM_MODE` / `EMBEDDING_MODE` / `DIAGNOSIS_LLM_MODE` / `EXTRACTION_LLM_MODE` =
+> `mock` \| `openai`). Claude/Anthropic no diagrama é histórico do plano inicial.
+> CI permanece em `mock`.
+
 ---
 
 # Stack Principal
@@ -61,6 +66,7 @@ Arquitetura baseada em monólito modular.
 - htmx
 - Bootstrap 5
 - Alpine.js
+- Design system Industrial Precision (`design-system/`)
 
 ## Banco
 
@@ -73,7 +79,7 @@ Arquitetura baseada em monólito modular.
 
 ## IA
 
-- Claude (Anthropic)
+- OpenAI (chat, embeddings, extração, visão, diagnóstico) — modos `mock` \| `openai`
 - LangChain
 - LangGraph
 

@@ -36,6 +36,7 @@ class ProductAdmin(SimpleHistoryAdmin):
     list_filter = ("status", "product_kind", "brand", "brand_ref", "voltage", "equipment_model")
     search_fields = ("sku", "brand", "model_code")
     autocomplete_fields = ("brand_ref", "equipment_model", "category")
+    filter_horizontal = ("categories",)
     inlines = [ProductTranslationInline, ProductImageInline, StockInline]
     readonly_fields = ("published_at", "created_at", "updated_at")
 

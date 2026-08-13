@@ -21,22 +21,28 @@ Streaming SSE; hx-indicator; feedback 👍/👎; Bootstrap.
 - Feedback 👍/👎 em respostas técnicas
 - Streaming de chat via SSE
 
-## Telas do domínio (protótipos)
+## Telas do domínio
 
-| Tela | Arquivo / componente |
+Inventário atualizado (rota → template → função): [`../pages/inventory.md`](../pages/inventory.md).  
+Formulário de produto (multi-categoria): [`../pages/dashboard-produto.md`](../pages/dashboard-produto.md).
+
+| Tela | Rota / template |
 |---|---|
-| Home / catálogo | `code (cópia 3|4).html`, `CatalogView`, `HeroSection` |
-| Produto | `code (cópia 6|7|11).html`, `ProductDetailView` |
-| Checkout | `code (cópia 1|8).html`, `CartCheckoutView` |
-| Diagnóstico | `code.html`, `code (cópia 9).html`, `DiagnosticChatView` |
-| Chamados | `code (cópia 5).html`, `TicketsView` |
-| Admin manuais | `code (cópia 2).html`, `AdminManualsView` |
-| Dashboard | `DashboardSection` |
+| Home | `/` → `core/home.html` |
+| Catálogo | `/catalogo/` → `catalog/product_list.html` |
+| Produto (PDP) | `/catalogo/<slug>/` → `catalog/product_detail.html` |
+| Checkout | `/checkout/…` → `checkout/step_*.html` |
+| Diagnóstico / chat | `/assistente/chat/` → `ai/chat.html` |
+| Chamados | `/chamados/` → `tickets/list.html` |
+| HITL manuais | `/manuais/revisao/` → `manuals/review_queue.html` |
+| Dashboard ops | `/dashboard/` → `dashboard/insights.html` |
+| Editar produto | `/dashboard/produtos/<id>/` → `dashboard/products_form.html` |
 
-> Os HTML em `docs/` e o app React em `docs/src/` são **protótipos de UX/visual**. A implementação alvo permanece Django + htmx + Bootstrap.
+> Protótipos HTML/React antigos (se existirem em rascunhos) **não** são a implementação. Fonte de verdade: templates em `backend/templates/` + inventário acima.
 
 ## Fontes
 
 - `plan.md` — Frontend
 - `plano-ecommerce-ia-pecas.md` — Frontend (loja)
-- `design.md` — Implementation Notes
+- `pages/inventory.md` — mapa de telas
+- `design/DESIGN.md` — tokens vigentes

@@ -79,6 +79,7 @@ def escalate_session(
     email: str = "",
     user=None,
 ) -> Ticket:
+    """Abre Ticket com histórico do chat; reutiliza se a sessão já escalou."""
     if session.escalated_ticket_id:
         return session.escalated_ticket
 

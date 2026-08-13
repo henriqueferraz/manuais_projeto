@@ -1,23 +1,29 @@
 # ADR 0011 — Pagamento sandbox Stripe / Mercado Pago
 
-- **Status:** Aceito
-- **Data:** 2026-08-07
+- **Status:** Aceito (atualizado)
+- **Data:** 2026-08-07 · update Preference: 2026-08-13
 - **Pilares:** P05, P15
 - **Fase:** T-P.4
 
 ## Contexto
 
-Cobrança tokenizada já existia em código (`PAYMENT_PROVIDER=stripe|mercadopago`). Faltava formalizar o contrato de staging e smoke.
+Cobrança tokenizada já existia (`PAYMENT_PROVIDER=stripe|mercadopago`). Em 2026-08
+passamos a oferecer **Checkout Pro (Preference)** como modo padrão do Mercado Pago.
 
 ## Decisão
 
 1. CI/local: `PAYMENT_PROVIDER=mock`.
-2. Staging: `PAYMENT_PROVIDER=stripe` (test keys) **ou** `mercadopago` (sandbox token).
-3. UI continua enviando `payment_token` (PaymentMethod / card token) — Elements/Brick no front é opcional pós-smoke.
-4. Webhooks com assinatura (`STRIPE_WEBHOOK_SECRET` / `MERCADOPAGO_WEBHOOK_SECRET`).
-5. Smoke: `manage.py smoke_live_integrations` (imprime modos/credenciais e testa frete; sem charge real).
+2. Staging: `PAYMENT_PROVIDER=stripe` **ou** `mercadopago`.
+3. Mercado Pago:
+   - **`MERCADOPAGO_CHECKOUT_MODE=preference`** (default): cria Preference, redireciona ao Checkout Pro; confirmação via `notification_url` + `back_urls`.
+   - **`MERCADOPAGO_CHECKOUT_MODE=token`**: Payments API com card token (fluxo anterior).
+4. `PUBLIC_BASE_URL` define `back_urls` e `notification_url` (ex.: `https://staging.exemplo.com`).
+   Em `http://localhost`/`127.0.0.1`, `notification_url` e `auto_return` são omitidos (API MP rejeita).
+5. Webhooks Stripe com assinatura; MP IPN autenticado ao **buscar o pagamento** com `MERCADOPAGO_ACCESS_TOKEN`.
+6. Smoke: Preference via `create_mercadopago_preference` / `manage.py smoke_live_integrations`.
 
 ## Consequências
 
-+ Sandbox real documentado.  
-− Tokenização no browser ainda é manual/dev; PCI permanece no gateway.
++ Checkout Pro sem coletar cartão no site.  
++ Token API permanece disponível se necessário.  
+− `PUBLIC_BASE_URL` precisa ser HTTPS público em staging para o MP chamar o webhook.

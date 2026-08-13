@@ -31,6 +31,7 @@ class Category(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        """Normaliza nome (initial_cap) e gera slug se vazio."""
         from apps.products.libraries.field_style import initial_cap
 
         self.name = initial_cap(self.name or "")[:120]
@@ -57,6 +58,7 @@ class Brand(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        """Gera slug a partir do nome se ainda estiver vazio."""
         if not self.slug:
             self.slug = slugify(self.name)[:140] or "marca"
         super().save(*args, **kwargs)
@@ -84,6 +86,7 @@ class EquipmentModel(models.Model):
         return self.code
 
     def save(self, *args, **kwargs):
+        """Gera slug a partir de marca + código se ainda estiver vazio."""
         if not self.slug:
             base = slugify(f"{self.brand}-{self.code}") or slugify(self.code) or "modelo"
             self.slug = base[:160]

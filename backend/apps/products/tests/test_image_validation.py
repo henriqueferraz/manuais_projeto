@@ -146,7 +146,7 @@ def test_products_dashboard_upload_image():
             "voltage": "",
             "product_kind": "spare_part",
             "status": "draft",
-            "category": cat.pk,
+            "categories": cat.pk,
             "quantity_available": 1,
             "minimum_alert": 1,
             "images": upload,

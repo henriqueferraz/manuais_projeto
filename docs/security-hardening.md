@@ -15,6 +15,8 @@ Runbook: [`deploy.md`](deploy.md).
 
 - [x] `SECURE_SSL_REDIRECT=true` — produção; staging configurável
 - [x] `SESSION_COOKIE_SECURE` / `CSRF_COOKIE_SECURE=true` — staging/produção
+- [x] `SESSION_COOKIE_HTTPONLY=true`, `SESSION_COOKIE_SAMESITE=Lax` — defaults Django / settings
+- [x] `SESSION_COOKIE_AGE` (24h), `SESSION_SAVE_EVERY_REQUEST=true`, `SESSION_EXPIRE_AT_BROWSER_CLOSE=false` — `.env.example` + `settings.base`
 - [x] HSTS habilitado no proxy/Nginx — Django `SECURE_HSTS_*` + header condicional em `docker/nginx/nginx.conf`
 - [x] `ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS` explícitos — validados ao boot em staging/produção
 
@@ -24,7 +26,7 @@ Runbook: [`deploy.md`](deploy.md).
 - [x] Rate limit IA (`AI_RATE_LIMIT`) adequado ao tráfego — env + `ai_rate_limit`
 - [x] Budget diário de tokens + alertas LangSmith/Sentry — `record_token_usage` + `scan_and_emit_alerts` (80%/100%)
 - [x] 2FA staff (django-otp) obrigatório para ops — `LOGIN_URL=two_factor:login` + `TWO_FACTOR_PATCH_ADMIN`
-
+- [x] UI 2FA no design system — `backend/templates/two_factor/` + `static/design-system/auth.css`
 ## Uploads e webhooks
 
 - [x] ClamAV ou AV em produção para PDFs (`MANUAL_CLAMAV_ENABLED`) — default prod true; serviço Compose `--profile clamav`; dep `clamd`

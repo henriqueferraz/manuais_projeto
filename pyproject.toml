@@ -38,3 +38,17 @@ skip_covered = true
 name = "cz_conventional_commits"
 version = "0.2.0"
 tag_format = "v$version"
+
+[tool.interrogate]
+ignore-magic = true
+ignore-nested-classes = true
+ignore-nested-functions = true
+ignore-semiprivate = true
+ignore-private = true
+ignore-property-decorators = true
+ignore-regex = ["^Meta$"]
+style = "google"
+fail-under = 80
+verbose = 1
+color = true
+exclude = ["*/migrations/*", "*/tests/*", "*/apps.py", "*/admin.py"]

@@ -266,3 +266,126 @@ def test_webhook_rejects_bad_signature(client):
         HTTP_X_SIGNATURE="invalid",
     )
     assert r.status_code == 400
+
+
+@pytest.mark.django_db
+def test_create_mercadopago_preference_mocked(settings):
+    settings.PAYMENT_PROVIDER = "mercadopago"
+    settings.MERCADOPAGO_CHECKOUT_MODE = "preference"
+    settings.MERCADOPAGO_ACCESS_TOKEN = "TEST-token"
+    settings.PUBLIC_BASE_URL = "https://shop.test"
+    settings.DEBUG = True
+
+    from unittest.mock import MagicMock, patch
+
+    from apps.checkout.payments import create_mercadopago_preference
+
+    mock_sdk = MagicMock()
+    mock_sdk.preference.return_value.create.return_value = {
+        "response": {
+            "id": "pref-abc",
+            "init_point": "https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=pref-abc",
+            "sandbox_init_point": "https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id=pref-abc",
+        }
+    }
+    with patch("mercadopago.SDK", return_value=mock_sdk):
+        result = create_mercadopago_preference(
+            order_number="ORD-1",
+            order_id="00000000-0000-0000-0000-000000000001",
+            amount=__import__("decimal").Decimal("119.90"),
+            currency="BRL",
+            title="Pedido ORD-1",
+            payer_email="buyer@example.com",
+        )
+    assert result.success
+    assert result.preference_id == "pref-abc"
+    assert "sandbox" in result.checkout_url
+    body = mock_sdk.preference.return_value.create.call_args[0][0]
+    assert body["external_reference"] == "ORD-1"
+    assert body["notification_url"].startswith("https://shop.test/")
+    assert body["back_urls"]["success"].startswith("https://shop.test/checkout/sucesso/")
+    assert body["auto_return"] == "approved"
+
+
+@pytest.mark.django_db
+def test_checkout_preference_redirects(client, cart_ready, settings):
+    settings.PAYMENT_PROVIDER = "mercadopago"
+    settings.MERCADOPAGO_CHECKOUT_MODE = "preference"
+    settings.MERCADOPAGO_ACCESS_TOKEN = "TEST-token"
+    settings.PUBLIC_BASE_URL = "https://shop.test"
+    settings.DEBUG = True
+
+    from unittest.mock import MagicMock, patch
+
+    client.post(reverse("checkout:start"), {**SHIPPING, "email": "mp@example.com"})
+    client.post(reverse("checkout:shipping"), {"shipping_option_id": "fixed-econ"})
+
+    mock_sdk = MagicMock()
+    mock_sdk.preference.return_value.create.return_value = {
+        "response": {
+            "id": "pref-xyz",
+            "init_point": "https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=pref-xyz",
+            "sandbox_init_point": "https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id=pref-xyz",
+        }
+    }
+    with patch("mercadopago.SDK", return_value=mock_sdk):
+        r = client.post(reverse("checkout:payment"))
+    assert r.status_code == 302
+    assert "mercadopago.com" in r["Location"]
+    order = Order.objects.get()
+    assert order.status == Order.Status.AWAITING_PAYMENT
+    payment = order.payments.get()
+    assert payment.provider_intent_id == "pref-xyz"
+    assert payment.status == Payment.Status.PENDING
+
+
+@pytest.mark.django_db
+def test_mp_webhook_syncs_by_external_reference(client, rf, product, settings):
+    settings.PAYMENT_PROVIDER = "mercadopago"
+    settings.MERCADOPAGO_ACCESS_TOKEN = "TEST-token"
+
+    from unittest.mock import patch
+
+    from django.contrib.auth.models import AnonymousUser
+    from django.contrib.sessions.middleware import SessionMiddleware
+
+    request = rf.get("/")
+    SessionMiddleware(lambda r: None).process_request(request)
+    request.session.save()
+    request.user = AnonymousUser()
+    add_to_cart(request, product, 1)
+    cart = get_or_create_cart(request)
+    order = build_order_from_cart(
+        cart=cart,
+        email="mpw@example.com",
+        shipping=SHIPPING,
+        shipping_option_id="fixed-econ",
+    )
+    Payment.objects.create(
+        order=order,
+        provider=Payment.Provider.MERCADOPAGO,
+        status=Payment.Status.PENDING,
+        amount=order.total,
+        provider_intent_id="pref-wh",
+        payment_token="",
+    )
+
+    mp_payment = {
+        "id": 987654321,
+        "status": "approved",
+        "external_reference": order.number,
+        "preference_id": "pref-wh",
+    }
+    with patch(
+        "apps.checkout.services.fetch_mercadopago_payment",
+        return_value=mp_payment,
+    ):
+        r = client.get(
+            reverse("checkout:webhook") + f"?topic=payment&id={mp_payment['id']}"
+        )
+    assert r.status_code == 200
+    order.refresh_from_db()
+    assert order.status == Order.Status.PAID
+    payment = order.payments.get()
+    assert payment.status == Payment.Status.PAID
+    assert payment.provider_payment_id == "987654321"

@@ -2,6 +2,8 @@
 
 *Plano de arquitetura, tecnologias e diferenciais*
 
+> **Documento histórico** (roadmap longo original). Para status atual use [`plano-tarefas.md`](plano-tarefas.md); stack LLM vigente = OpenAI (`*_LLM_MODE`); telas = [`pages/inventory.md`](pages/inventory.md).
+
 **Versão atualizada com stack: Python + Django + htmx + Bootstrap +
 PostgreSQL + Cloudflare R2 — agora com LangChain/LangGraph,
 observabilidade, CI/CD e segurança**

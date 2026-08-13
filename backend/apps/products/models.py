@@ -11,6 +11,12 @@ from simple_history.models import HistoricalRecords
 
 
 class Product(models.Model):
+    """Produto do catálogo (acabado ou peça).
+
+    `category` é a FK principal (exibição/filtros legados); `categories` é M2M
+    para múltiplas categorias no mesmo SKU.
+    """
+
     class Status(models.TextChoices):
         DRAFT = "draft", "Rascunho"
         PUBLISHED = "published", "Publicado"
@@ -39,6 +45,11 @@ class Product(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="products",
+    )
+    categories = models.ManyToManyField(
+        "catalog.Category",
+        blank=True,
+        related_name="products_m2m",
     )
     brand = models.CharField(max_length=120, db_index=True)
     brand_ref = models.ForeignKey(
@@ -92,6 +103,7 @@ class Product(models.Model):
         return f"{self.sku} — {self.brand} {self.model_code}".strip()
 
     def save(self, *args, **kwargs):
+        """Gera slug se vazio e sincroniza `published_at` com o status."""
         if not self.slug:
             base = slugify(f"{self.brand}-{self.model_code}-{self.sku}") or self.sku
             self.slug = base[:180]
@@ -110,12 +122,14 @@ class Product(models.Model):
         return self.description_for("pt-BR")
 
     def name_for(self, locale: str = "pt-BR") -> str:
+        """Nome traduzido; fallback pt-BR e depois marca + modelo."""
         tr = self.translations.filter(locale=locale).first()
         if tr is None and locale != "pt-BR":
             tr = self.translations.filter(locale="pt-BR").first()
         return tr.name if tr else f"{self.brand} {self.model_code}"
 
     def description_for(self, locale: str = "pt-BR") -> str:
+        """Descrição traduzida; fallback pt-BR ou string vazia."""
         tr = self.translations.filter(locale=locale).first()
         if tr is None and locale != "pt-BR":
             tr = self.translations.filter(locale="pt-BR").first()
@@ -132,6 +146,7 @@ class Product(models.Model):
 
     @property
     def quantity_sellable(self) -> int:
+        """Unidades vendáveis (disponível − reservado); 0 se não houver Stock."""
         try:
             stock = self.stock
         except Stock.DoesNotExist:
@@ -144,6 +159,8 @@ class Product(models.Model):
 
 
 class ProductTranslation(models.Model):
+    """Nome/descrição do produto por locale (ex.: pt-BR)."""
+
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
@@ -167,11 +184,14 @@ class ProductTranslation(models.Model):
 
 
 def product_image_upload_to(instance: ProductImage, filename: str) -> str:
+    """Caminho de storage: products/<product_id>/<filename>."""
     safe = filename.replace(" ", "_")
     return f"products/{instance.product_id}/{safe}"
 
 
 class ProductImage(models.Model):
+    """Imagem de vitrine do produto (galeria; capa de manual não entra aqui)."""
+
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to=product_image_upload_to, blank=True)
     alt_text = models.CharField(max_length=255, blank=True)
@@ -189,6 +209,8 @@ class ProductImage(models.Model):
 
 
 class Stock(models.Model):
+    """Estoque 1:1 do produto: disponível, reservado e alerta mínimo."""
+
     product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name="stock")
     quantity_available = models.PositiveIntegerField(default=0)
     quantity_reserved = models.PositiveIntegerField(default=0)
@@ -212,6 +234,7 @@ class Stock(models.Model):
         return self.sellable <= self.minimum_alert
 
     def clean(self):
+        """Valida que reservado não exceda disponível."""
         if self.quantity_reserved > self.quantity_available:
             raise ValidationError("Reservado não pode exceder disponível.")
 
@@ -232,6 +255,7 @@ class Stock(models.Model):
     @classmethod
     @transaction.atomic
     def release(cls, product_id: int, qty: int) -> Stock:
+        """Libera reserva (carrinho abandonado / falha de pagamento)."""
         if qty < 1:
             raise ValidationError("Quantidade inválida.")
         stock = cls.objects.select_for_update().get(product_id=product_id)

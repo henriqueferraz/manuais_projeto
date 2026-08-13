@@ -6,16 +6,27 @@ import json
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_http_methods
 
 from apps.cart.coupons import COUPON_SESSION_KEY, cart_totals_with_coupon
 from apps.cart.services import cart_totals, get_or_create_cart
 from apps.checkout.forms import CheckoutAddressForm, CheckoutPaymentForm, CheckoutShippingForm
-from apps.checkout.payments import parse_webhook_event, verify_webhook_signature
-from apps.checkout.services import apply_payment_webhook, build_order_from_cart, pay_order
+from apps.checkout.payments import (
+    get_provider_name,
+    mercadopago_uses_preference,
+    parse_webhook_event,
+    verify_webhook_signature,
+)
+from apps.checkout.services import (
+    apply_payment_webhook,
+    build_order_from_cart,
+    pay_order,
+    start_mercadopago_preference_checkout,
+    sync_mercadopago_payment_by_id,
+)
 from apps.checkout.shipping import calculate_shipping
 from apps.orders.models import Order
 
@@ -114,23 +125,34 @@ def checkout_payment(request: HttpRequest) -> HttpResponse:
         return redirect("checkout:shipping")
 
     cart, totals, coupon_code = _cart_checkout_totals(request)
+    use_mp_preference = mercadopago_uses_preference()
     form = CheckoutPaymentForm(request.POST or None)
 
-    if request.method == "POST" and form.is_valid():
+    if request.GET.get("mp") == "failure":
+        messages.error(request, "Pagamento no Mercado Pago não concluído. Tente novamente.")
+
+    if request.method == "POST":
         try:
             order = build_order_from_cart(
                 cart=cart,
                 email=draft["email"],
                 shipping=draft,
                 shipping_option_id=draft["shipping_option_id"],
-                user=request.user,
+                user=request.user if request.user.is_authenticated else None,
                 coupon_code=coupon_code,
             )
-            pay_order(order=order, payment_token=form.cleaned_data["payment_token"])
-            request.session.pop(SESSION_CHECKOUT, None)
-            request.session.pop(COUPON_SESSION_KEY, None)
-            messages.success(request, f"Pedido {order.number} pago com sucesso.")
-            return redirect("checkout:success", order_id=order.id)
+            if use_mp_preference:
+                checkout_url = start_mercadopago_preference_checkout(order=order)
+                request.session.pop(SESSION_CHECKOUT, None)
+                request.session.pop(COUPON_SESSION_KEY, None)
+                return HttpResponseRedirect(checkout_url)
+
+            if form.is_valid():
+                pay_order(order=order, payment_token=form.cleaned_data["payment_token"])
+                request.session.pop(SESSION_CHECKOUT, None)
+                request.session.pop(COUPON_SESSION_KEY, None)
+                messages.success(request, f"Pedido {order.number} pago com sucesso.")
+                return redirect("checkout:success", order_id=order.id)
         except ValidationError as exc:
             messages.error(request, "; ".join(getattr(exc, "messages", [str(exc)])))
         except Exception as exc:  # noqa: BLE001
@@ -139,22 +161,60 @@ def checkout_payment(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         "checkout/step_payment.html",
-        {"form": form, "totals": totals, "draft": draft, "step": 3},
+        {
+            "form": form,
+            "totals": totals,
+            "draft": draft,
+            "step": 3,
+            "payment_provider": get_provider_name(),
+            "mp_preference": use_mp_preference,
+        },
     )
 
 
 def checkout_success(request: HttpRequest, order_id) -> HttpResponse:
     order = get_object_or_404(Order.objects.prefetch_related("items", "payments"), pk=order_id)
+    # Retorno do Checkout Pro: sync se ainda pendente.
+    payment_id = (
+        request.GET.get("payment_id")
+        or request.GET.get("collection_id")
+        or request.GET.get("preference_id")
+        or ""
+    )
+    if payment_id and get_provider_name() == "mercadopago" and order.status != Order.Status.PAID:
+        # payment_id do back_url é o id do pagamento (não preference).
+        if request.GET.get("payment_id") or request.GET.get("collection_id"):
+            sync_mercadopago_payment_by_id(str(payment_id))
+            order.refresh_from_db()
     return render(request, "checkout/success.html", {"order": order, "step": 4})
 
 
 @csrf_exempt
-@require_POST
+@require_http_methods(["GET", "POST"])
 def payment_webhook(request: HttpRequest) -> HttpResponse:
     signature = request.headers.get("X-Signature") or request.headers.get("Stripe-Signature", "")
-    payload = request.body
+    payload = request.body or b"{}"
     if not verify_webhook_signature(payload=payload, signature_header=signature):
         return JsonResponse({"error": "invalid signature"}, status=400)
+
+    provider = get_provider_name()
+
+    # Mercado Pago IPN / Webhooks: ?topic=payment&id=... ou JSON type=payment
+    if provider == "mercadopago":
+        topic = (request.GET.get("topic") or request.GET.get("type") or "").lower()
+        mp_id = request.GET.get("id") or request.GET.get("data.id") or ""
+        if request.method == "POST" and payload.strip() not in {b"", b"{}"}:
+            try:
+                event = parse_webhook_event(payload)
+            except json.JSONDecodeError:
+                event = {}
+            topic = topic or str(event.get("type") or event.get("action") or "").lower()
+            data = event.get("data") if isinstance(event.get("data"), dict) else {}
+            mp_id = mp_id or str(data.get("id") or event.get("id") or "")
+        if "payment" in topic and mp_id:
+            payment = sync_mercadopago_payment_by_id(str(mp_id))
+            return JsonResponse({"ok": True, "found": payment is not None})
+        return JsonResponse({"ok": True, "ignored": True, "topic": topic})
 
     try:
         event = parse_webhook_event(payload)
@@ -168,7 +228,6 @@ def payment_webhook(request: HttpRequest) -> HttpResponse:
         or ""
     )
     status = event.get("status") or event.get("type") or event.get("action") or ""
-    # normaliza tipos stripe
     if status in {"payment_intent.succeeded", "charge.succeeded"}:
         status = "paid"
     elif status in {"payment_intent.payment_failed", "charge.failed"}:

@@ -12,7 +12,7 @@ Em cada push/PR:
 
 1. Lint (ruff + black check)
 2. Tipos (mypy, se adotado)
-3. Testes (pytest + mocks Anthropic + golden set de manuais)
+3. Testes (pytest + mocks OpenAI / `*_LLM_MODE=mock` + golden set de manuais)
 4. Migrations pendentes do Django
 5. SAST (bandit), pip-audit/Dependabot
 6. Cobertura mínima nos fluxos críticos

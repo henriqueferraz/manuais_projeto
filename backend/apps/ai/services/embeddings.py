@@ -16,6 +16,7 @@ _TOKEN_RE = re.compile(r"[a-zA-ZÀ-ÿ0-9.]{2,}")
 
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
+    """Gera embeddings (mock ou OpenAI) para uma lista de textos."""
     mode = getattr(settings, "EMBEDDING_MODE", "mock").lower()
     if mode == "openai":
         return _embed_openai(texts)
@@ -23,10 +24,12 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
 
 
 def embed_query(text: str) -> list[float]:
+    """Embedding de uma única consulta (wrapper de ``embed_texts``)."""
     return embed_texts([text])[0]
 
 
 def tokenize(text: str) -> set[str]:
+    """Extrai tokens alfanuméricos normalizados em minúsculas."""
     return {t.lower() for t in _TOKEN_RE.findall(text or "")}
 
 
@@ -42,6 +45,7 @@ def lexical_overlap(query: str, document: str) -> float:
 
 
 def cosine_similarity(a: list[float], b: list[float]) -> float:
+    """Similaridade cosseno entre dois vetores; 0.0 se inválidos."""
     if not a or not b or len(a) != len(b):
         return 0.0
     dot = 0.0

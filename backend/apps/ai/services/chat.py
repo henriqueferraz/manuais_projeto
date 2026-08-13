@@ -39,6 +39,7 @@ FALLBACK_MSG = (
 
 
 def load_system_prompt(version: str = PROMPT_VERSION) -> str:
+    """Carrega o system prompt do chat; fallback embutido se o arquivo faltar."""
     path = PROMPT_DIR / f"chat_system_{version}.md"
     if path.exists():
         return path.read_text(encoding="utf-8")
@@ -255,6 +256,7 @@ def answer_question(
 
 
 def format_sse(event: str, data: dict) -> str:
+    """Formata um evento Server-Sent Events (`event` + JSON `data`)."""
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 

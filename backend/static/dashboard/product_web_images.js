@@ -19,6 +19,12 @@
     return el ? String(el.value || "").trim() : "";
   }
 
+  function firstCategoryValue() {
+    const checked = document.querySelector('input[name="categories"]:checked');
+    if (checked) return String(checked.value || "").trim();
+    return fieldValue("id_category");
+  }
+
   function setStatus(text, kind) {
     if (!statusEl) return;
     statusEl.hidden = !text;
@@ -132,7 +138,7 @@
     if (!searchUrl) return;
     const brandRef = fieldValue("id_brand_ref");
     const equipmentModel = fieldValue("id_equipment_model");
-    const category = fieldValue("id_category");
+    const category = firstCategoryValue();
     const name = fieldValue("id_name");
 
     if (!brandRef && !equipmentModel && !category && !name) {

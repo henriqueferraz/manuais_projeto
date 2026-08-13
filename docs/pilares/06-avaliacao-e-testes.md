@@ -23,7 +23,7 @@ Testes com casos reais e extremos; métricas de qualidade; loop de feedback do u
 
 ## Ferramentas
 
-- Pytest (+ mocks Anthropic, testes Celery)
+- Pytest (+ mocks LLM, testes Celery)
 - pytest-cov (meta ex.: 80% em fluxos críticos)
 - Golden set de manuais no CI
 - Ruff, Black, Mypy, Bandit

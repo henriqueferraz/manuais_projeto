@@ -116,6 +116,7 @@ def resolve_product_context(
 
 
 def ask_product_context_message() -> str:
+    """Texto pedindo tipo de produto ou modelo antes do diagnóstico."""
     return (
         "Antes de diagnosticar, preciso saber o tipo de produto "
         "(ex.: liquidificador, ventilador, batedeira) ou o modelo "

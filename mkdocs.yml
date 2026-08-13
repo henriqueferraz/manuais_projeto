@@ -1,0 +1,60 @@
+site_name: TechParts AI
+site_description: Documentação do monólito Django — produto, páginas e API interna
+docs_dir: docs
+site_dir: site
+
+repo_url: https://github.com/henriqueferraz/manuais_projeto
+
+theme:
+  name: material
+  language: pt
+  palette:
+    - scheme: default
+      primary: blue grey
+      accent: cyan
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [backend]
+          options:
+            docstring_style: google
+            show_source: true
+            members_order: source
+            show_root_heading: true
+            heading_level: 2
+
+nav:
+  - Índice: README.md
+  - Regras de ouro:
+      - Campos de produto: regra-ouro-campos-produto.md
+      - Documentação: regra-ouro-documentacao.md
+  - Páginas:
+      - Índice: pages/README.md
+      - Inventário: pages/inventory.md
+      - Editar produto: pages/dashboard-produto.md
+      - Chat / diagnóstico: pages/assistente-chat.md
+      - Checkout: pages/checkout.md
+  - Plano e ops:
+      - Plano de tarefas: plano-tarefas.md
+      - Deploy: deploy.md
+      - Hardening: security-hardening.md
+  - ADRs: adr/README.md
+  - API interna (código):
+      - Visão geral: api/index.md
+      - Products: api/products.md
+      - Catalog: api/catalog.md
+      - AI: api/ai.md
+      - Manuals: api/manuals.md
+      - Cart: api/cart.md
+      - Checkout: api/checkout.md
+      - Dashboard: api/dashboard.md
+
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.superfences

@@ -15,7 +15,8 @@ Padrão consistente de imagens; zoom/ângulos; otimização R2 (WebP/AVIF) + laz
 
 ## Referências visuais
 
-Screenshots em `docs/screen*.png` e PDPs em `code (cópia 6|7|11).html`, `ProductDetailView.tsx`.
+PDP vigente: `/catalogo/<slug>/` → `catalog/product_detail.html`.  
+Galeria / fotos web no cadastro: [`../pages/dashboard-produto.md`](../pages/dashboard-produto.md).
 
 ## Fontes
 

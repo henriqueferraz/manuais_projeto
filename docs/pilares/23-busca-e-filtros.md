@@ -8,20 +8,30 @@ Filtros técnicos claros; autocomplete visual; diferencial “busca por sintoma�
 
 ## Requisitos
 
-- Filtros técnicos: compatibilidade, modelo, voltagem, categoria
+- Filtros técnicos: compatibilidade, modelo, voltagem, **categoria**
 - Autocomplete/sugestões com miniatura do produto
 - **Busca por sintoma** (diferencial): “minha geladeira não gela” → IA sugere peças
 - Verificador de compatibilidade com badge visual (“COMPATIBILIDADE GARANTIDA”)
 - Busca full-text Postgres no início; upgrade opcional depois
 
-## UI de referência
+## Categoria no filtro (código vigente)
 
-- `code (cópia 3|4|10).html` — catálogo / hero / “Dúvidas sobre compatibilidade?”
-- `src/components/CatalogView.tsx`, `HeroSection.tsx`
-- Badge de compatibilidade em `Product` (`src/types.ts`)
+`filter_catalog(?category=)` em `apps.catalog.services` casa:
+
+- `Product.category` (FK principal), **ou**
+- `Product.categories` (M2M)
+
+Um produto em *Peça de reposição* e *Móveis* aparece nos dois filtros.  
+Detalhe do cadastro: [`../pages/dashboard-produto.md`](../pages/dashboard-produto.md).
+
+## UI vigente
+
+- `/catalogo/` → `catalog/product_list.html` (+ `partials/product_grid.html` HTMX)
+- `/` → filtros na home (`core/home.html`)
+- Inventário: [`../pages/inventory.md`](../pages/inventory.md)
 
 ## Fontes
 
 - `pilares-app-ia-vendas-pecas.md` — Pilar 23
 - `specify.md` — §§4.1–4.2
-- `techparts_ai_project_brief.md` — AI-Powered Search, Compatibility Badge
+- `techparts_ai_project_brief.md` — AI-Powered Search (histórico)

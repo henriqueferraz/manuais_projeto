@@ -10,10 +10,14 @@ Product, Manual, ManualChunk (pgvector), ExtractionLog — e modelos de apoio do
 
 | Model | Papel |
 |---|---|
-| `Product` | Dados do produto (SKU, specs, preço, estoque, i18n-ready) |
+| `Product` | SKU, specs, preço, estoque, i18n; `category` FK (principal) + `categories` M2M |
 | `Manual` | FK / referência ao PDF no R2 |
 | `ManualChunk` | Trechos com embedding (pgvector) + metadados |
 | `ExtractionLog` | Histórico de execuções da IA, revisão humana, timestamps |
+
+Código: `backend/apps/products/models.py`, `catalog/models.py`, `manuals/`, `ai/`.  
+Multi-categoria no form: [`../pages/dashboard-produto.md`](../pages/dashboard-produto.md).  
+Schema F1 (histórico + evolução): [`../fase-1-schema-produto.md`](../fase-1-schema-produto.md).
 
 ## Models de domínio (consolidados do plano)
 
@@ -24,24 +28,20 @@ Product, Manual, ManualChunk (pgvector), ExtractionLog — e modelos de apoio do
 - **SubscriptionPlan** — assinatura de manutenção (fase 8)
 - **PartnerService** — assistência parceira (fase 8)
 - **ReturnRequest** — trocas/devoluções
-- **Coupon** — cupons/promoções
+- **Coupon** / **ProductPromotion** — cupons/promoções (por produto ou categoria)
 - Role/Permission — RBAC configurável
-- Audit log — django-simple-history ou equivalente
+- Audit log — django-simple-history
 
 ## PostgreSQL + pgvector
 
 - Postgres: usuários, pedidos, produtos, estoque, categorias, chamados, assinaturas, compatibilidade
 - pgvector: embeddings, chunks, busca semântica
 - Índices em SKU e compatibilidade; HNSW/IVFFlat no vetor desde fase 4
-- Schema já preparado para i18n
-
-## Tipos de referência no protótipo
-
-Ver `src/types.ts`: `Product`, `ManualReview`, `Ticket`, `ChatMessage`, `DiagnosticCardData`.
+- Schema já preparado para i18n (`ProductTranslation`)
 
 ## Fontes
 
 - `pilares-app-ia-vendas-pecas.md` — Pilar 11
 - `plan.md` — Banco de Dados
-- `plano-ecommerce-ia-pecas.md` — Dados
-- `src/types.ts`
+- `fase-1-schema-produto.md` — schema inicial + evolução M2M
+- Models em `backend/apps/*/models.py`

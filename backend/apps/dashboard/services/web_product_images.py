@@ -27,6 +27,7 @@ _BLOCKED_HOST_SUFFIXES = (".localhost", ".local", ".internal")
 
 
 def web_image_search_mode() -> str:
+    """Retorna o modo de busca de fotos web (`mock` ou provedor configurado)."""
     return str(getattr(settings, "WEB_IMAGE_SEARCH_MODE", "mock") or "mock").lower()
 
 

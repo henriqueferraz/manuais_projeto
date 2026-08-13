@@ -17,11 +17,13 @@ CART_SESSION_KEY = "cart_id"
 
 
 def reservation_ttl() -> timedelta:
+    """Retorna o TTL da reserva de estoque do carrinho."""
     minutes = int(getattr(settings, "CART_RESERVATION_MINUTES", 30))
     return timedelta(minutes=minutes)
 
 
 def get_or_create_cart(request) -> Cart:
+    """Obtém o carrinho da sessão/usuário ou cria um novo."""
     cart = None
     cart_id = request.session.get(CART_SESSION_KEY)
     if cart_id:
@@ -46,6 +48,7 @@ def get_or_create_cart(request) -> Cart:
 
 @transaction.atomic
 def add_to_cart(request, product: Product, quantity: int = 1) -> CartItem:
+    """Adiciona produto ao carrinho e reserva estoque imediatamente."""
     if product.status != Product.Status.PUBLISHED:
         raise ValidationError("Produto indisponível.")
     if quantity < 1:
@@ -99,6 +102,7 @@ def add_to_cart(request, product: Product, quantity: int = 1) -> CartItem:
 
 @transaction.atomic
 def update_cart_item(request, product_id: int, quantity: int) -> CartItem | None:
+    """Atualiza quantidade do item; qty < 1 remove o item."""
     cart = get_or_create_cart(request)
     item = (
         CartItem.objects.select_for_update()
@@ -135,6 +139,7 @@ def update_cart_item(request, product_id: int, quantity: int) -> CartItem | None
 
 @transaction.atomic
 def remove_cart_item(request, product_id: int) -> None:
+    """Remove item do carrinho e libera reserva de estoque."""
     cart = get_or_create_cart(request)
     item = CartItem.objects.select_for_update().filter(cart=cart, product_id=product_id).first()
     if item is None:
@@ -145,6 +150,7 @@ def remove_cart_item(request, product_id: int) -> None:
 
 
 def cart_totals(cart: Cart) -> dict:
+    """Calcula subtotal e contagem de itens do carrinho."""
     items = list(cart.items.select_related("product"))
     subtotal = sum((i.line_total for i in items), Decimal("0"))
     return {

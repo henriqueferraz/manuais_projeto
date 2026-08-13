@@ -21,6 +21,8 @@ logger = structlog.get_logger(__name__)
 
 @dataclass(frozen=True)
 class RetrievedChunk:
+    """Chunk de manual com score híbrido (embedding + lexical)."""
+
     chunk: ManualChunk
     score: float
 

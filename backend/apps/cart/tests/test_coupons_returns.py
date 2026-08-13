@@ -117,6 +117,21 @@ def test_promo_price(product):
 
 
 @pytest.mark.django_db
+def test_promo_by_secondary_category(product):
+    secondary = Category.objects.create(name="Móveis", slug="moveis-promo")
+    product.categories.add(secondary)
+    now = timezone.now()
+    ProductPromotion.objects.create(
+        category=secondary,
+        promo_price=Decimal("120.00"),
+        valid_from=now - timedelta(hours=1),
+        valid_until=now + timedelta(days=1),
+        active=True,
+    )
+    assert effective_price(product) == Decimal("120.00")
+
+
+@pytest.mark.django_db
 def test_checkout_applies_coupon(rf, product, percent_coupon):
     request = rf.get("/")
     from django.contrib.auth.models import AnonymousUser

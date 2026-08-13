@@ -14,6 +14,7 @@ COUPON_SESSION_KEY = "coupon_code"
 
 
 def effective_price(product: Product) -> Decimal:
+    """Preço vigente: promoção ativa (produto/categoria) ou `product.price`."""
     now = timezone.now()
     promo = (
         ProductPromotion.objects.filter(active=True, valid_from__lte=now, valid_until__gte=now)
@@ -27,12 +28,20 @@ def effective_price(product: Product) -> Decimal:
 
 
 def models_q(product: Product):
+    """Q de promoção: produto, FK `category` ou qualquer de `categories` (M2M)."""
     from django.db.models import Q
 
-    return Q(product=product) | Q(category=product.category)
+    q = Q(product=product)
+    if product.category_id:
+        q |= Q(category=product.category)
+    category_ids = list(product.categories.values_list("pk", flat=True))
+    if category_ids:
+        q |= Q(category_id__in=category_ids)
+    return q
 
 
 def apply_coupon_code(code: str, *, subtotal: Decimal) -> tuple[Coupon, Decimal]:
+    """Valida cupom e devolve (cupom, desconto) sobre o subtotal."""
     code = (code or "").strip().upper()
     if not code:
         raise ValidationError("Informe um cupom.")
@@ -44,6 +53,7 @@ def apply_coupon_code(code: str, *, subtotal: Decimal) -> tuple[Coupon, Decimal]
 
 
 def cart_totals_with_coupon(cart, coupon_code: str | None = None) -> dict:
+    """Totais do carrinho + desconto de cupom (`total_after_discount`)."""
     from apps.cart.services import cart_totals
 
     base = cart_totals(cart)

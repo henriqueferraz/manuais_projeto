@@ -18,6 +18,8 @@ from apps.tickets.models import CrossSellAttribution, Ticket, TicketEvent
 
 @dataclass
 class InsightsPayload:
+    """Payload agregado de insights operacionais (chat, tickets, vendas, custo)."""
+
     days: int
     since: str
     chat: dict
@@ -26,6 +28,7 @@ class InsightsPayload:
     ai_cost: dict
 
     def to_dict(self) -> dict:
+        """Serializa o dataclass em dicionário plano."""
         return asdict(self)
 
 
@@ -34,6 +37,7 @@ def _period_start(days: int):
 
 
 def collect_insights(*, days: int = 30) -> InsightsPayload:
+    """Agrega métricas de chat, tickets, vendas IA e custo no período."""
     since = _period_start(days)
     return InsightsPayload(
         days=days,

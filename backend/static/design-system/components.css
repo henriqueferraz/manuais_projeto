@@ -655,6 +655,37 @@
   padding: 0;
 }
 
+.tp-category-checks {
+  max-height: 12rem;
+  overflow-y: auto;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--tp-border, #d7dde5);
+  border-radius: var(--tp-radius-md, 0.5rem);
+  background: #fff;
+}
+
+.tp-category-checks ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tp-category-checks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tp-category-checks label {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
 .tp-ai-agent {
   border: 1px solid var(--tp-border, #d7dde5);
   border-radius: var(--tp-radius-md, 0.5rem);

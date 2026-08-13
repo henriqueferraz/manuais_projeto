@@ -26,10 +26,12 @@ _WEBP_RIFF = b"RIFF"
 
 
 def photo_max_bytes() -> int:
+    """Limite máximo de upload de foto em bytes (settings)."""
     return int(getattr(settings, "PHOTO_MAX_UPLOAD_BYTES", 5 * 1024 * 1024))
 
 
 def sniff_image_mime(content: bytes, filename: str = "") -> str:
+    """Detecta MIME da imagem por magic bytes ou extensão do arquivo."""
     if content.startswith(_JPEG):
         return "image/jpeg"
     if content.startswith(_PNG):
@@ -47,6 +49,7 @@ def sniff_image_mime(content: bytes, filename: str = "") -> str:
 
 
 def validate_photo_upload(content: bytes, filename: str) -> tuple[bytes, str]:
+    """Valida tamanho/formato; retorna (conteúdo, mime) ou levanta ValidationError."""
     if not content:
         raise ValidationError("Arquivo vazio.")
     if len(content) > photo_max_bytes():
@@ -66,6 +69,7 @@ def create_photo_search(
     product_id: int | None = None,
     enqueue: bool = True,
 ) -> PhotoSearch:
+    """Cria PhotoSearch, salva a imagem e opcionalmente enfileira a task."""
     validated, mime = validate_photo_upload(content, filename)
     search = PhotoSearch(
         user=user if getattr(user, "is_authenticated", False) else None,
@@ -88,6 +92,7 @@ def create_photo_search(
 
 
 def run_photo_search(search_id: str | uuid.UUID) -> PhotoSearch:
+    """Executa visão (mock/OpenAI), grava candidatos e status final."""
     search = PhotoSearch.objects.get(pk=search_id)
     search.status = PhotoSearch.Status.RUNNING
     search.started_at = timezone.now()

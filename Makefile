@@ -1,4 +1,4 @@
-.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden golden-rag up-staging backup restore e2e
+.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden golden-rag up-staging backup restore e2e docs docs-coverage
 
 help:
 	@echo "Targets:"
@@ -13,8 +13,10 @@ help:
 	@echo "  make e2e          - Playwright E2E (chromium; requer requirements/e2e.txt)"
 	@echo "  make golden       - regressão golden set de extração"
 	@echo "  make golden-rag   - regressão golden set RAG"
-	@echo "  make lint         - ruff + black --check + bandit"
+	@echo "  make lint         - ruff + black --check + bandit + interrogate"
 	@echo "  make fmt          - black + ruff --fix"
+	@echo "  make docs         - MkDocs serve (API + produto)"
+	@echo "  make docs-coverage - cobertura de docstrings (interrogate)"
 	@echo "  make ci           - lint + test + golden + check migrations"
 	@echo "  make backup       - dump Postgres (RPO ≤24h — docs/deploy.md)"
 	@echo "  make restore FILE=backups/....sql.gz"
@@ -74,6 +76,25 @@ lint:
 	.venv/bin/ruff check backend
 	.venv/bin/black --check backend
 	.venv/bin/bandit -q -r backend -x '*/tests/*,*/migrations/*'
+	$(MAKE) docs-coverage
+
+docs-coverage:
+	.venv/bin/interrogate \
+		--ignore-magic --ignore-nested-classes --ignore-nested-functions \
+		--ignore-semiprivate --ignore-private --ignore-property-decorators \
+		--ignore-regex '^Meta$$' --style google -f 80 \
+		backend/apps/products/models.py \
+		backend/apps/catalog/models.py \
+		backend/apps/catalog/services.py \
+		backend/apps/ai/services \
+		backend/apps/cart/coupons.py \
+		backend/apps/cart/services.py \
+		backend/apps/checkout/services.py \
+		backend/apps/manuals/services/pipeline.py \
+		backend/apps/dashboard/services
+
+docs:
+	.venv/bin/mkdocs serve
 
 fmt:
 	.venv/bin/black backend

@@ -29,16 +29,16 @@ Manual (PDF) → upload R2 → Extração (OCR/texto) → LangGraph/LangChain
 - Produto nasce como **rascunho**; humano aprova/corrige
 - Fase 3 do roadmap — coração do diferencial; testar com vários manuais reais
 
-## UI de referência
+## UI vigente
 
-- `code (cópia 2).html` — Fila de Revisão de Manuais
-- `src/components/AdminManualsView.tsx`
-- `src/types.ts` — `ManualReview`
+- Fila HITL: `/manuais/revisao/` → `manuals/review_queue.html`
+- Detalhe: `/manuais/revisao/<id>/` → `manuals/review_detail.html`
+- Cadastro assistido: `/dashboard/produtos/…` → [`../pages/dashboard-produto.md`](../pages/dashboard-produto.md)
 
 ## Fontes
 
 - `pilares-app-ia-vendas-pecas.md` — Pilar 9
 - `constitution.md` — Artigo 2.2
 - `specify.md` — §4.2
-- `plano-ecommerce-ia-pecas.md` — Revisão humana, fase 3
+- `plano-ecommerce-ia-pecas.md` — Revisão humana, fase 3 (histórico)
 - `plan.md` — Pipeline

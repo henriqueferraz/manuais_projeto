@@ -389,6 +389,10 @@
 
   function setField(name, value, label) {
     if (value === null || value === undefined || value === "") return;
+    if (name === "categories" || name === "category") {
+      setCategoryCheckbox(value, label);
+      return;
+    }
     const el = document.getElementById("id_" + name) || document.querySelector('[name="' + name + '"]');
     if (!el) return;
     if (el.type === "checkbox") {
@@ -414,6 +418,41 @@
     el.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
+  function setCategoryCheckbox(value, label) {
+    const strVal = String(value);
+    const boxes = document.querySelectorAll('input[name="categories"]');
+    let matched = null;
+    Array.prototype.forEach.call(boxes, function (box) {
+      if (box.value === strVal) {
+        box.checked = true;
+        matched = box;
+      }
+    });
+    if (matched) {
+      matched.dispatchEvent(new Event("change", { bubbles: true }));
+      return;
+    }
+    const wrap = document.querySelector(".tp-category-checks ul, .tp-category-checks");
+    if (!wrap) return;
+    const li = document.createElement("li");
+    const id = "id_categories_ai_" + strVal;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.name = "categories";
+    input.value = strVal;
+    input.id = id;
+    input.checked = true;
+    input.className = "form-check-input";
+    const lab = document.createElement("label");
+    lab.htmlFor = id;
+    lab.textContent = label || strVal;
+    li.appendChild(input);
+    li.appendChild(lab);
+    const list = wrap.tagName === "UL" ? wrap : wrap.querySelector("ul") || wrap;
+    list.appendChild(li);
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
   function applySuggestions(sug) {
     if (!sug) return;
     setField("sku", sug.sku);
@@ -430,7 +469,7 @@
     setField("voltage", sug.voltage);
     setField("product_kind", sug.product_kind);
     setField("status", sug.status || "draft");
-    setField("category", sug.category, sug.category_name);
+    setField("categories", sug.category, sug.category_name);
     setField("power_w", sug.power_w);
     setField("weight_kg", sug.weight_kg);
     setField("dim_height_cm", sug.dim_height_cm);

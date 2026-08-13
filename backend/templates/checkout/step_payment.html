@@ -12,9 +12,6 @@
 >
   {% include "checkout/partials/steps.html" %}
   <h1 class="font-headline-lg">Pagamento</h1>
-  <p class="text-secondary">
-    O servidor recebe apenas o <strong>token</strong> do gateway — nunca o número do cartão.
-  </p>
 
   <div id="checkout-skeleton" class="tp-checkout-skeleton htmx-indicator" aria-hidden="true">
     <div class="tp-skeleton tp-skeleton--title"></div>
@@ -22,23 +19,44 @@
     <div class="tp-skeleton tp-skeleton--card tp-skeleton--h-96"></div>
   </div>
 
-  <div class="alert alert-secondary small border" role="status">
-    Sandbox mock: use <code class="font-technical">tok_sandbox_4242</code> para sucesso ou
-    <code class="font-technical">tok_fail</code> para recusa.
-  </div>
-  <form method="post" class="vstack gap-3 mt-3" autocomplete="off">
-    {% csrf_token %}
-    <div>
-      <label class="form-label" for="{{ form.payment_token.id_for_label }}">{{ form.payment_token.label }}</label>
-      {{ form.payment_token }}
-      <div class="form-text">{{ form.payment_token.help_text }}</div>
-      {% if form.payment_token.errors %}<div class="text-danger small">{{ form.payment_token.errors }}</div>{% endif %}
-    </div>
-    <p class="font-technical">Itens {{ totals.subtotal|brl }}{% if totals.discount %} · Desconto −{{ totals.discount|brl }} · Líquido {{ totals.total_after_discount|brl }}{% endif %}</p>
-    <div class="d-flex gap-2">
+  {% if mp_preference %}
+    <p class="text-secondary">
+      Você será redirecionado ao <strong>Mercado Pago</strong> (Checkout Pro) para concluir
+      o pagamento com segurança. Não coletamos dados de cartão neste site.
+    </p>
+    <p class="font-technical mt-2">
+      Itens {{ totals.subtotal|brl }}{% if totals.discount %} · Desconto −{{ totals.discount|brl }} · Líquido {{ totals.total_after_discount|brl }}{% endif %}
+    </p>
+    <form method="post" class="d-flex gap-2 mt-3" autocomplete="off" hx-boost="false">
+      {% csrf_token %}
       <a class="btn btn-ghost" href="{% url 'checkout:shipping' %}">Voltar</a>
-      <button type="submit" class="btn btn-primary">Pagar e finalizar</button>
+      <button type="submit" class="btn btn-primary">Pagar com Mercado Pago</button>
+    </form>
+  {% else %}
+    <p class="text-secondary">
+      O servidor recebe apenas o <strong>token</strong> do gateway — nunca o número do cartão.
+    </p>
+    <div class="alert alert-secondary small border" role="status">
+      Sandbox mock: use <code class="font-technical">tok_sandbox_4242</code> para sucesso ou
+      <code class="font-technical">tok_fail</code> para recusa.
+      {% if payment_provider == "mercadopago" %}
+        Modo token MP ativo (<code>MERCADOPAGO_CHECKOUT_MODE=token</code>).
+      {% endif %}
     </div>
-  </form>
+    <form method="post" class="vstack gap-3 mt-3" autocomplete="off">
+      {% csrf_token %}
+      <div>
+        <label class="form-label" for="{{ form.payment_token.id_for_label }}">{{ form.payment_token.label }}</label>
+        {{ form.payment_token }}
+        <div class="form-text">{{ form.payment_token.help_text }}</div>
+        {% if form.payment_token.errors %}<div class="text-danger small">{{ form.payment_token.errors }}</div>{% endif %}
+      </div>
+      <p class="font-technical">Itens {{ totals.subtotal|brl }}{% if totals.discount %} · Desconto −{{ totals.discount|brl }} · Líquido {{ totals.total_after_discount|brl }}{% endif %}</p>
+      <div class="d-flex gap-2">
+        <a class="btn btn-ghost" href="{% url 'checkout:shipping' %}">Voltar</a>
+        <button type="submit" class="btn btn-primary">Pagar e finalizar</button>
+      </div>
+    </form>
+  {% endif %}
 </section>
 {% endblock %}

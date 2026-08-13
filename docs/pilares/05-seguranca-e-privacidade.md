@@ -19,12 +19,14 @@ Validação/sanitização de inputs; cuidado com dados sensíveis; proteção co
 
 ## Controles técnicos
 
-- Django Auth + JWT/sessions no DRF; 2FA para staff
+- Django Auth + **sessão** (+ django-two-factor / 2FA staff); **sem JWT**
+- Templates de login em `backend/templates/two_factor/` + `design-system/auth.css`
 - Proteção brute-force no login (django-axes)
 - Rate limiting em endpoints de IA
 - Validação MIME/tamanho + antivírus (ClamAV) em uploads
 - System prompt isolado do conteúdo do manual (anti prompt injection)
 - CSRF, XSS, SQL via ORM, HTTPS/HSTS, cookies secure/HttpOnly/SameSite
+- Sessão: `SESSION_COOKIE_AGE` (24h), `SESSION_SAVE_EVERY_REQUEST`, não expira ao fechar o browser (defaults em `.env.example`)
 - CSP, X-Frame-Options, Referrer-Policy
 - R2 privado + URLs assinadas com expiração curta
 - Anonimização de e-mail/CPF/endereço em logs (structlog)
@@ -32,6 +34,7 @@ Validação/sanitização de inputs; cuidado com dados sensíveis; proteção co
 ## Fontes
 
 - `constitution.md` — Artigos 3 e 8
-- `plano-ecommerce-ia-pecas.md` — Segurança
+- `security-hardening.md` — checklist pré-go-live
+- `plano-ecommerce-ia-pecas.md` — Segurança (histórico)
 - `plan.md` — Segurança
 - Ver também pilar **15** (segurança aplicada ao domínio)

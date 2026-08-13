@@ -652,6 +652,7 @@ def discard_product_form_extraction(
     user: AbstractBaseUser,
     notes: str = "Descartado no formulário de produto",
 ) -> ExtractionLog:
+    """Rejeita extração do formulário de produto sem aplicar dados ao catálogo."""
     log = ExtractionLog.objects.select_related("manual").get(pk=extraction_id)
     if log.status not in {
         ExtractionLog.Status.AWAITING_REVIEW,

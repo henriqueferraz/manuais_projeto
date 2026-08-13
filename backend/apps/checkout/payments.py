@@ -29,6 +29,8 @@ FORBIDDEN_CARD_KEYS = frozenset(
 
 @dataclass
 class ChargeResult:
+    """Resultado de cobrança tokenizada (mock / Stripe / Mercado Pago)."""
+
     success: bool
     provider_payment_id: str = ""
     provider_intent_id: str = ""
@@ -38,6 +40,27 @@ class ChargeResult:
     failure_code: str = ""
     failure_message: str = ""
     raw: dict | None = None
+
+
+@dataclass
+class PreferenceResult:
+    """Resultado da Preference (Checkout Pro) do Mercado Pago."""
+
+    success: bool
+    preference_id: str = ""
+    init_point: str = ""
+    sandbox_init_point: str = ""
+    failure_message: str = ""
+    raw: dict | None = None
+
+    @property
+    def checkout_url(self) -> str:
+        """URL de redirecionamento (sandbox_init_point em DEBUG se existir)."""
+        from django.conf import settings as dj_settings
+
+        if getattr(dj_settings, "DEBUG", False) and self.sandbox_init_point:
+            return self.sandbox_init_point
+        return self.init_point or self.sandbox_init_point
 
 
 def sanitize_payment_payload(data: dict) -> dict:
@@ -54,7 +77,136 @@ def sanitize_payment_payload(data: dict) -> dict:
 
 
 def get_provider_name() -> str:
+    """Nome do gateway configurado (`mock` | `stripe` | `mercadopago`)."""
     return getattr(settings, "PAYMENT_PROVIDER", "mock").lower()
+
+
+def mercadopago_uses_preference() -> bool:
+    """True se MP deve usar Checkout Pro (Preference) em vez de card token."""
+    if get_provider_name() != "mercadopago":
+        return False
+    mode = (getattr(settings, "MERCADOPAGO_CHECKOUT_MODE", "preference") or "preference").lower()
+    return mode == "preference"
+
+
+def public_base_url() -> str:
+    """Base absoluta para back_urls e notification_url."""
+    return (getattr(settings, "PUBLIC_BASE_URL", "") or "http://127.0.0.1:8000").rstrip("/")
+
+
+def create_mercadopago_preference(
+    *,
+    order_number: str,
+    order_id: str,
+    amount: Decimal,
+    currency: str,
+    title: str,
+    payer_email: str,
+    items: list[dict] | None = None,
+    success_url: str = "",
+    failure_url: str = "",
+    pending_url: str = "",
+    notification_url: str = "",
+) -> PreferenceResult:
+    """Cria Preference (Checkout Pro) no Mercado Pago.
+
+    Args:
+        order_number: `external_reference` do pedido.
+        items: itens opcionais; se vazio, usa um item único com `amount`/`title`.
+        success_url / failure_url / pending_url: back_urls do Checkout Pro.
+        notification_url: IPN/webhook.
+
+    Returns:
+        PreferenceResult com `init_point` / `sandbox_init_point`.
+    """
+    try:
+        import mercadopago
+    except ImportError as exc:
+        raise RuntimeError("mercadopago não instalado") from exc
+
+    token = getattr(settings, "MERCADOPAGO_ACCESS_TOKEN", "") or ""
+    if not token:
+        return PreferenceResult(
+            success=False,
+            failure_message="MERCADOPAGO_ACCESS_TOKEN não configurado.",
+        )
+
+    base = public_base_url()
+    success_url = success_url or f"{base}/checkout/sucesso/{order_id}/"
+    failure_url = failure_url or f"{base}/checkout/pagamento/?mp=failure"
+    pending_url = pending_url or f"{base}/checkout/sucesso/{order_id}/?mp=pending"
+    notification_url = notification_url or f"{base}/checkout/webhooks/pagamento/"
+
+    if items:
+        pref_items = items
+    else:
+        pref_items = [
+            {
+                "id": order_number,
+                "title": (title or f"Pedido {order_number}")[:127],
+                "quantity": 1,
+                "currency_id": (currency or "BRL").upper(),
+                "unit_price": float(amount),
+            }
+        ]
+
+    body: dict = {
+        "items": pref_items,
+        "payer": {"email": payer_email},
+        "external_reference": order_number,
+        "back_urls": {
+            "success": success_url,
+            "failure": failure_url,
+            "pending": pending_url,
+        },
+        "metadata": {"order_id": str(order_id), "order_number": order_number},
+        "statement_descriptor": "TECHPARTS",
+    }
+    # auto_return exige back_urls.success em HTTPS (MP rejeita http://localhost).
+    if success_url.startswith("https://"):
+        body["auto_return"] = "approved"
+    # notification_url precisa ser URL pública válida (não localhost/127.0.0.1).
+    if notification_url.startswith("https://") and "localhost" not in notification_url:
+        body["notification_url"] = notification_url
+
+    sdk = mercadopago.SDK(token)
+    try:
+        result = sdk.preference().create(body)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("mp_preference_failed", error=str(exc)[:240])
+        return PreferenceResult(success=False, failure_message=str(exc)[:250])
+
+    resp = result.get("response", {}) if isinstance(result, dict) else {}
+    pref_id = str(resp.get("id") or "")
+    init_point = str(resp.get("init_point") or "")
+    sandbox = str(resp.get("sandbox_init_point") or "")
+    if not pref_id or not (init_point or sandbox):
+        msg = str(resp.get("message") or resp.get("error") or resp or "Preference rejeitada")
+        logger.warning("mp_preference_rejected", response=sanitize_payment_payload(resp))
+        return PreferenceResult(success=False, failure_message=msg[:250], raw=resp)
+
+    logger.info(
+        "mp_preference_created",
+        preference_id=pref_id,
+        order=order_number,
+    )
+    return PreferenceResult(
+        success=True,
+        preference_id=pref_id,
+        init_point=init_point,
+        sandbox_init_point=sandbox,
+        raw=sanitize_payment_payload(resp) if isinstance(resp, dict) else {},
+    )
+
+
+def fetch_mercadopago_payment(payment_id: str) -> dict:
+    """Busca um pagamento no MP pelo id (webhook / back_url)."""
+    import mercadopago
+
+    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+    result = sdk.payment().get(payment_id)
+    resp = result.get("response", {}) if isinstance(result, dict) else {}
+    return resp if isinstance(resp, dict) else {}
 
 
 def create_charge(
@@ -66,6 +218,7 @@ def create_charge(
     customer_email: str,
     metadata: dict | None = None,
 ) -> ChargeResult:
+    """Cria cobrança no provider configurado (`PAYMENT_PROVIDER`)."""
     provider = get_provider_name()
     meta = sanitize_payment_payload(metadata or {})
     logger.info(
@@ -85,6 +238,7 @@ def create_charge(
 
 
 def refund_charge(*, provider_payment_id: str, amount: Decimal | None = None) -> ChargeResult:
+    """Estorna cobrança no provider (ou mock)."""
     provider = get_provider_name()
     if provider == "mock" or provider_payment_id.startswith("mock_"):
         return ChargeResult(
@@ -109,11 +263,8 @@ def verify_webhook_signature(*, payload: bytes, signature_header: str) -> bool:
     if provider == "stripe":
         return _verify_stripe_signature(payload, signature_header)
     if provider == "mercadopago":
-        secret = getattr(settings, "MERCADOPAGO_WEBHOOK_SECRET", "")
-        if not secret:
-            return False
-        expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
-        return hmac.compare_digest(expected, signature_header or "")
+        # IPN/webhook: autenticidade via GET do pagamento na API (ACCESS_TOKEN).
+        return True
     return False
 
 
@@ -247,4 +398,5 @@ def _verify_stripe_signature(payload: bytes, header: str) -> bool:
 
 
 def parse_webhook_event(payload: bytes) -> dict:
+    """Decodifica o corpo JSON do webhook."""
     return json.loads(payload.decode("utf-8"))

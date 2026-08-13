@@ -202,11 +202,13 @@ class InternalProductForm(forms.Form):
     voltage = forms.CharField(label="Voltagem", max_length=32, required=False)
     product_kind = forms.ChoiceField(label="Tipo", choices=Product.Kind.choices)
     status = forms.ChoiceField(label="Status", choices=Product.Status.choices)
-    category = forms.ModelChoiceField(
-        label="Categoria",
+    categories = forms.ModelMultipleChoiceField(
+        label="Categorias",
         queryset=Category.objects.all(),
         required=False,
-        empty_label="Selecione a categoria",
+        widget=forms.CheckboxSelectMultiple,
+        help_text="Selecione uma ou mais (ex.: Peça de reposição e Móveis). "
+        "A primeira da lista marcada vale como principal.",
     )
     quantity_available = forms.IntegerField(
         label="Estoque disponível",
@@ -279,9 +281,12 @@ class InternalProductForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields["brand_ref"].queryset = Brand.objects.order_by("name")
         self.fields["equipment_model"].queryset = EquipmentModel.objects.order_by("brand", "code")
-        self.fields["category"].queryset = Category.objects.order_by("name")
+        self.fields["categories"].queryset = Category.objects.order_by("name")
         for name, field in self.fields.items():
             if name == "sku":
+                continue
+            if isinstance(field.widget, forms.CheckboxSelectMultiple):
+                field.widget.attrs.setdefault("class", "form-check-input")
                 continue
             if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.setdefault("class", "form-check-input")

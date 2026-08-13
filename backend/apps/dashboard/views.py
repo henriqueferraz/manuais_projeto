@@ -254,7 +254,10 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
             "voltage": product.voltage,
             "product_kind": product.product_kind,
             "status": product.status,
-            "category": product.category_id,
+            "categories": (
+                list(product.categories.values_list("pk", flat=True))
+                or ([product.category_id] if product.category_id else [])
+            ),
             "quantity_available": stock.quantity_available if stock else 0,
             "minimum_alert": stock.minimum_alert if stock else 2,
         }
@@ -363,12 +366,14 @@ def products_edit(request: HttpRequest, pk: int | None = None) -> HttpResponse:
         product.voltage = data["voltage"]
         product.product_kind = data["product_kind"]
         product.status = data["status"]
-        product.category = data["category"]
+        selected_categories = list(data.get("categories") or [])
+        product.category = selected_categories[0] if selected_categories else None
         product.power_w = data.get("power_w")
         product.weight_kg = data.get("weight_kg")
         product.dimensions = form.cleaned_dimensions()
         product.specs = form.cleaned_specs()
         product.save()
+        product.categories.set(selected_categories)
         ProductTranslation.objects.update_or_create(
             product=product,
             locale="pt-BR",

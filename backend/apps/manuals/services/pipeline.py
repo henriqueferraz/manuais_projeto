@@ -298,6 +298,7 @@ def reject_extraction(
     notes: str = "",
     skip_graph_resume: bool = False,
 ) -> ExtractionLog:
+    """HITL: rejeita extração; draft permanece rascunho (não publica)."""
     if log.status not in {
         ExtractionLog.Status.AWAITING_REVIEW,
         ExtractionLog.Status.APPROVED,

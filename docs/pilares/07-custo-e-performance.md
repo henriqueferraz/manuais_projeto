@@ -22,7 +22,7 @@ Escolha do modelo certo; monitoramento de latência; otimização de prompts/tok
 
 | Serviço | Estimativa |
 |---|---|
-| Anthropic (Claude) | R$ 300–1.500/mês |
+| OpenAI (chat / embeddings / extração) | R$ 300–1.500/mês (ordem de grandeza; depende do volume) |
 | Hospedagem | R$ 150–600/mês |
 | Cloudflare R2 | R$ 10–50/mês |
 | Observabilidade | R$ 0–150/mês |

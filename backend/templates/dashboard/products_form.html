@@ -247,10 +247,15 @@
                 {% endif %}
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
-                {{ form.category }}
-                {% if form.category.errors %}
-                  <div class="text-danger small">{{ form.category.errors }}</div>
+                <span class="form-label">{{ form.categories.label }}</span>
+                <div class="tp-category-checks">
+                  {{ form.categories }}
+                </div>
+                {% if form.categories.help_text %}
+                  <div class="form-text">{{ form.categories.help_text }}</div>
+                {% endif %}
+                {% if form.categories.errors %}
+                  <div class="text-danger small">{{ form.categories.errors }}</div>
                 {% endif %}
               </div>
             </div>

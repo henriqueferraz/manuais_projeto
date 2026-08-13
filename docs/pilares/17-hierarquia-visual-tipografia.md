@@ -27,6 +27,5 @@ Elevação por **camadas tonais** e outlines de baixo contraste — sem sombras 
 
 ## Fontes
 
-- `DESIGN.md` — Typography, Elevation
-- `design.md` — Typography Scale
-- Protótipos de produto: `code (cópia 6|7|11).html`
+- `DESIGN.md` — Typography, Elevation (fonte de verdade)
+- PDP: `catalog/product_detail.html` · inventário [`../pages/inventory.md`](../pages/inventory.md)

@@ -19,6 +19,8 @@ from apps.tickets.models import Ticket
 
 @dataclass
 class MonitoringSnapshot:
+    """Snapshot de saúde, falhas, filas, links externos e alertas ops."""
+
     health: dict
     failures: list
     queues: dict
@@ -27,10 +29,12 @@ class MonitoringSnapshot:
     uptime_note: str
 
     def to_dict(self) -> dict:
+        """Serializa o dataclass em dicionário plano."""
         return asdict(self)
 
 
 def external_links() -> dict:
+    """URLs de Sentry, Flower, Grafana e endpoint /health/."""
     return {
         "sentry": getattr(settings, "SENTRY_UI_URL", "") or "",
         "flower": getattr(settings, "FLOWER_URL", "") or "http://localhost:5555",
@@ -40,6 +44,7 @@ def external_links() -> dict:
 
 
 def collect_monitoring(*, limit: int = 20) -> MonitoringSnapshot:
+    """Monta snapshot de monitoramento (falhas 24h, filas e alertas)."""
     since = timezone.now() - timedelta(hours=24)
     failures: list[dict] = []
 
@@ -127,6 +132,7 @@ def raise_ops_alert(
     payload: dict | None = None,
     notify: bool = True,
 ) -> OpsAlert:
+    """Cria OpsAlert e dispara notificação (e-mail/Slack) se ``notify``."""
     alert = OpsAlert.objects.create(
         kind=kind,
         severity=severity,

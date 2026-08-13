@@ -80,7 +80,7 @@ Testes não são “fase opcional”: são regra de entrega a partir da **F2** (
 | Unitários | pytest (+ Django TestCase / pytest-django) | Todo código de domínio novo (models, services, parsers, validators) |
 | Integração | pytest + DB/Redis de teste | Fluxos que cruzam apps (estoque+carrinho, upload+task, etc.) |
 | Tasks Celery | pytest com eager/mocks | Extração, embeddings, NF-e, e-mails |
-| IA | mocks da API Anthropic + golden set | Extração/RAG — **nunca** chamar API paga no CI unitário |
+| IA | mocks da API OpenAI + golden set | Extração/RAG — **nunca** chamar API paga no CI unitário |
 | E2E | Playwright (a partir de F4b/F5) | Checkout, chamado, chat — caminhos críticos |
 | Estáticos | ruff, black --check, bandit, check migrations | Todo PR com código |
 
@@ -90,7 +90,7 @@ Testes não são “fase opcional”: são regra de entrega a partir da **F2** (
 2. Testes da mudança rodam **localmente antes do push** e de novo no **CI da PR**; merge só com CI verde (R2/D2).
 3. **Cobertura mínima** nos fluxos críticos (checkout, pagamento, extração de IA): meta **≥ 80%** (pytest-cov no CI), verificada a partir da F4b/F3 conforme o código existir.
 4. **Novo comportamento = novo teste** na mesma PR; regressão sem teste que a pegaria é débito proibido no merge.
-5. Chamadas reais a Claude/Anthropic **fora** do CI unitário; no CI usar fixtures/mocks. Golden set (F3 local → F6 no CI) valida prompts/extração com gabarito conhecido.
+5. Chamadas reais a OpenAI **fora** do CI unitário; no CI usar fixtures/mocks (`*_LLM_MODE=mock`). Golden set (F3 local → F6 no CI) valida prompts/extração com gabarito conhecido.
 6. F1 e F0 (docs / fundação visual sem app): testes automatizados de app **não se aplicam**; a partir da F2, pipeline pytest existe mesmo que a suíte inicial seja mínima (“smoke”).
 7. Stack de teste também segue **R1** (maior pytest/pytest-django/Playwright estável na instalação).
 
@@ -545,7 +545,7 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P03, P08, P10, P12
 
-- [x] View/DRF + htmx/JS: pergunta → retrieval → Claude → resposta
+- [x] View/DRF + htmx/JS: pergunta → retrieval → LLM (OpenAI/mock) → resposta
 - [x] Streaming via SSE (`StreamingHttpResponse`)
 - [x] Citação de fonte (página/seção) em toda resposta técnica
 - [x] Fallback explícito: “não encontrei isso no manual”
@@ -608,7 +608,7 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Pilares:** P03, P15, P23
 
-- [x] Upload de imagem → R2 → Claude vision (Celery)
+- [x] Upload de imagem → R2 → visão OpenAI / mock (Celery)
 - [x] Validação MIME/tamanho + rate limit
 - [x] Candidatos ranqueados na UI com loading/skeleton
 
@@ -765,6 +765,18 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 
 **Aceite:** ≥3 specs E2E verdes localmente; gate no CI definido (obrigatório ou nightly). ✅ · `e2e/` + workflow nightly
 
+### Entregas incrementais pós T-P.6 _(código na `main`)_
+
+Itens entregues após o backlog T-P.1–T-P.6, sem nova fase numerada:
+
+- [x] **Multi-categoria no produto** — `Product.categories` (M2M) + FK `category` principal; form com checkboxes; filtro catálogo e cupons — [`pages/dashboard-produto.md`](pages/dashboard-produto.md)
+- [x] **Grounding / confiança no chat** — `CHAT_MIN_ANSWER_CONFIDENCE` + `apps.ai.services.confidence`; evidência de falha no diagnóstico
+- [x] **Contexto de produto no diagnóstico** — pedir tipo/modelo antes do retrieval (`product_context`)
+- [x] **Login 2FA no design system** — `templates/two_factor/` + `auth.css`
+- [x] **Sessão autenticada 24h** — `SESSION_COOKIE_AGE` / `SESSION_SAVE_EVERY_REQUEST` (`.env.example`)
+- [x] **Docs de páginas** — [`pages/inventory.md`](pages/inventory.md), [`pages/assistente-chat.md`](pages/assistente-chat.md)
+- [x] **Regra de ouro de documentação** — [`regra-ouro-documentacao.md`](regra-ouro-documentacao.md) + Cursor rule; docstrings P0; MkDocs + `interrogate` no CI (`make docs` / `make docs-coverage`)
+
 ### Ordem sugerida pós-F8
 
 | Ordem | Bloco | Foco |
@@ -859,7 +871,7 @@ Sequência de alto nível (ajustar duração à capacidade; ~1 unidade = bloco d
 | 10 | F6 | Diagnóstico, foto, HITL grafo, golden no CI |
 | 11 | F7 | Dashboard, alertas, beta, ajustes |
 | 12 | F8 | Itens de escala sob demanda (ADR + PR por item) — **feito** |
-| 13+ | Pós-F8 | Ver [Pós-F8 — O que ainda falta](#pós-f8--o-que-ainda-falta) |
+| 13+ | Pós-F8 | Ver [Pós-F8 — Backlog pós-MVP](#pós-f8--backlog-pós-mvp-t-p1t-p6) |
 
 **Regra de ouro:** não iniciar F5 sem ao menos um conjunto de manuais aprovados e produtos publicados; não iniciar F7 sem feedback 👍/👎 e traces LangSmith fluindo; não iniciar fase seguinte sem merge da anterior na `main`. **Após F8:** priorizar T-P.1 (beta humana) antes de integrações live.
 
@@ -876,4 +888,4 @@ O plano de fases F0–F8 está **entregue em código**. O sistema está “cumpr
 5. [ ] Loja vende no Brasil com NF-e, arrependimento e LGPD desde o primeiro pedido. _(mock/sandbox → live em staging/prod)_
 6. [x] UI/UX respeitam os pilares P16–P24 em todas as superfícies críticas. _(T-P.3 + polish HOME T-P.1 + DoD S-002)_
 
-Rastreio: [`beta-relatorio.md`](beta-relatorio.md) · backlog: [Pós-F8](#pós-f8--o-que-ainda-falta).
+Rastreio: [`beta-relatorio.md`](beta-relatorio.md) · backlog: [Pós-F8 — Backlog pós-MVP](#pós-f8--backlog-pós-mvp-t-p1t-p6).

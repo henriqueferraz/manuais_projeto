@@ -69,8 +69,9 @@ docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .e
 3. TLS no load balancer / Nginx edge; encaminhar `X-Forwarded-Proto: https`.
 4. `ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS` = domínio real (`https://…`).
 5. `SENTRY_DSN` obrigatório; `AI_TOKEN_BUDGET_DAILY` > 0; `AXES_ENABLED=true`.
-6. Staff ops com 2FA (django-otp / two_factor) — `LOGIN_URL=two_factor:login`.
-7. No release, rode migrate/bootstrap/collectstatic **no mesmo projeto Compose** do ambiente (não use o `make migrate` do stack local sem o overlay/env corretos):
+6. Staff ops com 2FA (django-otp / two_factor) — `LOGIN_URL=two_factor:login`; UI em `templates/two_factor/` + `auth.css`.
+7. Sessão: confirme `SESSION_COOKIE_SECURE` e, se quiser o default de 24h renovável, `SESSION_COOKIE_AGE` / `SESSION_SAVE_EVERY_REQUEST` (ver `.env.example` e [`security-hardening.md`](security-hardening.md)).
+8. No release, rode migrate/bootstrap/collectstatic **no mesmo projeto Compose** do ambiente (não use o `make migrate` do stack local sem o overlay/env corretos):
 
 ```bash
 # Exemplo com overlay staging; em produção use o mesmo padrão com --env-file .env.production

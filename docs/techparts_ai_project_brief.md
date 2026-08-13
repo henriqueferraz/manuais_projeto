@@ -1,5 +1,7 @@
 # Project Brief: TechParts AI - E-commerce de Peças com IA
 
+> **Documento histórico** (brief inicial). Stack LLM e UI vigentes: OpenAI via `*_LLM_MODE`, Django templates — ver [`README.md`](README.md) e [`pages/inventory.md`](pages/inventory.md). Não usar este brief como fonte de implementação.
+
 ## 1. Overview
 TechParts AI is a specialized e-commerce platform for industrial and domestic spare parts. The core differentiator is the use of Artificial Intelligence to automate catalog management (extracting data from technical manuals) and provide high-fidelity technical support (AI-driven diagnostics and RAG-based chat).
 

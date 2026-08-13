@@ -10,6 +10,8 @@ from django.conf import settings
 
 @dataclass(frozen=True)
 class TextChunk:
+    """Fragmento de manual pronto para embed (conteúdo, seção, página)."""
+
     content: str
     section: str
     page: int | None

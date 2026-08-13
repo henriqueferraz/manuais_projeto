@@ -120,6 +120,21 @@ def test_filter_catalog_by_voltage_and_q(published_product):
 
 
 @pytest.mark.django_db
+def test_filter_catalog_by_secondary_category(published_product):
+    spare = Category.objects.create(name="Peça de reposição", slug="peca-de-reposicao")
+    moveis = Category.objects.create(name="Móveis", slug="moveis")
+    published_product.categories.set([spare, moveis])
+    published_product.category = spare
+    published_product.save(update_fields=["category"])
+
+    by_moveis = filter_catalog(category="moveis")
+    assert published_product in by_moveis
+    by_name = filter_catalog(category="Móveis")
+    assert published_product in by_name
+    assert published_product not in filter_catalog(category="outra-categoria")
+
+
+@pytest.mark.django_db
 def test_filter_catalog_sort_by_name_and_price(category):
     # Marca "Zebra" mas nome começa com A — deve vir primeiro no A–Z pelo nome.
     alpha = Product.objects.create(
@@ -291,15 +306,18 @@ def test_ops_staff_can_create(client, category):
             "voltage": "220V",
             "product_kind": "spare_part",
             "status": "draft",
-            "category": category.pk,
+            "categories": category.pk,
             "quantity_available": 3,
             "minimum_alert": 1,
         },
     )
     assert r.status_code == 302
-    assert Product.objects.filter(
-        sku="NEW-001", status="draft", brand="Mondial", model_code="X1"
-    ).exists()
+    product = Product.objects.get(sku="NEW-001")
+    assert product.status == "draft"
+    assert product.brand == "Mondial"
+    assert product.model_code == "X1"
+    assert product.category_id == category.pk
+    assert list(product.categories.values_list("pk", flat=True)) == [category.pk]
     assert Stock.objects.filter(product__sku="NEW-001", quantity_available=3).exists()
 
 

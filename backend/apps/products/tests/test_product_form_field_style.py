@@ -22,7 +22,7 @@ def test_internal_product_form_applies_field_style():
             "voltage": "127/220V",
             "product_kind": "finished_good",
             "status": "draft",
-            "category": cat.pk,
+            "categories": [cat.pk],
             "quantity_available": 1,
             "minimum_alert": 1,
             "material": "abs",

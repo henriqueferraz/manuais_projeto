@@ -2,9 +2,9 @@
 
 E-commerce de peças de reposição com IA: extração de manuais, catálogo, checkout, chamados, chat RAG e diagnóstico.
 
-**Stack:** Python 3.13+ · Django 6 · htmx · Bootstrap · PostgreSQL/pgvector · Celery · Redis · LangChain/LangGraph
+**Stack:** Python 3.13+ · Django 6 · htmx · Bootstrap · design-system Industrial Precision · PostgreSQL/pgvector · Celery · Redis · LangChain/LangGraph · OpenAI (`*_LLM_MODE`)
 
-**Status:** fases F0–F8 e backlog pós-F8 (T-P.1–T-P.6) entregues em código. Detalhe: [`docs/plano-tarefas.md`](docs/plano-tarefas.md).
+**Status:** fases F0–F8 e backlog pós-F8 (T-P.1–T-P.6) entregues em código; entregas incrementais (multi-categoria, grounding do chat, docs de páginas) em [`docs/plano-tarefas.md`](docs/plano-tarefas.md).
 
 ---
 
@@ -73,12 +73,17 @@ Rotas úteis no primeiro uso:
 | --- | --- |
 | `/` | Home |
 | `/catalogo/` | Catálogo |
+| `/carrinho/` | Carrinho |
 | `/assistente/chat/` | Chat / diagnóstico |
+| `/compatibilidade/verificar/` | Verificador de compatibilidade |
 | `/checkout/` | Checkout (carrinho com itens) |
 | `/chamados/` | Chamados técnicos |
 | `/manuais/revisao/` | Fila HITL (staff) |
 | `/dashboard/` | Insights ops (staff) |
+| `/dashboard/produtos/` | Estoque e produtos (staff) |
 | `/health/` | Healthcheck |
+
+Inventário completo de telas: [`docs/pages/inventory.md`](docs/pages/inventory.md). Índice dos docs: [`docs/README.md`](docs/README.md).
 
 ### 5. Alternativa: Docker Compose
 
@@ -205,12 +210,15 @@ make e2e
 | Doc | Para quê |
 | --- | --- |
 | [`docs/README.md`](docs/README.md) | Índice (canônico × obsoleto) |
+| [`docs/regra-ouro-documentacao.md`](docs/regra-ouro-documentacao.md) | Atualizar docs após cada mudança |
+| [`docs/pages/`](docs/pages/) | Inventário de telas |
 | [`docs/plano-tarefas.md`](docs/plano-tarefas.md) | Fases e aceite |
 | [`docs/adr/`](docs/adr/) | Decisões de arquitetura |
 | [`docs/deploy.md`](docs/deploy.md) | Deploy / backup |
 | [`docs/beta-script.md`](docs/beta-script.md) | Roteiro beta |
 | [`design-system/`](design-system/) | Design system Industrial Precision |
 | [`docs/design/DESIGN.md`](docs/design/DESIGN.md) | Tokens (fonte de verdade) |
+| `make docs` | Site MkDocs (produto + API interna) |
 
 **Não use** `docs/design/design.md` (rascunho obsoleto) nem um segundo `.env.example` em `docs/` (removido).
 

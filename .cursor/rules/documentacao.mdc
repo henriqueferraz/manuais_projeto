@@ -1,0 +1,29 @@
+---
+description: Após qualquer mudança, atualizar documentação (regra de ouro)
+alwaysApply: true
+---
+
+# Documentação obrigatória após cada mudança
+
+Seguir [`docs/regra-ouro-documentacao.md`](docs/regra-ouro-documentacao.md).
+
+## Obrigatório na mesma entrega do código
+
+1. **Docstrings** em símbolos públicos novos/alterados (`models`, `services*`, graphs) — PT, curtas.
+2. **Docs de produto** se o comportamento for de usuário/ops:
+   - rotas/telas → `docs/pages/inventory.md` (+ página específica se existir)
+   - produto/categorias → `docs/regra-ouro-campos-produto.md`, `docs/pages/dashboard-produto.md`
+   - chat/RAG → `docs/pages/assistente-chat.md`
+   - env → `.env.example`
+   - segurança/deploy → `docs/security-hardening.md` / `docs/deploy.md`
+3. **Status** → `docs/plano-tarefas.md` quando fechar feature; ADR se for decisão.
+
+## Não fazer
+
+- Encerrar só com diff de código sem docs quando a mudança altera comportamento, schema, API interna ou UI.
+- Docstring em helpers `_privados` ou testes (exceto módulo).
+- Inventar docs genéricos sem refletir o código.
+
+## Verificação
+
+Antes de considerar a tarefa pronta: listar mentalmente “o que mudou → qual doc atualizei”. Se nada em `docs/` nem docstring e a mudança não for cosmético puro, **ainda falta trabalho**.
