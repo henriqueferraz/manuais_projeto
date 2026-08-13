@@ -1,0 +1,28 @@
+{% load i18n %}
+
+<div class="tp-auth__actions">
+  {% if wizard.steps.prev %}
+  <button
+    name="wizard_goto_step"
+    type="submit"
+    value="{{ wizard.steps.prev }}"
+    class="btn btn-ghost"
+  >
+    Voltar
+  </button>
+  {% endif %}
+  <button type="submit" class="btn btn-primary tp-auth__submit">
+    {% if wizard.steps.current == "auth" %}
+    Entrar
+    {% elif wizard.steps.last %}
+    Confirmar
+    {% else %}
+    Continuar
+    {% endif %}
+  </button>
+</div>
+{% if cancel_url %}
+<p class="tp-auth__cancel mb-0">
+  <a href="{{ cancel_url }}" class="tp-auth__link">Cancelar</a>
+</p>
+{% endif %}

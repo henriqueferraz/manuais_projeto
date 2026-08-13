@@ -42,6 +42,19 @@
   color: var(--tp-industrial-navy, #0b1f33);
   border-radius: 0.25rem;
   padding: 0.15rem 0.4rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-style: dotted;
+}
+
+.tp-chat__source-tag--hint {
+  cursor: help;
+}
+
+.tp-chat__source-tag--hint:hover,
+.tp-chat__source-tag--hint:focus-visible {
+  background: rgba(0, 229, 255, 0.32);
+  outline: none;
 }
 
 .tp-chat__meta {

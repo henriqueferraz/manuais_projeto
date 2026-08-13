@@ -17,9 +17,23 @@ class TextChunk:
     metadata: dict
 
 
-_SECTION_RE = re.compile(
-    r"(?m)^(#{1,3}\s+.+$|[A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9\s\-–—/]{4,80}$|"
-    r"\d+(?:\.\d+)*\s+[A-ZÁÉÍÓÚ][^\n]{3,80}$)"
+# Títulos: markdown, ALL CAPS (com indentação) ou numeração 1.2 Estilo.
+# Importante: NÃO usar \s genérico (pega \n) — senão "8\\n\\nSUCO…" vira um título só.
+_SECTION_CANDIDATE_RE = re.compile(
+    r"(?m)^[ \t]*(?:#{1,3}[ \t]+[^\n]+|"
+    r"[A-ZÁÉÍÓÚÂÊÔÃÕÇ][A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9 \t\-–—/'“”\"]{4,80}|"
+    r"\d+(?:\.\d+)*[ \t]+[A-ZÁÉÍÓÚ][^\n]{3,80})$"
+)
+# Linhas de ingredientes / medidas NÃO são seções (causava "1 Laranja; Açúcar…").
+_INGREDIENTISH_RE = re.compile(
+    r"(?i)("
+    r"^\d|"
+    r";|"
+    r"\b(xícaras?|colheres?|ovos?|latas?|envelope|gotinhas|cubos?|"
+    r"mamões|cenouras?|mangas?|ml\b|gramas?|\bg\b|\bkg\b)\b|"
+    r"^\s*ingredientes?\s*$|"
+    r"^\s*modo de preparo\s*$"
+    r")"
 )
 _PAGE_RE = re.compile(r"(?i)(?:página|page|pág\.?)\s*[:\-]?\s*(\d+)")
 _TABLE_LINE_RE = re.compile(r".*\|.*\|.*")
@@ -38,10 +52,17 @@ def chunk_manual_text(text: str) -> list[TextChunk]:
     idx = 0
 
     for section_title, body, page in sections:
-        parts = _split_preserving_tables(body, max_chars=max_chars, overlap=overlap)
+        # Garante que o título da receita entre no texto indexado.
+        full_body = body.strip()
+        if section_title and section_title not in ("Geral", "Introdução"):
+            if section_title.lower() not in full_body.lower():
+                full_body = f"{section_title}\n{full_body}".strip()
+        parts = _split_preserving_tables(full_body, max_chars=max_chars, overlap=overlap)
         for part in parts:
             content = part.strip()
-            if len(content) < 40:
+            # Receitas curtas (título + poucos ingredientes) ainda devem indexar.
+            min_len = 24 if section_title not in ("Geral", "Introdução") else 40
+            if len(content) < min_len:
                 continue
             chunks.append(
                 TextChunk(
@@ -59,8 +80,29 @@ def chunk_manual_text(text: str) -> list[TextChunk]:
     return chunks
 
 
+def _is_section_title(line: str) -> bool:
+    raw = (line or "").strip()
+    if not raw or not _SECTION_CANDIDATE_RE.match(raw):
+        return False
+    # Subtítulos de receita NÃO quebram a seção (senão "SUCO DE CENOURA" fica sem corpo).
+    if re.match(r"(?i)^(ingredientes?|modo de preparo|preparo|rendimento)$", raw):
+        return False
+    if _INGREDIENTISH_RE.search(raw) and not re.match(
+        r"(?i)^(suco|mousse|massa|milk|vitamina|receita|usando|instruções|creme|pudim)\b",
+        raw,
+    ):
+        # Ex.: "2 Cenouras…", "1 Laranja; Açúcar a gosto"
+        if re.search(r"\d", raw) or ";" in raw:
+            return False
+    # ALL CAPS curto com só unidades → rejeita
+    letters = re.sub(r"[^A-Za-zÁ-ú]", "", raw)
+    if len(letters) < 6:
+        return False
+    return True
+
+
 def _split_sections(text: str) -> list[tuple[str, str, int | None]]:
-    matches = list(_SECTION_RE.finditer(text))
+    matches = [m for m in _SECTION_CANDIDATE_RE.finditer(text) if _is_section_title(m.group(0))]
     if not matches:
         page = _detect_page(text)
         return [("Geral", text, page)]

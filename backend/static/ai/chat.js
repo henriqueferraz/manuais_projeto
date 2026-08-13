@@ -34,17 +34,30 @@
     return bubble;
   }
 
+  function renderSourceTag(label, hint) {
+    const tag = el("span", "tp-chat__source-tag", label);
+    const tip = (hint || "").trim();
+    if (tip) {
+      tag.classList.add("tp-chat__source-tag--hint");
+      tag.title = tip;
+      tag.tabIndex = 0;
+      tag.setAttribute("role", "note");
+      tag.setAttribute(
+        "aria-label",
+        `${label}. Passe o mouse ou foque para ver o trecho do manual.`
+      );
+    }
+    return tag;
+  }
+
   function renderSources(bubble, sources) {
     if (!sources || !sources.length) return;
     const wrap = el("div", "tp-chat__source");
     sources.forEach((src) => {
-      const tag = el(
-        "span",
-        "tp-chat__source-tag",
-        `Fonte técnica: ${src.section || "Manual"}${src.page ? `, pág. ${src.page}` : ""}`
-      );
-      tag.title = src.excerpt || "";
-      wrap.appendChild(tag);
+      const label = `Fonte técnica: ${src.section || "Manual"}${
+        src.page ? `, pág. ${src.page}` : ""
+      }`;
+      wrap.appendChild(renderSourceTag(label, src.excerpt || ""));
     });
     bubble.appendChild(wrap);
   }
@@ -77,7 +90,10 @@
     if (card.refManual) {
       const src = el("div", "tp-chat__source");
       src.appendChild(
-        el("span", "tp-chat__source-tag", `Fonte técnica: ${card.refManual}`)
+        renderSourceTag(
+          `Fonte técnica: ${card.refManual}`,
+          card.description || card.excerpt || ""
+        )
       );
       cardEl.appendChild(src);
     }
@@ -195,7 +211,7 @@
           question,
           session_id: sessionId,
           product_id: productId || null,
-          mode: "diagnosis",
+          // auto: diagnóstico só com pistas de falha; uso/receita vão pelo chat RAG
         }),
       });
 
@@ -248,6 +264,14 @@
             setTyping(false);
             renderDiagnosisCard(aiBubble, diagnosisCard);
             renderSources(aiBubble, sources);
+            if (data.ticket_code) {
+              const note = el(
+                "div",
+                "tp-chat__meta",
+                `Chamado ${data.ticket_code} aberto automaticamente (confiança abaixo de 70%).`
+              );
+              aiBubble.appendChild(note);
+            }
             if (messageId) renderFeedback(aiBubble, messageId);
           }
         }

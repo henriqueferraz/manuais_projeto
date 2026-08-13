@@ -28,10 +28,26 @@ def test_home_renders_brand():
     assert b"Assinaturas" in response.content
     assert b"tp-home-ai" in response.content
     assert b"tp-home-filters" in response.content
+    assert b"home-filter-sort" in response.content
+    assert b"price_desc" in response.content
     assert b"Produtos em destaque" in response.content
     assert b"Diagn" in response.content  # CTA diagnóstico
     assert b"catalogo" in response.content.lower() or b"Cat" in response.content
     assert b"tp-footer" in response.content
+
+
+@pytest.mark.django_db
+def test_login_page_uses_techparts_auth_shell():
+    client = Client()
+    response = client.get(reverse("two_factor:login"))
+    assert response.status_code == 200
+    body = response.content
+    assert b"Provide a template named" not in body
+    assert b"cdnjs.cloudflare.com" not in body
+    assert b"tp-auth" in body
+    assert b"Entrar na conta" in body
+    assert b"TechParts AI" in body
+    assert b"design-system/auth.css" in body
 
 
 @pytest.mark.django_db

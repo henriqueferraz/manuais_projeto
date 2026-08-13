@@ -767,13 +767,8 @@
   box-shadow: var(--tp-shadow-hover);
 }
 
-.tp-checkout-skeleton.htmx-indicator {
-  display: none;
-}
-
-.htmx-request .tp-checkout-skeleton.htmx-indicator,
-.tp-checkout-skeleton.htmx-indicator.htmx-request {
-  display: block;
+.tp-checkout-skeleton.htmx-indicator.htmx-request,
+.htmx-request .tp-checkout-skeleton.htmx-indicator {
   margin-top: var(--tp-space-4);
 }
 

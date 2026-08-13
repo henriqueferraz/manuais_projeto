@@ -120,10 +120,55 @@ def test_filter_catalog_by_voltage_and_q(published_product):
 
 
 @pytest.mark.django_db
+def test_filter_catalog_sort_by_name_and_price(category):
+    # Marca "Zebra" mas nome começa com A — deve vir primeiro no A–Z pelo nome.
+    alpha = Product.objects.create(
+        sku="SORT-Z",
+        brand="Zebra",
+        model_code="Z-90",
+        price="990.00",
+        status=Product.Status.PUBLISHED,
+        category=category,
+        product_kind=Product.Kind.FINISHED_GOOD,
+    )
+    ProductTranslation.objects.create(
+        product=alpha, locale="pt-BR", name="Alpha Peça Premium", description=""
+    )
+    # Marca "Acme" mas nome começa com Z — deve vir depois no A–Z.
+    zulu = Product.objects.create(
+        sku="SORT-A",
+        brand="Acme",
+        model_code="A-10",
+        price="10.00",
+        status=Product.Status.PUBLISHED,
+        category=category,
+        product_kind=Product.Kind.FINISHED_GOOD,
+    )
+    ProductTranslation.objects.create(
+        product=zulu, locale="pt-BR", name="Zulu Peça Básica", description=""
+    )
+
+    by_name = list(filter_catalog(sort="name_asc").values_list("sku", flat=True))
+    assert by_name.index(alpha.sku) < by_name.index(zulu.sku)
+    by_name_desc = list(filter_catalog(sort="name_desc").values_list("sku", flat=True))
+    assert by_name_desc.index(zulu.sku) < by_name_desc.index(alpha.sku)
+    by_price_asc = list(filter_catalog(sort="price_asc").values_list("sku", flat=True))
+    assert by_price_asc.index(zulu.sku) < by_price_asc.index(alpha.sku)
+    by_price_desc = list(filter_catalog(sort="price_desc").values_list("sku", flat=True))
+    assert by_price_desc.index(alpha.sku) < by_price_desc.index(zulu.sku)
+
+
+@pytest.mark.django_db
 def test_catalog_list_and_detail(client, published_product):
     r = client.get(reverse("catalog:list"))
     assert r.status_code == 200
     assert b"VTE-02" in r.content or b"Ventilador" in r.content
+    assert b"Ordenar por" in r.content
+    assert b'name="sort"' in r.content
+
+    r_sorted = client.get(reverse("catalog:list"), {"sort": "price_desc"})
+    assert r_sorted.status_code == 200
+    assert r_sorted.context["params"]["sort"] == "price_desc"
 
     r2 = client.get(reverse("catalog:detail", kwargs={"slug": published_product.slug}))
     assert r2.status_code == 200

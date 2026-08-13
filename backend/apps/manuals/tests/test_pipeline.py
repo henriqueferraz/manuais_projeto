@@ -391,6 +391,62 @@ def test_approve_materializes_sellable_parts_only(staff_user, settings):
     assert Compatibility.objects.filter(part_product=part).count() == 1
 
 
+@pytest.mark.django_db
+def test_approve_normalizes_uncoded_components_before_materialize(staff_user, settings):
+    """JSON antigo com components+medidas sem code vira peça vendável no approve."""
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+
+    from apps.compatibility.models import Compatibility
+    from apps.manuals.models import Manual
+
+    manual = Manual.objects.create(
+        original_filename="bom-old.pdf",
+        mime_type="application/pdf",
+        manufacturer="Henn",
+        sha256="c" * 64,
+        size_bytes=10,
+        scan_status="skipped",
+    )
+    log = ExtractionLog.objects.create(
+        manual=manual,
+        status=ExtractionLog.Status.AWAITING_REVIEW,
+        prompt_version="v3",
+        raw_json={
+            "brand": "Henn",
+            "model_code": "C364",
+            "name": "Aéreo 01 Porta",
+            "sku_suggestion": "HENN-C364",
+            "product_kind": "finished_good",
+            "source_doc_types": ["assembly_guide"],
+            "components": [
+                {
+                    "number": "01",
+                    "name": "Base",
+                    "dimensions": "400x295x15",
+                    "qty_per_unit": 1,
+                }
+            ],
+            "spare_parts": [],
+            "accessories": [],
+            "confidence": 0.7,
+        },
+    )
+
+    product = approve_extraction(log, reviewer=staff_user, skip_graph_resume=True)
+    log.refresh_from_db()
+    corrected = log.corrected_json or {}
+    parts_json = corrected.get("spare_parts") or []
+    assert parts_json
+    assert parts_json[0]["code"] == "HENN-C364-01-400x295x15"
+    assert parts_json[0]["sellable_separately"] is True
+
+    part = Product.objects.get(product_kind=Product.Kind.SPARE_PART)
+    assert part.sku == "HENN-C364-01-400x295x15"
+    assert "Base" in part.translations.get(locale="pt-BR").name
+    assert Compatibility.objects.filter(part_product=part).exists()
+    assert product.sku == "HENN-C364"
+
+
 def test_structure_mock_guesses_spare_parts():
     text = (
         "Itatiaia FOGAO STAR NEW 6Q Modelo: 3700000474\n"
@@ -444,6 +500,338 @@ def test_related_part_empty_code_forces_not_sellable():
 
     part = RelatedPartHint(code="", name="Embalagem", sellable_separately=True)
     assert part.sellable_separately is False
+
+
+def test_normalize_uncoded_parts_from_components():
+    from apps.manuals.schemas import ComponentHint, ExtractedProduct
+    from apps.manuals.services.structure import normalize_uncoded_parts
+
+    product = ExtractedProduct(
+        brand="Henn",
+        model_code="C364",
+        name="Aéreo 01 Porta 400mm",
+        sku_suggestion="HENN-C364",
+        source_doc_types=["assembly_guide"],
+        components=[
+            ComponentHint(
+                number="01",
+                name="Base",
+                dimensions="400x295x15",
+                qty_per_unit=1,
+            ),
+            ComponentHint(
+                number="02",
+                name="Lateral esquerda",
+                dimensions="800x295x15",
+                qty_per_unit=1,
+            ),
+            # rótulo sem medida → não promove
+            ComponentHint(number="05", name="Cesto"),
+        ],
+    )
+    fixed = normalize_uncoded_parts(product)
+    assert len(fixed.spare_parts) == 2
+    by_ref = {p.ref_number: p for p in fixed.spare_parts}
+    base = by_ref["01"]
+    assert base.sellable_separately is True
+    assert base.code == "HENN-C364-01-400x295x15"
+    assert base.name == "01 Base 400x295x15"
+    assert "400x295x15" in base.dimensions
+    assert base.sku_suggestion == "HENN-C364-01-400x295x15"
+    lateral = by_ref["02"]
+    assert lateral.code == "HENN-C364-02-800x295x15"
+    assert lateral.name == "02 Lateral esquerda 800x295x15"
+
+
+def test_normalize_dedupes_components_already_in_spare_parts():
+    from apps.manuals.schemas import (
+        AssemblySummary,
+        ComponentHint,
+        ExtractedProduct,
+        RelatedPartHint,
+    )
+    from apps.manuals.services.structure import normalize_uncoded_parts
+
+    product = ExtractedProduct(
+        brand="Henn",
+        model_code="C364",
+        name="Aéreo",
+        sku_suggestion="HENN-C364",
+        source_doc_types=["assembly_guide"],
+        spare_parts=[
+            RelatedPartHint(
+                code="HENN-C364-02-800x295x15",
+                name="02 01 Lateral esquerda 800x295x15",
+                ref_number="02",
+                dimensions="800x295x15",
+                sellable_separately=True,
+            ),
+            RelatedPartHint(
+                code="HENN-C364-02-800x295x15-02",
+                name="02 Lateral esquerda 800x295x15",
+                ref_number="02",
+                dimensions="800x295x15",
+                sellable_separately=True,
+            ),
+        ],
+        components=[
+            ComponentHint(number="02", name="Lateral esquerda", dimensions="800x295x15"),
+        ],
+        assembly_summary=AssemblySummary(
+            hardware_list=["A Parafuso 5,0x50mm FLA", "G Dobradiça SlideOn 35mm"]
+        ),
+    )
+    once = normalize_uncoded_parts(product)
+    twice = normalize_uncoded_parts(once)
+    laterals = [p for p in once.spare_parts if p.ref_number == "02"]
+    assert len(laterals) == 1
+    assert laterals[0].code == "HENN-C364-02-800x295x15"
+    assert laterals[0].name == "02 Lateral esquerda 800x295x15"
+    assert len(twice.spare_parts) == len(once.spare_parts)
+    hw_codes = {p.code for p in once.accessories}
+    assert any("5.0x50mm" in (c or "") for c in hw_codes)
+    assert any(p.ref_number == "G" for p in once.accessories)
+    assert len(normalize_uncoded_parts(twice).accessories) == len(once.accessories)
+
+
+def test_mock_guesses_furniture_bom_components():
+    from apps.manuals.services.structure import structure_manual_text
+
+    text = (
+        "Ind. e Com. de Móveis Henn\n"
+        "ITM/C364- Rev.000\n"
+        "INSTRUÇÕES DE MONTAGEM\n"
+        "Lista de Peças | Lista de piezas | List of parts\n"
+        "01 1/1 01 Base | Base | Base 400x295x15\n"
+        "02 1/1 01 Lateral esquerda | Left side 800x295x15\n"
+        "07 1/1 01 Porta | Door 813x396x15\n"
+        "02x 12x 32x Parafuso 5,0x50mm FLA.\n"
+    )
+    result = structure_manual_text(text, filename="VE_armario-henn-c364.pdf")
+    parts = result.product.spare_parts
+    assert len(parts) >= 3
+    by_ref = {p.ref_number: p for p in parts}
+    assert by_ref["01"].code.endswith("400x295x15")
+    assert by_ref["07"].name == "07 Porta 813x396x15"
+    assert by_ref["07"].sellable_separately is True
+    ferragens = result.product.accessories
+    assert any(
+        "5.0x50mm" in (p.code or "") or "5.0x50mm" in (p.dimensions or "") for p in ferragens
+    )
+    assert any(p.sellable_separately for p in ferragens)
+
+
+def test_hardware_from_text_and_35mm_becomes_sellable():
+    from apps.manuals.schemas import AssemblySummary, ExtractedProduct
+    from apps.manuals.services.structure import prepare_extracted_product
+
+    product = ExtractedProduct(
+        brand="Henn",
+        model_code="C364",
+        name="Aéreo",
+        sku_suggestion="HENN-C364",
+        spare_parts=[],
+        assembly_summary=AssemblySummary(
+            hardware_list=["Parafuso 3,5x40mm CHT", "Dobradiça SlideOn 35mm"]
+        ),
+    )
+    text = (
+        "Ferragens | Hardware\n"
+        "Parafuso 5,0x50mm FLA. Parafuso 3,5x14mm FLA.\n"
+        "Prego 10x10mm\n"
+        "Puxador Pontual PZ14 Oval\n"
+        "Bucha plástica 8mm\n"
+    )
+    fixed = prepare_extracted_product(product, text)
+    sellable = [
+        p for p in list(fixed.spare_parts) + list(fixed.accessories) if p.sellable_separately
+    ]
+    codes = {p.code for p in sellable}
+    names = " ".join(p.name for p in sellable).casefold()
+    assert any("5.0x50mm" in (c or "") for c in codes)
+    assert any("35mm" in (p.code or "") or "35mm" in (p.dimensions or "") for p in sellable)
+    assert "puxador" in names
+    assert "8mm" in " ".join(codes) or any("8mm" in (p.dimensions or "") for p in sellable)
+    # não duplica o parafuso 3,5x40 que veio da hardware_list e do texto
+    cht = [
+        p for p in sellable if "3.5x40mm" in (p.code or "") or "3.5x40mm" in (p.dimensions or "")
+    ]
+    assert len(cht) == 1
+
+
+def test_hardware_matches_assembly_manual_count():
+    """7 painéis + 17 ferragens do manual Henn; sem fragmentos PT/ES/EN."""
+    from apps.manuals.services.structure import structure_manual_text
+
+    text = (
+        "Ind. e Com. de Móveis Henn ITM/C364-\n"
+        "INSTRUÇÕES DE MONTAGEM\n"
+        "Lista de Peças | Lista de piezas | List of parts\n"
+        "01 1/1 01 Base | Base | Base 400x295x15\n"
+        "02 1/1 01 Lateral esquerda | Left side 800x295x15\n"
+        "03 1/1 01 Lateral Direita | Right side 800x295x15\n"
+        "04 1/1 02 Prateleira | Shelf 369x295x15\n"
+        "05 1/1 01 Tampo | Top 400x322x15\n"
+        "06 1/1 01 Fundo | Bottom 824x392x3\n"
+        "07 1/1 01 Porta | Door 813x396x15\n"
+        "Ferragens | Herrajes | Hardware\n"
+        "Parafuso 5,0x50mm FLA. Tornillo 5,0x50mm FLA. Screw 5,0x50mm FLA.\n"
+        "Parafuso 3,5x40mm CHT. Tornillo 3,5x40mm CHT. Screw 3,5x40mm CHT.\n"
+        "Parafuso 3,5x14mm FLA. Tornillo 3,5x14mm FLA. Screw 3,5x14mm FLA.\n"
+        "Prego 10x10mm Clavo 10x10mm Nail 10x10mm\n"
+        "Proteção para cantoneira Ángulo de protección Protection angle\n"
+        "Suporte de fixação Soporte de fijación Mounting bracket\n"
+        "Bucha plástica 8mm Bucha de plástico 8mm 8mm plastic bushing\n"
+        "Sachê de cola Bolsa de pegamento Glue bag\n"
+        "Adesivo tapa parafuso 10mm Adhesivo tapón de tornillo 10mm Bolt cover adhesive 10mm\n"
+        "Parafuso União 30mm Tornillo Unión 30mm Union Screw 30mm\n"
+        "Cavilha 8x25mm Cinta 8x25mm Dowel 8x25mm\n"
+        "Giz de correção Tiza de corrección Chalk of correction\n"
+        "Etiqueta resinada Henn\n"
+        "Parafuso M4x20mm CHT. ZB Tornillo M4x20mm CHT. ZB Screw M4x20mm CHT. ZB\n"
+        "Puxador Pontual PZ14 Oval Tirador Puntual PZ14 Oval PZ14 Oval Point Knob\n"
+        "Calço Removível Calzado extraíble Removable Shim\n"
+        "Dobradiça SlideOn Baixa Amortecedor 35mm "
+        "Bisagra SlideOn Baja Amortiguador 35mm Low SlideOn Hinge 35mm Shock Absorber\n"
+    )
+    result = structure_manual_text(text, filename="VE_armario-henn-c364.pdf")
+    panels = result.product.spare_parts
+    hw = [p for p in result.product.accessories if p.sellable_separately]
+    assert len(panels) == 7
+    assert len(hw) == 17
+    names = " ".join(p.name.casefold() for p in hw)
+    assert "tornillo" not in names
+    assert "screw" not in names
+    codes = [p.code for p in hw]
+    assert len(codes) == len(set(codes))
+    assert not any(p.code.endswith("-PARAFUSO") for p in hw)
+    assert not any("UNIAO-8mm" in (p.code or "") or "UNIAO-10mm" in (p.code or "") for p in hw)
+    assert not any("PUXADOR-8mm" in (p.code or "") for p in hw)
+
+
+def test_hardware_ignores_loose_mentions_outside_lists():
+    from apps.manuals.schemas import ExtractedProduct
+    from apps.manuals.services.structure import prepare_extracted_product
+
+    product = ExtractedProduct(
+        brand="Henn",
+        model_code="C364",
+        name="Aéreo",
+        sku_suggestion="HENN-C364",
+    )
+    text = (
+        "INSTRUÇÕES DE MONTAGEM\n"
+        "Para fixar o móvel na parede usar o parafuso 5,0x50mm FLA (A) "
+        "e a bucha plástica 8mm (I).\n"
+        "Utilizar o sachê de cola (N) em todas as cavilhas 8x25mm (E).\n"
+        "SISTEMA DE MONTAGEM\n"
+    )
+    fixed = prepare_extracted_product(product, text)
+    hw = [p for p in list(fixed.spare_parts) + list(fixed.accessories) if p.sellable_separately]
+    assert hw == []
+
+
+def test_hardware_collapses_pt_es_en_duplicates():
+    from apps.manuals.schemas import ExtractedProduct, RelatedPartHint
+    from apps.manuals.services.structure import prepare_extracted_product
+
+    product = ExtractedProduct(
+        brand="Henn",
+        model_code="C364",
+        name="Aéreo",
+        sku_suggestion="HENN-C364",
+        accessories=[
+            RelatedPartHint(name="Parafuso 5,0x50mm FLA", dimensions="5.0x50mm"),
+            RelatedPartHint(name="Tornillo 5,0x50mm FLA", dimensions="5.0x50mm"),
+            RelatedPartHint(name="Screw 5,0x50mm FLA", dimensions="5.0x50mm"),
+            RelatedPartHint(name="Dobradiça SlideOn 35mm", dimensions="35mm"),
+            RelatedPartHint(name="Bisagra SlideOn Baja 35mm", dimensions="35mm"),
+            RelatedPartHint(name="Hinge 35mm Shock Absorber", dimensions="35mm"),
+        ],
+    )
+    text = (
+        "Ferragens | Hardware\n"
+        "Parafuso 5,0x50mm FLA. Tornillo 5,0x50mm FLA. Screw 5,0x50mm FLA.\n"
+        "Cavilha 8x25mm Cinta 8x25mm Dowel 8x25mm\n"
+        "Puxador Pontual PZ14 Oval Tirador Puntual PZ14 Oval Knob\n"
+    )
+    fixed = prepare_extracted_product(product, text)
+    sellable = [
+        p for p in list(fixed.spare_parts) + list(fixed.accessories) if p.sellable_separately
+    ]
+    names = [p.name.casefold() for p in sellable]
+    assert sum("5.0x50mm" in (p.dimensions or p.code or "") for p in sellable) == 1
+    assert (
+        sum(
+            "35mm" in (p.dimensions or p.code or "") and "dobradi" in p.name.casefold()
+            for p in sellable
+        )
+        == 1
+    )
+    assert all("tornillo" not in n and "screw" not in n and "hinge" not in n for n in names)
+    assert any("parafuso" in n for n in names)
+    assert any("puxador" in n for n in names)
+    assert sum("8x25mm" in (p.dimensions or p.code or "") for p in sellable) == 1
+
+
+def test_normalize_fills_code_on_spare_parts_without_manufacturer_code():
+    from apps.manuals.schemas import ExtractedProduct, RelatedPartHint
+    from apps.manuals.services.structure import normalize_uncoded_parts
+
+    product = ExtractedProduct(
+        brand="Genérica",
+        model_code="M1",
+        name="Móvel",
+        sku_suggestion="GEN-M1",
+        spare_parts=[
+            RelatedPartHint(
+                code="",
+                name="Prateleira",
+                ref_number="04",
+                dimensions="369x295x15",
+                sellable_separately=True,  # validator derruba; normalize reabilita
+            )
+        ],
+    )
+    fixed = normalize_uncoded_parts(product)
+    part = fixed.spare_parts[0]
+    assert part.code == "GEN-M1-04-369x295x15"
+    assert part.name == "04 Prateleira 369x295x15"
+    assert part.sellable_separately is True
+
+
+def test_parts_for_review_includes_synthetic_component_codes():
+    from apps.dashboard.services.product_ai_assist import parts_for_review
+    from apps.manuals.schemas import ComponentHint, ExtractedProduct
+    from apps.manuals.services.structure import ensure_sales_description
+
+    product = ensure_sales_description(
+        ExtractedProduct(
+            brand="Henn",
+            model_code="C364",
+            name="Aéreo",
+            sku_suggestion="HENN-C364",
+            source_doc_types=["assembly_guide"],
+            components=[
+                ComponentHint(number="01", name="Base", dimensions="400x295x15"),
+            ],
+        )
+    )
+    rows = parts_for_review(product)
+    assert len(rows) == 1
+    assert rows[0]["sellable_separately"] is True
+    assert rows[0]["code"] == "HENN-C364-01-400x295x15"
+    assert rows[0]["selected"] is True
+
+
+def test_extract_dimensions_token_variants():
+    from apps.manuals.schemas import extract_dimensions_token
+
+    assert extract_dimensions_token("Base 400x295x15") == "400x295x15"
+    assert extract_dimensions_token("Parafuso 5,0x50mm FLA") == "5.0x50mm"
+    assert extract_dimensions_token("Dobradiça 35mm") == "35mm"
+    assert extract_dimensions_token("Parafuso M4x20mm CHT") == "M4x20mm"
+    assert extract_dimensions_token("sem medidas") == ""
 
 
 @pytest.mark.django_db

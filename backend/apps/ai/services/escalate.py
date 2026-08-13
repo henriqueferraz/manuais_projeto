@@ -85,9 +85,10 @@ def escalate_session(
     history = _format_history(session)
     contact = email or getattr(user, "email", "") or "cliente@techparts.local"
     title = session.title or "Suporte via chat IA"
+    reason_label = reason or "resposta marcada como não útil"
     description = (
         "Chamado aberto automaticamente a partir do chat de suporte.\n\n"
-        f"Motivo do feedback: {reason or 'resposta marcada como não útil'}\n\n"
+        f"Motivo: {reason_label}\n\n"
         f"Histórico da conversa:\n{history}"
     )
     if trigger_message and trigger_message.sources:

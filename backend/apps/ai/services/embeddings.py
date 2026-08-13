@@ -68,7 +68,8 @@ def hybrid_score(
     mode = getattr(settings, "EMBEDDING_MODE", "mock").lower()
     if mode == "mock":
         return 0.35 * cos + 0.65 * lex
-    return 0.75 * cos + 0.25 * lex
+    # OpenAI: mais peso lexical para títulos/receitas (ex.: "massa para pizza").
+    return 0.55 * cos + 0.45 * lex
 
 
 def _embed_mock(text: str) -> list[float]:

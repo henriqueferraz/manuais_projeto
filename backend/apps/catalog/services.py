@@ -5,7 +5,8 @@ from __future__ import annotations
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Prefetch, Q, QuerySet
+from django.db.models import CharField, F, OuterRef, Prefetch, Q, QuerySet, Subquery, Value
+from django.db.models.functions import Coalesce, Concat, Lower
 
 from apps.products.models import Product, ProductTranslation
 
@@ -29,6 +30,21 @@ def published_products(*, locale: str = "pt-BR") -> QuerySet[Product]:
     )
 
 
+# Valores aceitos no GET `sort` (filtros técnicos / catálogo).
+CATALOG_SORT_CHOICES: tuple[tuple[str, str], ...] = (
+    ("", "Padrão"),
+    ("name_asc", "Nome A–Z"),
+    ("name_desc", "Nome Z–A"),
+    ("price_asc", "Preço: menor → maior"),
+    ("price_desc", "Preço: maior → menor"),
+)
+
+_CATALOG_SORT_FIELDS: dict[str, tuple[str, ...]] = {
+    "price_asc": ("price", "brand", "sku"),
+    "price_desc": ("-price", "brand", "sku"),
+}
+
+
 def filter_catalog(
     *,
     q: str = "",
@@ -38,6 +54,7 @@ def filter_catalog(
     brand: str = "",
     compat_model: str = "",
     locale: str = "pt-BR",
+    sort: str = "",
 ) -> QuerySet[Product]:
     qs = published_products(locale=locale)
 
@@ -59,10 +76,63 @@ def filter_catalog(
         ).distinct()
 
     q = (q or "").strip()
-    if q:
+    has_query = bool(q)
+    if has_query:
         qs = _full_text_or_icontains(qs, q)
 
+    return apply_catalog_sort(qs, sort, has_query=has_query, locale=locale)
+
+
+def apply_catalog_sort(
+    qs: QuerySet[Product],
+    sort: str = "",
+    *,
+    has_query: bool = False,
+    locale: str = "pt-BR",
+) -> QuerySet[Product]:
+    """Aplica ordenação por nome do produto ou preço; com busca e sem sort, mantém relevância."""
+    key = (sort or "").strip().lower()
+    if key in {"name_asc", "name_desc"}:
+        return _order_by_product_name(qs, descending=key == "name_desc", locale=locale)
+    fields = _CATALOG_SORT_FIELDS.get(key)
+    if fields:
+        return qs.order_by(*fields)
+    if has_query:
+        # `_full_text_or_icontains` já ordenou por rank (Postgres) ou deixa icontains.
+        if connection.vendor != "postgresql":
+            return qs.order_by("brand", "model_code", "sku")
+        return qs
     return qs.order_by("brand", "model_code", "sku")
+
+
+def _order_by_product_name(
+    qs: QuerySet[Product],
+    *,
+    descending: bool,
+    locale: str = "pt-BR",
+) -> QuerySet[Product]:
+    """Ordena pelo nome da tradução (fallback: marca + modelo), case-insensitive."""
+    preferred = Subquery(
+        ProductTranslation.objects.filter(product_id=OuterRef("pk"), locale=locale).values("name")[
+            :1
+        ],
+        output_field=CharField(),
+    )
+    coalesce_parts: list = [preferred]
+    if locale != "pt-BR":
+        coalesce_parts.append(
+            Subquery(
+                ProductTranslation.objects.filter(product_id=OuterRef("pk"), locale="pt-BR").values(
+                    "name"
+                )[:1],
+                output_field=CharField(),
+            )
+        )
+    coalesce_parts.append(Concat(F("brand"), Value(" "), F("model_code"), output_field=CharField()))
+
+    qs = qs.annotate(sort_name=Lower(Coalesce(*coalesce_parts, output_field=CharField())))
+    direction = "-sort_name" if descending else "sort_name"
+    return qs.order_by(direction, "sku")
 
 
 def _full_text_or_icontains(qs: QuerySet[Product], q: str) -> QuerySet[Product]:

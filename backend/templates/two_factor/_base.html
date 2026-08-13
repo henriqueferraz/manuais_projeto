@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'design-system/auth.css' %}" rel="stylesheet" />
+{% block extra_media %}{% endblock %}
+{% endblock %}
+
+{% block main_class %}p-0{% endblock %}
+
+{% block content %}
+{% block content_wrapper %}
+<div class="tp-container py-4">
+  {% block content_inner %}{% endblock %}
+</div>
+{% endblock %}
+{% endblock %}

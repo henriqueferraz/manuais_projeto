@@ -2,6 +2,16 @@
  * UI states: loading, empty, error (P19)
  */
 
+/* HTMX: opacity:0 ainda reserva altura — esconde de verdade fora do request. */
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-indicator.htmx-request {
+  display: block;
+}
+
 .tp-skeleton {
   display: block;
   background: linear-gradient(

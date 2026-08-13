@@ -20,7 +20,6 @@
   const msgEl = document.getElementById("product-ai-agent-msg");
   const badgesEl = document.getElementById("product-ai-badges");
   const highlightsEl = document.getElementById("product-ai-highlights");
-  const jsonEl = document.getElementById("product-ai-json");
   const partsWrap = document.getElementById("product-ai-parts");
   const partsBody = document.getElementById("product-ai-parts-body");
   const partsAllBtn = document.getElementById("product-ai-parts-all");
@@ -383,7 +382,6 @@
       );
     }
 
-    jsonEl.textContent = JSON.stringify(ex, null, 2);
     renderParts(payload.parts_for_review || []);
     renderSections(payload.proposal_sections || {});
     renderModelPicker(payload.model_options || []);

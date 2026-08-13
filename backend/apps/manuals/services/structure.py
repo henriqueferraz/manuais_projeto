@@ -11,7 +11,13 @@ from typing import Any
 import structlog
 from django.conf import settings
 
-from apps.manuals.schemas import ExtractedProduct, ExtractionResult, RelatedPartHint
+from apps.manuals.schemas import (
+    ComponentHint,
+    ExtractedProduct,
+    ExtractionResult,
+    RelatedPartHint,
+    extract_dimensions_token,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -86,15 +92,22 @@ def _structure_mock(
 
     category = _guess_category(text)
     spare_parts = _guess_spare_parts(text, brand=brand or manufacturer_hint, model=model)
+    components = _guess_bom_components(text)
     source_doc_types: list[str] = []
     if spare_parts:
         source_doc_types.append("parts_catalog")
+    if components:
+        if "assembly_guide" not in source_doc_types:
+            source_doc_types.append("assembly_guide")
     if re.search(r"(?i)vista\s+explod|diagrama", text):
         if "exploded_view" not in source_doc_types:
             source_doc_types.append("exploded_view")
-    if re.search(r"(?i)manual|instru[cç][oõ]es|pot[eê]ncia|voltagem", text):
+    if re.search(r"(?i)manual|instru[cç][oõ]es|pot[eê]ncia|voltagem|montagem", text):
         if "manual" not in source_doc_types:
             source_doc_types.insert(0, "manual")
+    if re.search(r"(?i)instru[cç][oõ]es\s+de\s+montagem|assembly\s+instructions", text):
+        if "assembly_guide" not in source_doc_types:
+            source_doc_types.append("assembly_guide")
 
     manufacturer = (manufacturer_hint or "").strip()
     if not manufacturer and re.search(r"(?i)\bbrit[aâ]nia\b", text[:4000]):
@@ -102,6 +115,9 @@ def _structure_mock(
             manufacturer = "Britânia"
     if not manufacturer and brand != "Desconhecida":
         manufacturer = brand
+
+    if components and re.search(r"(?i)m[oó]vel|arm[aá]rio|guarda-roupa|mdf|mdp", text):
+        category = category if category not in {"ventiladores", "ventiladores-teto"} else "móveis"
 
     product = ExtractedProduct(
         brand=brand,
@@ -116,11 +132,12 @@ def _structure_mock(
         voltage=voltage,
         power_w=power,
         specs=specs,
+        components=components,
         spare_parts=spare_parts,
         confidence=confidence,
         manufacturer=manufacturer,
     )
-    product = ensure_sales_description(product)
+    product = prepare_extracted_product(product, text)
     product = recompute_extraction_confidence(product)
     tokens_in = max(1, len(text) // 4)
     tokens_out = max(1, len(product.model_dump_json()) // 4)
@@ -171,7 +188,7 @@ def _structure_with_openai(text: str, *, manufacturer_hint: str = "") -> Extract
         # Alguns wrappers devolvem dict
         result = ExtractedProduct.model_validate(result)
 
-    result = ensure_sales_description(result)
+    result = prepare_extracted_product(result, text)
     result = recompute_extraction_confidence(result)
 
     # Usage metadata nem sempre disponível no structured output
@@ -276,6 +293,7 @@ def _guess_brand(text: str, filename: str) -> str:
         ("Mondial", r"\bMondial\b"),
         ("Arno", r"\bArno\b"),
         ("Electrolux", r"\bElectrolux\b|\bEletrolux\b"),
+        ("Henn", r"\bHenn\b|\bM[oó]veis\s+Henn\b"),
         ("Britânia", r"\bBrit[aâ]nia\b"),
     ]
     for name, pat in candidates:
@@ -290,6 +308,8 @@ def _guess_brand(text: str, filename: str) -> str:
         return "Electrolux"
     if "brit" in lower:
         return "Britânia"
+    if "henn" in lower:
+        return "Henn"
     return ""
 
 
@@ -298,6 +318,8 @@ def _guess_model(text: str, filename: str) -> str:
         r"(?i)\b(VTE-?\d+[A-Z0-9\-]*)\b",
         r"(?i)\b(VT-?\d+[A-Z0-9\-]*)\b",
         r"(?i)\b(C60[A-Z0-9\-]*)\b",
+        r"(?i)\bITM/(C\d{2,4})\b",
+        r"(?i)\b(C\d{3,4})(?:-\d+)?\b",
         r"(?i)modelo[:\s]+([A-Z0-9][A-Z0-9\-]{2,})",
         r"(?i)refer[eê]ncia[:\s]+([A-Z0-9][A-Z0-9\-]{2,})",
     ]
@@ -449,10 +471,799 @@ def promote_canonical_fields(product: ExtractedProduct) -> ExtractedProduct:
     Normaliza campos canônicos após a extração:
     - potencia/power em specs → power_w
     - marca comercial vs fabricante/grupo (Philco × Britânia)
+    - componentes/peças sem código → identidade sintética SKU+medidas
     """
     product = _promote_power_from_specs(product)
     product = _normalize_brand_vs_manufacturer(product)
+    product = normalize_uncoded_parts(product)
     return product
+
+
+def normalize_uncoded_parts(product: ExtractedProduct) -> ExtractedProduct:
+    """
+    Garante identidade vendável para peças/componentes sem código de fabricante.
+
+    Regras (abrangentes, não por marca):
+    - código sintético = SKU do produto + medidas (e item, se houver, para unicidade)
+    - nome = item + descrição + medidas (omitindo partes vazias)
+    - componentes/ferragens com medidas sobem para spare_parts/accessories
+    - idempotente: não duplica item já presente (mesmo ref / mesmo código-base)
+    """
+    parent_sku = (product.sku_suggestion or "").strip() or _sku_suggestion(
+        product.brand or product.manufacturer, product.model_code
+    )
+    parent_model = (product.model_code or "").strip()
+    seen: set[str] = set()
+
+    def _remember(part: RelatedPartHint, *, extra_code: str = "") -> None:
+        seen.update(
+            _part_identity_keys(
+                ref=(part.ref_number or "").strip(),
+                dims=(part.dimensions or "").strip(),
+                code=(part.code or extra_code or "").strip(),
+            )
+        )
+
+    def _is_dup(ref: str, dims: str, code: str = "") -> bool:
+        return bool(seen & _part_identity_keys(ref=ref, dims=dims, code=code))
+
+    def _finalize(part: RelatedPartHint) -> RelatedPartHint | None:
+        item = (part.ref_number or "").strip()
+        dims = (part.dimensions or "").strip() or extract_dimensions_token(
+            f"{part.name} {part.description} {part.notes}"
+        )
+        desc = _clean_part_description(part.description or part.name or "", item=item)
+        existing_code = (part.code or "").strip()
+        hardware_like = _looks_like_hardware_name(desc or part.name)
+
+        if existing_code:
+            if _is_dup(item, dims, existing_code):
+                return None
+            payload = part.model_dump()
+            if dims:
+                payload["dimensions"] = dims
+            if desc:
+                nice = _compose_part_name(item=item, description=desc, dimensions=dims)
+                if nice:
+                    payload["name"] = nice[:200]
+                    payload["description"] = desc[:200]
+            out = RelatedPartHint.model_validate(payload)
+            _remember(out)
+            return out
+
+        if not dims and not item and not hardware_like:
+            if _is_dup(item, dims, ""):
+                return None
+            _remember(part)
+            return part
+
+        code = _compose_synthetic_part_code(parent_sku, item=item, dimensions=dims, name=desc)
+        if not code:
+            _remember(part)
+            return part
+        if _is_dup(item, dims, code):
+            return None
+
+        name = _compose_part_name(item=item, description=desc or "Peça", dimensions=dims)
+        compat = list(part.compatible_with or [])
+        if parent_model and parent_model not in compat:
+            compat = [parent_model, *compat]
+        category = part.category
+        if not category:
+            if hardware_like:
+                category = "ferragem"
+            elif dims:
+                category = "peça de montagem"
+            else:
+                category = "peça de reposição"
+        out = RelatedPartHint.model_validate(
+            {
+                **part.model_dump(),
+                "code": code[:64],
+                "part_code": code[:64],
+                "name": name[:200],
+                "description": (desc or name)[:200],
+                "dimensions": dims,
+                "sku_suggestion": (part.sku_suggestion or code)[:64],
+                "product_kind": "spare_part",
+                "sellable_separately": True,
+                "ref_number": item or part.ref_number,
+                "compatible_with": compat,
+                "category": category,
+            }
+        )
+        _remember(out)
+        return out
+
+    spare_parts = [p for p in (_finalize(x) for x in product.spare_parts) if p is not None]
+    accessories = [p for p in (_finalize(x) for x in product.accessories) if p is not None]
+
+    for comp in product.components:
+        number = (comp.number or "").strip()
+        raw_name = (comp.name or comp.description or "").strip()
+        dims = (comp.dimensions or "").strip() or extract_dimensions_token(raw_name)
+        desc = _clean_part_description(raw_name, item=number)
+        if not dims and not (number and desc):
+            continue
+        if (
+            not dims
+            and not _looks_like_bom_component(comp, product)
+            and not _looks_like_hardware_name(desc or raw_name)
+        ):
+            continue
+        synthetic = _compose_synthetic_part_code(
+            parent_sku, item=number, dimensions=dims, name=desc
+        )
+        if _is_dup(number, dims, synthetic):
+            continue
+        hint = RelatedPartHint(
+            code="",
+            name=desc or raw_name,
+            description=desc or raw_name,
+            ref_number=number,
+            dimensions=dims,
+            qty_per_unit=comp.qty_per_unit,
+            product_kind="spare_part",
+            sellable_separately=False,
+            compatible_with=[parent_model] if parent_model else [],
+            category="peça de montagem" if dims else "peça de reposição",
+        )
+        finalized = _finalize(hint)
+        if finalized is not None:
+            spare_parts.append(finalized)
+
+    for hint in _hints_from_hardware_list(product, parent_model=parent_model):
+        synthetic = _compose_synthetic_part_code(
+            parent_sku,
+            item=(hint.ref_number or "").strip(),
+            dimensions=(hint.dimensions or "").strip(),
+            name=(hint.name or "").strip(),
+        )
+        if _is_dup(hint.ref_number, hint.dimensions, synthetic or hint.code):
+            continue
+        finalized = _finalize(hint)
+        if finalized is not None:
+            accessories.append(finalized)
+
+    spare_other: list[RelatedPartHint] = []
+    spare_hw: list[RelatedPartHint] = []
+    for part in spare_parts:
+        if _looks_like_hardware_name(f"{part.name} {part.description}"):
+            spare_hw.append(part)
+        else:
+            spare_other.append(part)
+    spare_parts = spare_other + _collapse_multilingual_hardware(spare_hw, parent_sku=parent_sku)
+    accessories = _collapse_multilingual_hardware(accessories, parent_sku=parent_sku)
+
+    return product.model_copy(update={"spare_parts": spare_parts, "accessories": accessories})
+
+
+def _part_identity_keys(*, ref: str = "", dims: str = "", code: str = "") -> set[str]:
+    """Chaves para deduplicar a mesma peça vinda de spare_parts + components + hardware."""
+    keys: set[str] = set()
+    ref_n = (ref or "").strip().casefold()
+    dim_n = (dims or "").strip().casefold()
+    code_n = (code or "").strip().casefold()
+    if ref_n:
+        keys.add(f"ref:{ref_n}")
+    if ref_n and dim_n:
+        keys.add(f"refdim:{ref_n}|{dim_n}")
+    if code_n:
+        keys.add(f"code:{code_n}")
+        # Sufixo de colisão antiga (SKU-01-400x295x15-01) → mesmo item
+        if ref_n and code_n.endswith(f"-{ref_n}"):
+            keys.add(f"code:{code_n[: -len(ref_n) - 1]}")
+    return keys
+
+
+def _clean_part_description(text: str, *, item: str = "") -> str:
+    """Remove item, qtd da tabela (01) e medidas do nome ('02 01 Lateral esquerda')."""
+    text = (text or "").strip()
+    text = _strip_trailing_dimensions(text)
+    if item:
+        text = re.sub(rf"^{re.escape(item)}\s*[-–:]?\s*", "", text, flags=re.IGNORECASE).strip()
+    text = re.sub(r"^\d+\s*/\s*\d+\s+", "", text).strip()
+    text = re.sub(r"^0*\d{1,3}\s+", "", text).strip()
+    if item:
+        text = re.sub(rf"^{re.escape(item)}\s*[-–:]?\s*", "", text, flags=re.IGNORECASE).strip()
+    return text
+
+
+def _hints_from_hardware_list(
+    product: ExtractedProduct,
+    *,
+    parent_model: str = "",
+) -> list[RelatedPartHint]:
+    """Ferragens em assembly_summary.hardware_list → acessórios vendáveis."""
+    summary = product.assembly_summary
+    raw_items = list(getattr(summary, "hardware_list", None) or [])
+    if not raw_items:
+        return []
+    hints: list[RelatedPartHint] = []
+    for raw in raw_items:
+        text = str(raw or "").strip()
+        if not text:
+            continue
+        text = re.sub(r"^\d+\s*[x×]\s+", "", text).strip()
+        item = ""
+        rest = text
+        letter = re.match(r"^([A-Z])\s*[-–:]?\s+(.+)$", text)
+        if letter:
+            item = letter.group(1)
+            rest = letter.group(2).strip()
+        dims = extract_dimensions_token(rest) or extract_dimensions_token(text)
+        desc = _clean_part_description(rest, item=item)
+        if not desc:
+            continue
+        if not dims and not item:
+            # Sem letra/medida: ainda promove se o nome for ferragem (puxador, cola…)
+            if not _looks_like_hardware_name(desc):
+                continue
+        hints.append(
+            RelatedPartHint(
+                code="",
+                name=desc,
+                description=desc,
+                ref_number=item,
+                dimensions=dims,
+                product_kind="spare_part",
+                sellable_separately=False,
+                compatible_with=[parent_model] if parent_model else [],
+                category="ferragem",
+            )
+        )
+    joined = " ".join(str(x).strip() for x in raw_items if str(x).strip())
+    if joined:
+        hints.extend(_guess_hardware_from_text(joined, restrict_to_lists=False))
+    return hints
+
+
+def enrich_parts_from_source_text(product: ExtractedProduct, text: str) -> ExtractedProduct:
+    """Completa ferragens a partir do texto do manual (OCR), se a LLM omitiu."""
+    guessed = _guess_hardware_from_text(text)
+    if not guessed:
+        return product
+    return product.model_copy(update={"accessories": list(product.accessories) + guessed})
+
+
+def prepare_extracted_product(product: ExtractedProduct, source_text: str = "") -> ExtractedProduct:
+    """Enriquece ferragens do texto-fonte e aplica normalização canônica/vendável."""
+    if source_text:
+        product = enrich_parts_from_source_text(product, source_text)
+    return ensure_sales_description(product)
+
+
+_HARDWARE_NAME_RE = (
+    r"parafuso|tornillo|screw|prego|clavo|nail|bucha|cavilha|cinta|dowel|"
+    r"dobradi[cç]a|bisagra|hinge|puxador|tirador|knob|"
+    r"suporte(?:\s+de\s+fixa[cç][aã]o)?|soporte|bracket|"
+    r"cal[cç]o|calzado|shim|"
+    r"sach[eê](?:\s+de\s+cola)?|glue|pegamento|"
+    r"adesivo(?:\s+tapa\s+parafuso)?|adhesivo|adhesive|"
+    r"giz(?:\s+de\s+corre[cç][aã]o)?|tiza|chalk|"
+    r"etiqueta(?:\s+resinada)?|"
+    r"prote[cç][aã]o(?:\s+para\s+cantoneira)?|protection|"
+    r"uni[aã]o|union"
+)
+
+# Mais específico primeiro (união antes de parafuso/screw).
+_HARDWARE_TYPE_ALIASES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("uniao", ("uniao", "união", "union")),
+    ("protecao", ("protecao", "proteção", "proteccion", "protection", "cantoneira", "angulo")),
+    ("suporte", ("suporte", "soporte", "bracket")),
+    ("puxador", ("puxador", "tirador", "knob", "handle")),
+    ("dobradica", ("dobradica", "dobradiça", "bisagra", "hinge")),
+    ("cavilha", ("cavilha", "cinta", "dowel", "espiga")),
+    ("bucha", ("bucha", "casquillo", "bushing")),
+    ("calco", ("calco", "calço", "calzado", "shim")),
+    ("cola", ("sache", "sachê", "cola", "glue", "pegamento")),
+    ("adesivo", ("adesivo", "adhesivo", "adhesive")),
+    ("giz", ("giz", "tiza", "chalk")),
+    ("etiqueta", ("etiqueta", "label")),
+    ("prego", ("prego", "clavo", "nail")),
+    ("parafuso", ("parafuso", "tornillo", "screw")),
+)
+
+_HARDWARE_PT_NAME = {
+    "parafuso": "Parafuso",
+    "prego": "Prego",
+    "cavilha": "Cavilha",
+    "dobradica": "Dobradiça",
+    "puxador": "Puxador",
+    "bucha": "Bucha",
+    "suporte": "Suporte de fixação",
+    "calco": "Calço removível",
+    "cola": "Sachê de cola",
+    "adesivo": "Adesivo tapa parafuso",
+    "giz": "Giz de correção",
+    "etiqueta": "Etiqueta resinada",
+    "protecao": "Proteção para cantoneira",
+    "uniao": "Parafuso união",
+}
+
+_HARDWARE_NO_DIMS = frozenset({"giz", "cola", "etiqueta", "calco", "suporte", "protecao"})
+_HARDWARE_REQUIRE_DIMS = frozenset(
+    {"parafuso", "prego", "bucha", "cavilha", "uniao", "adesivo", "dobradica"}
+)
+_HARDWARE_SPEC_RE = re.compile(
+    r"\b(FLA|CHT|ZB|PZ14|SLIDEON|SLIDE-ON)\b",
+    flags=re.IGNORECASE,
+)
+
+
+def _looks_like_hardware_name(text: str) -> bool:
+    return bool(re.search(rf"(?i)\b(?:{_HARDWARE_NAME_RE})\b", text or ""))
+
+
+def _hardware_type_slug(text: str) -> str:
+    folded = _fold_ascii(text or "")
+    for slug, aliases in _HARDWARE_TYPE_ALIASES:
+        if any(alias in folded for alias in aliases):
+            return slug
+    return ""
+
+
+def _hardware_spec(text: str) -> str:
+    match = _HARDWARE_SPEC_RE.search(text or "")
+    if not match:
+        return ""
+    return match.group(1).upper().replace("-", "")
+
+
+def _accepted_hardware_dims(slug: str, dims: str, *, blob: str = "") -> str:
+    """Só aceita medida que pertence ao tipo; ignora mm vizinho do OCR."""
+    dims = (dims or "").strip()
+    if slug in _HARDWARE_NO_DIMS or slug == "puxador":
+        return ""
+    if not dims:
+        return ""
+    single = bool(re.fullmatch(r"\d+(?:\.\d+)?mm", dims, flags=re.IGNORECASE))
+    metric = bool(re.match(r"(?i)^M\d", dims))
+    has_x = "x" in dims.lower() and not metric
+    if slug == "parafuso":
+        return dims if has_x or metric else ""
+    if slug == "uniao":
+        if not single:
+            return ""
+        try:
+            value = float(re.sub(r"[^0-9.]", "", dims))
+        except ValueError:
+            return ""
+        return dims if value >= 20 else ""
+    if slug in {"prego", "cavilha"}:
+        return dims if has_x else ""
+    if slug in {"bucha", "adesivo", "dobradica"}:
+        return dims if single else ""
+    return dims
+
+
+def _hardware_is_keepable(slug: str, dims: str, spec: str) -> bool:
+    if not slug:
+        return False
+    if slug in _HARDWARE_REQUIRE_DIMS:
+        return bool(dims)
+    if slug == "puxador":
+        return bool(spec)
+    return True
+
+
+def _prune_incomplete_hardware(parts: list[RelatedPartHint]) -> list[RelatedPartHint]:
+    """Remove fragmentos (Parafuso sem medida) quando já existe o item completo."""
+    hardware: list[RelatedPartHint] = []
+    other: list[RelatedPartHint] = []
+    for part in parts:
+        blob = f"{part.name} {part.description}"
+        if _looks_like_hardware_name(blob):
+            hardware.append(part)
+        else:
+            other.append(part)
+    complete_slugs = {
+        _hardware_type_slug(f"{p.name} {p.description}")
+        for p in hardware
+        if (p.dimensions or "").strip() or _hardware_spec(f"{p.name} {p.description}")
+    }
+    kept: list[RelatedPartHint] = []
+    for part in hardware:
+        blob = f"{part.name} {part.description}"
+        slug = _hardware_type_slug(blob)
+        spec = _hardware_spec(blob)
+        dims = _accepted_hardware_dims(
+            slug, (part.dimensions or "").strip() or extract_dimensions_token(blob), blob=blob
+        )
+        if not _hardware_is_keepable(slug, dims, spec):
+            continue
+        if not dims and not spec and slug in complete_slugs:
+            continue
+        if dims != (part.dimensions or "").strip():
+            name = _pt_hardware_name(blob, dims=dims, spec=spec)
+            part = part.model_copy(
+                update={"dimensions": dims, "name": name[:200], "description": name[:200]}
+            )
+        kept.append(part)
+    return other + kept
+
+
+def _hardware_dedupe_key(part: RelatedPartHint | str, dims: str = "") -> str:
+    if isinstance(part, str):
+        blob = part
+        dim = (dims or extract_dimensions_token(part) or "").casefold()
+    else:
+        blob = f"{part.name} {part.description} {part.notes}"
+        dim = ((part.dimensions or "").strip() or extract_dimensions_token(blob)).casefold()
+    slug = _hardware_type_slug(blob) or _fold_ascii(blob)[:24]
+    spec = _hardware_spec(blob)
+    folded = _fold_ascii(blob)
+    if slug == "parafuso" and ("uniao" in folded or "union" in folded):
+        slug = "uniao"
+    dim = _accepted_hardware_dims(slug, dim, blob=blob)
+    if slug == "parafuso" and spec:
+        return f"{slug}|{dim}|{spec}"
+    if dim:
+        return f"{slug}|{dim}"
+    return f"{slug}|{spec}"
+
+
+def _pt_hardware_name(blob: str, *, dims: str = "", spec: str = "") -> str:
+    slug = _hardware_type_slug(blob)
+    folded = _fold_ascii(blob)
+    if slug == "parafuso" and ("uniao" in folded or "union" in folded):
+        slug = "uniao"
+    dims = _accepted_hardware_dims(slug, dims or extract_dimensions_token(blob), blob=blob)
+    spec = spec or _hardware_spec(blob)
+    if slug == "puxador":
+        dims = ""
+    base = _HARDWARE_PT_NAME.get(slug) or _clean_part_description(blob)
+    bits = [base]
+    if spec and spec.casefold() not in base.casefold():
+        bits.append(spec.replace("SLIDEON", "SlideOn"))
+    if dims and dims.casefold() not in " ".join(bits).casefold():
+        bits.append(dims)
+    return " ".join(bits).strip()
+
+
+def _pt_name_score(name: str) -> int:
+    folded = _fold_ascii(name)
+    score = 0
+    if any(_fold_ascii(token) in folded for token in _HARDWARE_PT_NAME.values()):
+        score += 3
+    if any(
+        token in folded
+        for token in (
+            "parafuso",
+            "prego",
+            "cavilha",
+            "dobradica",
+            "puxador",
+            "bucha",
+            "suporte",
+            "calco",
+            "sache",
+            "adesivo",
+            "giz",
+            "etiqueta",
+            "protecao",
+        )
+    ):
+        score += 2
+    if any(
+        token in folded
+        for token in (
+            "tornillo",
+            "screw",
+            "clavo",
+            "nail",
+            "dowel",
+            "bisagra",
+            "hinge",
+            "tirador",
+            "knob",
+            "shim",
+            "bracket",
+            "bushing",
+            "protection",
+            "calzado",
+        )
+    ):
+        score -= 4
+    score -= folded.count(" ")
+    return score
+
+
+def _extract_parts_list_sections(text: str) -> str:
+    """Recorta só blocos de lista (peças/ferragens), não o texto corrido de montagem."""
+    if not text:
+        return ""
+    header = re.compile(
+        r"(?i)("
+        r"lista\s+de\s+pe[cç]as|lista\s+de\s+piezas|list\s+of\s+parts|"
+        r"ferragens|herrajes|(?<![a-z])hardware(?![a-z])|"
+        r"cat[aá]logo\s+de\s+pe[cç]as|parts\s+catalog|"
+        r"vista\s+explod"
+        r")"
+    )
+    end = re.compile(
+        r"(?i)("
+        r"sistema\s+de\s+montagem|assembly\s+system|sistema\s+de\s+montaje|"
+        r"para\s+limpeza|to\s+clean|para\s+limpieza|"
+        r"\baviso\b|\bnotice\b|\badvertencia\b"
+        r")"
+    )
+    matches = list(header.finditer(text))
+    if not matches:
+        return ""
+    chunks: list[str] = []
+    for i, match in enumerate(matches):
+        start = match.start()
+        stop = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        block = text[start:stop]
+        end_match = end.search(block, pos=len(match.group(0)))
+        if end_match:
+            block = block[: end_match.start()]
+        chunks.append(block.strip())
+    return "\n".join(c for c in chunks if c)
+
+
+def _guess_hardware_from_text(
+    text: str,
+    *,
+    restrict_to_lists: bool = True,
+) -> list[RelatedPartHint]:
+    """Varre ferragens só em listas (Ferragens / Lista de Peças), não em frases soltas."""
+    if restrict_to_lists:
+        text = _extract_parts_list_sections(text)
+    if not text or not _looks_like_hardware_name(text):
+        return []
+    pattern = re.compile(
+        rf"(?i)(?P<label>{_HARDWARE_NAME_RE})(?P<rest>(?:(?!{_HARDWARE_NAME_RE}).){{0,60}})"
+    )
+    by_key: dict[str, RelatedPartHint] = {}
+    for match in pattern.finditer(text):
+        rest = (match.group("rest") or "").strip()
+        rest = rest.split("|")[0]
+        label = match.group("label")
+        slug = _hardware_type_slug(label)
+        if slug in _HARDWARE_NO_DIMS or slug == "puxador":
+            rest = re.split(r"[.;]|  ", rest)[0][:28]
+            dims = ""
+        else:
+            dim_chunk = re.search(
+                r"^(.{0,20}?\d+(?:[.,]\d+)?(?:\s*[x×]\s*\d+(?:[.,]\d+)?){0,2}\s*mm\b"
+                r"(?:\s+(?:FLA|CHT|ZB|SlideOn))?)",
+                rest,
+                flags=re.IGNORECASE,
+            )
+            rest = dim_chunk.group(1) if dim_chunk else re.split(r"[.;]|  ", rest)[0][:24]
+            dims = extract_dimensions_token(f"{label} {rest}")
+        blob = re.sub(r"\s+", " ", f"{label} {rest}").strip(" .;,-")
+        spec = _hardware_spec(blob)
+        dims = _accepted_hardware_dims(slug or _hardware_type_slug(blob), dims, blob=blob)
+        slug = _hardware_type_slug(blob) or slug
+        if not _hardware_is_keepable(slug, dims, spec):
+            continue
+        desc = _pt_hardware_name(blob, dims=dims, spec=spec)
+        if not desc or not _looks_like_hardware_name(desc):
+            continue
+        key = _hardware_dedupe_key(desc, dims)
+        qty = None
+        prefix = text[max(0, match.start() - 10) : match.start()]
+        qty_match = re.search(r"(\d+)\s*[x×]\s*$", prefix)
+        if qty_match:
+            qty = int(qty_match.group(1))
+        candidate = RelatedPartHint(
+            code="",
+            name=desc[:200],
+            description=desc[:200],
+            dimensions=dims,
+            qty_per_unit=qty,
+            product_kind="spare_part",
+            sellable_separately=False,
+            category="ferragem",
+        )
+        current = by_key.get(key)
+        if current is None or _pt_name_score(candidate.name) > _pt_name_score(current.name):
+            by_key[key] = candidate
+        if len(by_key) >= 30:
+            break
+    return list(by_key.values())
+
+
+def _collapse_multilingual_hardware(
+    parts: list[RelatedPartHint],
+    *,
+    parent_sku: str,
+) -> list[RelatedPartHint]:
+    """Junta o mesmo item em PT/ES/EN (ex.: parafuso / tornillo / screw)."""
+    kept: list[RelatedPartHint] = []
+    index: dict[str, int] = {}
+    for part in parts:
+        blob = f"{part.name} {part.description}"
+        if not _looks_like_hardware_name(blob):
+            kept.append(part)
+            continue
+        slug = _hardware_type_slug(blob)
+        spec = _hardware_spec(blob)
+        dims = _accepted_hardware_dims(
+            slug, (part.dimensions or "").strip() or extract_dimensions_token(blob), blob=blob
+        )
+        if not _hardware_is_keepable(slug, dims, spec):
+            continue
+        key = _hardware_dedupe_key(part)
+        pt_name = _pt_hardware_name(blob, dims=dims, spec=spec)
+        item = f"{(slug or 'FERRAGEM').upper()}{spec}" if spec else (slug or "FERRAGEM").upper()
+        code = _compose_synthetic_part_code(parent_sku, item=item, dimensions=dims)
+        payload = part.model_dump()
+        payload.update(
+            {
+                "name": pt_name[:200],
+                "description": pt_name[:200],
+                "dimensions": dims,
+                "category": part.category or "ferragem",
+            }
+        )
+        if code:
+            payload["code"] = code[:64]
+            payload["part_code"] = code[:64]
+            payload["sku_suggestion"] = code[:64]
+            payload["sellable_separately"] = True
+        canonical = RelatedPartHint.model_validate(payload)
+        if key in index:
+            i = index[key]
+            prev = kept[i]
+            winner = (
+                canonical if _pt_name_score(canonical.name) >= _pt_name_score(prev.name) else prev
+            )
+            ref = winner.ref_number or canonical.ref_number or prev.ref_number
+            if ref and winner.ref_number != ref:
+                winner = winner.model_copy(update={"ref_number": ref})
+            kept[i] = winner
+            continue
+        index[key] = len(kept)
+        kept.append(canonical)
+    return _prune_incomplete_hardware(kept)
+
+
+def _compose_synthetic_part_code(
+    sku: str,
+    *,
+    item: str = "",
+    dimensions: str = "",
+    name: str = "",
+) -> str:
+    """SKU + medidas (+ item quando existir) → código vendável sintético."""
+    sku_token = re.sub(r"[^A-Za-z0-9\-]+", "-", (sku or "PECA")).strip("-")
+    sku_token = re.sub(r"-{2,}", "-", sku_token)
+    sku_token = sku_token.upper()[:40] or "PECA"
+    # Medidas em minúsculas (400x295x15) para leitura; item em maiúsculas
+    dim_token = re.sub(r"[^0-9.xmm]", "", (dimensions or "").lower().replace(",", "."))
+    dim_token = dim_token.replace("×", "x")
+    if re.match(r"(?i)^M", dimensions or ""):
+        dim_token = "M" + dim_token.lstrip("m")
+    item_token = re.sub(r"[^A-Z0-9]+", "", (item or "").upper())[:8]
+    if not item_token and name:
+        item_token = re.sub(r"[^A-Z0-9]+", "", name.upper())[:12]
+    parts = [sku_token]
+    if item_token:
+        parts.append(item_token)
+    if dim_token:
+        parts.append(dim_token)
+    if len(parts) < 2:
+        return ""
+    return "-".join(parts)[:64]
+
+
+def _compose_part_name(*, item: str = "", description: str = "", dimensions: str = "") -> str:
+    """ITEM + descrição + medidas (omite vazios; não duplica tokens)."""
+    bits: list[str] = []
+    item = (item or "").strip()
+    description = (description or "").strip()
+    dimensions = (dimensions or "").strip()
+    if item:
+        bits.append(item)
+    if description:
+        # se a descrição já começa com o item, não repete
+        if item and description.casefold().startswith(item.casefold()):
+            bits = [description]
+        else:
+            bits.append(description)
+    if dimensions:
+        folded = " ".join(bits).casefold()
+        if dimensions.casefold() not in folded:
+            bits.append(dimensions)
+    return " ".join(bits).strip()
+
+
+def _strip_trailing_dimensions(text: str) -> str:
+    if not text:
+        return ""
+    return re.sub(
+        r"\s+(?:M\s*\d+\s*[x×]\s*\d+(?:[.,]\d+)?\s*mm|"
+        r"\d+(?:[.,]\d+)?\s*[x×]\s*\d+(?:[.,]\d+)?(?:\s*[x×]\s*\d+(?:[.,]\d+)?)?(?:\s*mm)?|"
+        r"\d+(?:[.,]\d+)?\s*mm)\s*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip()
+
+
+def _looks_like_bom_component(comp: ComponentHint, _product: ExtractedProduct) -> bool:
+    """
+    Heurística: promove componente sem código só quando parece peça de montagem/BOM.
+
+    Exige medidas, ou nome típico de painel/ferragem. Não promove rótulos de
+    "conheça seu produto" (ex.: Cesto) só porque o doc é assembly_guide.
+    """
+    if (comp.dimensions or "").strip():
+        return True
+    name = f"{comp.name} {comp.description}"
+    if extract_dimensions_token(name) or _looks_like_hardware_name(name):
+        return True
+    if re.fullmatch(r"[A-Za-z]", (comp.number or "").strip()):
+        return True
+    return bool(
+        re.search(
+            r"(?i)\b(base|lateral|prateleira|tampo|fundo|porta|painel|lado|"
+            r"shelf|door|top|bottom|side|gaveta|divis[oó]ria|costas)\b",
+            name,
+        )
+    )
+
+
+def _guess_bom_components(text: str) -> list[ComponentHint]:
+    """
+    Heurística mock: linhas de lista de peças com item + descrição + medidas.
+    Ex.: '01 1/1 01 Base | Base | Base 400x295x15'
+    """
+    if not re.search(r"(?i)lista\s+de\s+pe[cç]as|list\s+of\s+parts", text):
+        return []
+    components: list[ComponentHint] = []
+    seen: set[str] = set()
+    # Painéis de móvel quase sempre têm 3 medidas (L x P x espessura)
+    panel_dim = re.compile(
+        r"(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)",
+        re.IGNORECASE,
+    )
+    line_re = re.compile(r"(?m)^(?P<item>\d{2})\s+(?P<box>\d+/\d+)\s+(?P<qty>\d+)\s+(?P<body>.+)$")
+    for match in line_re.finditer(text):
+        item = match.group("item")
+        if item in seen:
+            continue
+        body = match.group("body").strip()
+        dim_matches = list(panel_dim.finditer(body))
+        if not dim_matches:
+            continue
+        # Prefere a primeira trinca no corpo (medidas da peça, não contagens 02x 12x 32x)
+        dim_match = dim_matches[0]
+        # Contagens de ferragem costumam ser inteiros pequenos tipo 02x12x32 — ignore
+        nums = [float(dim_match.group(i).replace(",", ".")) for i in (1, 2, 3)]
+        if all(n < 100 and n == int(n) for n in nums) and max(nums) <= 32:
+            if len(dim_matches) > 1:
+                dim_match = dim_matches[1]
+            else:
+                continue
+        dims = extract_dimensions_token(dim_match.group(0)) or "x".join(
+            g.replace(",", ".") for g in dim_match.groups()
+        )
+        # Nome: texto antes do primeiro | ou antes das medidas
+        label_region = body[: dim_match.start()]
+        label = label_region.split("|")[0].strip()
+        label = re.sub(r"\s{2,}", " ", label).strip(" -–:")
+        if not label:
+            continue
+        seen.add(item)
+        qty_raw = match.group("qty")
+        qty: int | None = int(qty_raw) if qty_raw.isdigit() else None
+        components.append(
+            ComponentHint(
+                number=item,
+                name=label[:120],
+                description=label[:200],
+                dimensions=dims,
+                qty_per_unit=qty,
+            )
+        )
+        if len(components) >= 40:
+            break
+    return components
 
 
 def _promote_power_from_specs(product: ExtractedProduct) -> ExtractedProduct:

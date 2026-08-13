@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -22,6 +23,7 @@ class RelatedPartHint(BaseModel):
     product_kind: str = "spare_part"
     sellable_separately: bool = True
     ref_number: str = ""
+    dimensions: str = ""  # ex.: "400x295x15" / medidas da peça
     qty_per_unit: int | str | None = None
     quantity: int | str | None = None  # alias legado
     compatible_with: list[str] = Field(default_factory=list)
@@ -62,10 +64,48 @@ class RelatedPartHint(BaseModel):
             self.qty_per_unit = self.quantity
         if self.quantity is None and self.qty_per_unit is not None:
             self.quantity = self.qty_per_unit
-        # Sem código → não vende avulso (composição apenas)
+        if not (self.dimensions or "").strip():
+            # Aceita variantes que a LLM às vezes coloca em notes/description
+            for blob in (self.notes, self.description, self.name):
+                dims = extract_dimensions_token(str(blob or ""))
+                if dims:
+                    self.dimensions = dims
+                    break
+        # Sem código → não vende avulso (composição apenas); o pós-processamento
+        # pode preencher code sintético (SKU+medidas) e reabilitar a venda.
         if not (self.code or "").strip():
             self.sellable_separately = False
         return self
+
+
+def extract_dimensions_token(text: str) -> str:
+    """Extrai token de medidas (ex.: 400x295x15, 5,0x50mm, M4x20mm, 35mm)."""
+    if not text:
+        return ""
+    metric = re.search(
+        r"\bM\s*(\d+)\s*[x×]\s*(\d+(?:[.,]\d+)?)\s*mm\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if metric:
+        return f"M{metric.group(1)}x{metric.group(2).replace(',', '.')}mm"
+    match = re.search(
+        r"(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)" r"(?:\s*[x×]\s*(\d+(?:[.,]\d+)?))?(\s*mm)?",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        parts = [match.group(1).replace(",", "."), match.group(2).replace(",", ".")]
+        if match.group(3):
+            parts.append(match.group(3).replace(",", "."))
+        token = "x".join(parts)
+        if match.group(4):
+            token = f"{token}mm"
+        return token
+    simple = re.search(r"(\d+(?:[.,]\d+)?)\s*mm\b", text, flags=re.IGNORECASE)
+    if simple:
+        return f"{simple.group(1).replace(',', '.')}mm"
+    return ""
 
 
 # Alias públicos usados pelo ExtractedProduct / prompt
@@ -74,10 +114,30 @@ AccessoryHint = RelatedPartHint
 
 
 class ComponentHint(BaseModel):
-    """Componente/controle numerado (ex.: 'conheça seu produto') — só rotulagem."""
+    """
+    Componente numerado (diagrama / lista de peças de montagem).
+
+    Em guias de montagem (móveis etc.), itens com medidas viram spare_parts
+    vendáveis via código sintético SKU+medidas no pós-processamento.
+    """
 
     number: str = ""
     name: str = ""
+    description: str = ""
+    dimensions: str = ""
+    qty_per_unit: int | str | None = None
+
+    @model_validator(mode="after")
+    def sync_component_fields(self) -> ComponentHint:
+        if not self.description and self.name:
+            self.description = self.name
+        if not self.name and self.description:
+            self.name = self.description
+        if not (self.dimensions or "").strip():
+            dims = extract_dimensions_token(f"{self.name} {self.description}")
+            if dims:
+                self.dimensions = dims
+        return self
 
 
 class TroubleshootingHint(BaseModel):

@@ -9,7 +9,12 @@ from django.http import FileResponse, Http404, HttpRequest, HttpResponse, JsonRe
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET
 
-from apps.catalog.services import autocomplete, cached_filter_count, filter_catalog
+from apps.catalog.services import (
+    CATALOG_SORT_CHOICES,
+    autocomplete,
+    cached_filter_count,
+    filter_catalog,
+)
 from apps.compatibility.services import compat_labels_for_product
 from apps.products.image_validation import gallery_images_queryset
 from apps.products.models import Product
@@ -19,6 +24,11 @@ from apps.tickets.services import cross_sell_for_product
 def _filter_params(request: HttpRequest) -> dict:
     from apps.core.i18n import resolve_locale
 
+    sort = (request.GET.get("sort") or "").strip().lower()
+    allowed = {key for key, _ in CATALOG_SORT_CHOICES}
+    if sort not in allowed:
+        sort = ""
+
     return {
         "q": request.GET.get("q", "").strip(),
         "category": request.GET.get("category", "").strip(),
@@ -26,6 +36,7 @@ def _filter_params(request: HttpRequest) -> dict:
         "model": request.GET.get("model", "").strip(),
         "brand": request.GET.get("brand", "").strip(),
         "compat_model": request.GET.get("compat_model", "").strip(),
+        "sort": sort,
         "locale": resolve_locale(request),
     }
 
@@ -50,6 +61,7 @@ def product_list(request: HttpRequest) -> HttpResponse:
         "locale": locale,
         "voltages": ["110V", "220V", "Bivolt"],
         "categories": _category_choices(),
+        "sort_choices": CATALOG_SORT_CHOICES,
     }
 
     if request.headers.get("HX-Request"):

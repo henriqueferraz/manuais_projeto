@@ -10,7 +10,15 @@
   </div>
   {% if card.refManual %}
   <p class="tp-chat__source mb-2">
-    <span class="tp-chat__source-tag">Fonte técnica: {{ card.refManual }}</span>
+    <span
+      class="tp-chat__source-tag{% if card.description %} tp-chat__source-tag--hint{% endif %}"
+      {% if card.description %}
+      title="{{ card.description }}"
+      tabindex="0"
+      role="note"
+      aria-label="Fonte técnica: {{ card.refManual }}. Passe o mouse ou foque para ver o trecho do manual."
+      {% endif %}
+    >Fonte técnica: {{ card.refManual }}</span>
   </p>
   {% endif %}
   {% if card.description %}

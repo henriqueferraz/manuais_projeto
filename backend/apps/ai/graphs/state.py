@@ -9,8 +9,11 @@ class DiagnosisState(TypedDict, total=False):
     symptom: str
     product_id: int | None
     category_id: int | None
+    category_name: str
+    product_type: str
+    model_code: str
     user_id: int | None
-    decision: str  # manual | orders | ask_details
+    decision: str  # manual | orders | ask_details | ask_product
     ask_message: str
     chunks: list[dict[str, Any]]
     orders_summary: str

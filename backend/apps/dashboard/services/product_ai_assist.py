@@ -19,6 +19,7 @@ from apps.manuals.services.pipeline import (
 )
 from apps.manuals.services.structure import (
     ensure_sales_description,
+    prepare_extracted_product,
     promote_canonical_fields,
 )
 from apps.products.libraries.field_style import apply_field_style
@@ -81,8 +82,7 @@ def extract_manual_for_product_form(
     raw = log.raw_json or {}
     try:
         schema = ExtractedProduct.model_validate(raw)
-        schema = promote_canonical_fields(schema)
-        schema = ensure_sales_description(schema)
+        schema = prepare_extracted_product(schema, log.raw_text_preview or "")
         product_data = schema.model_dump(mode="json")
     except Exception:  # noqa: BLE001
         schema = None
@@ -686,7 +686,7 @@ def link_approved_extraction_to_product(
         _merge_product_specs,
         enqueue_manual_rag_index,
     )
-    from apps.manuals.services.structure import dump_product_json
+    from apps.manuals.services.structure import dump_product_json, prepare_extracted_product
 
     try:
         log = ExtractionLog.objects.select_related("manual").get(pk=extraction_id)
@@ -703,6 +703,8 @@ def link_approved_extraction_to_product(
     data = log.corrected_json or log.raw_json or {}
     try:
         schema = ExtractedProduct.model_validate(data)
+        # Reaplica normalização no save (extrações antigas / JSON sem código sintético).
+        schema = prepare_extracted_product(schema, log.raw_text_preview or "")
     except Exception:  # noqa: BLE001
         schema = None
 
@@ -725,7 +727,7 @@ def link_approved_extraction_to_product(
         # selected_part_codes=None → todas vendáveis; set vazio → nenhuma peça
         codes = selected_part_codes if selected_part_codes is not None else None
         if codes is None:
-            # default: todas as vendáveis com código
+            # default: todas as vendáveis com código (após normalização)
             codes = {
                 (p.code or "").strip()
                 for p in list(schema.spare_parts) + list(schema.accessories)

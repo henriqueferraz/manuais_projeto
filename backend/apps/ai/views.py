@@ -88,11 +88,21 @@ def _get_or_create_session(
     )
 
 
-def _wants_diagnosis(question: str, mode: str | None) -> bool:
+def _wants_diagnosis(
+    question: str,
+    mode: str | None,
+    *,
+    session: ChatSession | None = None,
+) -> bool:
     if mode == "diagnosis":
         return True
     if mode == "chat":
         return False
+    if session is not None:
+        from apps.ai.services.product_context import session_continues_diagnosis
+
+        if session_continues_diagnosis(session, question):
+            return True
     q = question.lower()
     return any(h in q for h in _DIAGNOSIS_HINTS)
 
@@ -142,25 +152,27 @@ def chat_stream(request: HttpRequest) -> HttpResponse:
         return JsonResponse({"detail": "Filtros inválidos."}, status=400)
 
     request_id = getattr(request, "request_id", "") or ""
-    use_diagnosis = _wants_diagnosis(question, mode)
-    diagnosis_meta: dict = {}
+    use_diagnosis = _wants_diagnosis(question, mode, session=session)
+    answer_meta: dict = {}
     try:
         if use_diagnosis:
             user_id = request.user.pk if request.user.is_authenticated else None
-            assistant, token_stream, diagnosis_meta = diagnose_question(
+            assistant, token_stream, answer_meta = diagnose_question(
                 session,
                 question,
                 request_id=request_id,
                 user_id=user_id,
             )
         else:
-            assistant, token_stream = answer_question(
+            assistant, token_stream, answer_meta = answer_question(
                 session,
                 question,
                 request_id=request_id,
             )
     except ValueError as exc:
         return JsonResponse({"detail": str(exc)}, status=400)
+
+    ticket_code = answer_meta.get("ticket_code")
 
     def event_stream():
         meta = {
@@ -172,8 +184,9 @@ def chat_stream(request: HttpRequest) -> HttpResponse:
             "confidence": assistant.confidence,
             "mode": "diagnosis" if use_diagnosis else "chat",
             "diagnosis_card": assistant.diagnosis_card or None,
+            "ticket_code": ticket_code,
         }
-        meta.update({k: v for k, v in diagnosis_meta.items() if k not in meta})
+        meta.update({k: v for k, v in answer_meta.items() if k not in meta})
         yield format_sse("meta", meta)
         for piece in token_stream:
             yield format_sse("token", {"text": piece})
@@ -193,6 +206,7 @@ def chat_stream(request: HttpRequest) -> HttpResponse:
                 "mode": "diagnosis" if use_diagnosis else "chat",
                 "diagnosis_card": assistant.diagnosis_card or None,
                 "recommended_skus": (assistant.diagnosis_card or {}).get("recommendedSkus") or [],
+                "ticket_code": ticket_code,
             },
         )
 

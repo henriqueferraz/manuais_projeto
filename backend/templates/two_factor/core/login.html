@@ -1,0 +1,75 @@
+{% extends "two_factor/_base_focus.html" %}
+{% load i18n two_factor_tags %}
+
+{% block title %}Entrar — {{ brand_name }}{% endblock %}
+
+{% block extra_media %}
+{{ form.media }}
+{% endblock %}
+
+{% block content %}
+<p class="tp-auth__brand">{{ brand_name }}</p>
+
+{% if wizard.steps.current == "auth" %}
+<h1 class="tp-auth__title">Entrar na conta</h1>
+<p class="tp-auth__lead">
+  Acesse o catálogo técnico, pedidos e o assistente de diagnóstico.
+</p>
+{% elif wizard.steps.current == "token" %}
+<h1 class="tp-auth__title">Verificação em duas etapas</h1>
+<p class="tp-auth__lead">{{ device|as_verbose_action }}</p>
+{% elif wizard.steps.current == "backup" %}
+<h1 class="tp-auth__title">Token de backup</h1>
+<p class="tp-auth__lead">
+  Digite um dos tokens de backup que você guardou ao configurar a autenticação.
+</p>
+{% else %}
+<h1 class="tp-auth__title">Entrar</h1>
+{% endif %}
+
+<form class="tp-auth__form" action="" method="post" novalidate>
+  {% csrf_token %}
+  <input type="submit" value="" hidden aria-hidden="true" tabindex="-1" />
+
+  {% include "two_factor/_wizard_forms.html" %}
+
+  {% if other_devices %}
+  <div class="tp-auth__alt">
+    <p class="tp-auth__alt-label">Outro método de autenticação</p>
+    {% for other in other_devices %}
+    <button
+      name="challenge_device"
+      value="{{ other.persistent_id }}"
+      class="btn btn-ghost w-100"
+      type="submit"
+    >
+      {{ other|as_action }}
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% include "two_factor/_wizard_actions.html" %}
+</form>
+
+{% if backup_tokens %}
+<div class="tp-auth__backup">
+  <form action="" method="post">
+    {% csrf_token %}
+    <p class="tp-auth__backup-text">Sem acesso ao autenticador?</p>
+    <button
+      name="wizard_goto_step"
+      type="submit"
+      value="backup"
+      class="btn btn-ghost btn-sm"
+    >
+      Usar token de backup
+    </button>
+  </form>
+</div>
+{% endif %}
+
+<p class="tp-auth__footer">
+  <a class="tp-auth__link" href="{% url 'core:home' %}">Voltar ao início</a>
+</p>
+{% endblock %}

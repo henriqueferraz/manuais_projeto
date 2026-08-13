@@ -196,20 +196,23 @@ de um tipo de conteúdo:
   `voltage`, `power_w` / potência, `weight_kg`, dimensões já mapeadas.
 
 ### Estrutura do produto (quando houver vista explodida / catálogo de peças)
-- `components`: lista de componentes/controles nomeados e numerados como aparecem em
-  diagramas de "componentes"/"conheça seu produto" (ex.: {"number": "05", "name": "Cesto"}).
-  Isto é só rotulagem de diagrama de uso — **não** gera registro de produto (ver seção
-  "Relacionamento produto-peça" abaixo para o que gera).
-- `spare_parts`: lista de peças de reposição, cada uma estruturada como um **mini-registro de
-  produto** (ver schema em "Relacionamento produto-peça").
+- `components`: lista de componentes/controles nomeados e numerados. Use para:
+  1. Diagramas de "conheça seu produto" (ex.: {"number": "05", "name": "Cesto"}) — só
+     rotulagem de uso.
+  2. **Lista de peças de montagem / BOM** (móveis e afins: painéis, laterais, prateleiras)
+     com `number` (item), `name`/`description`, `dimensions` (medidas, ex.: "400x295x15") e
+     `qty_per_unit` quando houver. Estes itens **também** devem aparecer em `spare_parts`
+     (ver regra de código sintético abaixo).
+- `spare_parts`: lista de peças de reposição / montagem, cada uma estruturada como um
+  **mini-registro de produto** (ver schema em "Relacionamento produto-peça").
 - `accessories`: lista de acessórios inclusos ou disponíveis, na mesma estrutura de
   mini-registro de produto usada em `spare_parts` (um acessório também pode ser vendido
   avulso, ex.: bandeja de vapor, espátula, pente de altura de corte).
 
 ## Relacionamento produto-peça (IMPORTANTE)
 
-Documentos como vista explodida, catálogo de peças e lista de acessórios sempre descrevem
-**dois níveis de cadastro** que devem sair prontos para inserção:
+Documentos como vista explodida, catálogo de peças, lista de peças de montagem e lista de
+acessórios sempre descrevem **dois níveis de cadastro** que devem sair prontos para inserção:
 
 1. **Produto principal** — o objeto raiz desta extração (`product_kind: finished_good`),
    cadastrado normalmente no catálogo de produtos.
@@ -219,20 +222,28 @@ Documentos como vista explodida, catálogo de peças e lista de acessórios semp
    de `spare_parts` e `accessories` deve conter, sempre que a informação existir no
    documento:
 
-   - `code`: código da peça (ex.: "707125", "706452") — é o identificador primário da peça;
-     se o documento não fornecer um código, use `""` e sinalize em `low_confidence_fields`.
-   - `name`/`description`: nome da peça em pt-BR, como no documento (ex.: "ALTO FALANTE 8 Ohm
-     3W DOMO PR").
+   - `code`: código da peça do fabricante (ex.: "707125", "706452") — identificador
+     primário. **Se o documento não tiver código de fabricante** (comum em listas de
+     montagem de móveis: só item 01/02 + descrição + medidas), **não invente um código
+     interno da fábrica**. Deixe `code: ""` e preencha `dimensions` + `ref_number` +
+     `name`; o sistema gera o código vendável sintético `SKU+ITEM+MEDIDAS` (ex.:
+     `HENN-C364-01-400x295x15`) e o nome `ITEM + descrição + medidas` (ex.:
+     `01 Base 400x295x15`). O mesmo vale para itens que entrarem só em `components` com
+     medidas: o pós-processamento os promove a `spare_parts` vendáveis.
+   - `dimensions`: medidas da peça quando existirem (ex.: "400x295x15", "5.0x50mm"). Aceita
+     variantes textuais ("medidas", "size", "mm").
+   - `name`/`description`: preferencialmente `ITEM + descrição + medidas` quando não houver
+     código de fabricante; se houver código, use o nome comercial da peça como no documento.
    - `sku_suggestion`: sugestão de SKU para a peça como produto avulso (ex.: marca +
-     código, ex.: "PHILCO-706452").
+     código, ex.: "PHILCO-706452"). Com código sintético, pode espelhar o `code`.
    - `product_kind`: sempre `"spare_part"` para estes itens.
-   - `sellable_separately`: `true` por padrão — só marque `false` se o documento disser
-     explicitamente que a peça não é vendida avulsa (ex.: nota "Somente os itens que possuem
-     códigos serão fornecidos" implica que itens sem código **não** viram produto vendável
-     avulso; nesse caso ainda inclua o item em `spare_parts` para preservar a composição, mas
-     com `sellable_separately: false` e `code: ""`).
-   - `ref_number`: posição/número de referência no diagrama da vista explodida, se houver
-     (ex.: "11", "C1") — não é o SKU, é só a posição no desenho.
+   - `sellable_separately`: `true` por padrão quando a peça puder ser identificada (código
+     de fabricante **ou** item+medidas). Só marque `false` se o documento disser
+     explicitamente que a peça não é vendida avulsa, ou se for item sem qualquer
+     identificador (sem código, sem item e sem medidas) — nesse caso ainda inclua em
+     `spare_parts`/`components` para preservar a composição.
+   - `ref_number`: posição/número de referência no diagrama ou coluna "Item" da lista
+     (ex.: "01", "11", "A", "C1") — não é o SKU, é a posição no desenho/lista.
    - `qty_per_unit`: quantidade dessa peça usada em uma unidade do produto principal (ex.: um
      ventilador pode usar 4 unidades do mesmo parafuso) — extraia da coluna "Nº"/"Qtde" da
      tabela, quando existir.
@@ -242,8 +253,7 @@ Documentos como vista explodida, catálogo de peças e lista de acessórios semp
    - `unit_price` / `ean` / `ncm_classification`: preencha se o documento fornecer (comum em
      fichas técnicas de acessórios, raro em vista explodida).
    - `category`: sempre um valor descritivo do tipo de peça (ex.: "peça de reposição —
-     alto-falante", "acessório — bandeja de vapor"), para facilitar categorização no
-     catálogo.
+     alto-falante", "peça de montagem — lateral", "acessório — bandeja de vapor").
 
    Trate cada entrada de `spare_parts`/`accessories` como um objeto completo o suficiente
    para, sozinho, virar uma linha na tabela de produtos — não apenas uma descrição de texto
@@ -266,6 +276,13 @@ Documentos como vista explodida, catálogo de peças e lista de acessórios semp
 ### Montagem (quando o documento for um guia de montagem de móvel)
 - `assembly_summary`: objeto {"total_steps", "tools_required" (lista), "hardware_list"
   (lista curta de tipos de ferragem/parafuso e quantidade total, se explícito)}
+- **Ferragens / herrajes / hardware**: extraia **somente** de uma lista explícita
+  (seção "Ferragens"/"Hardware"/"Herrajes", "Lista de Peças", catálogo, vista explodida).
+  Não cadastre parafuso/cola/dobradiça citados só no texto de montagem ("use o parafuso L
+  quando…"). Cada item da lista vai em `spare_parts` ou `accessories` com `ref_number`
+  (letra A/B/C… se houver), `name`, `dimensions` e `qty_per_unit`. Sem código de fabricante,
+  deixe `code: ""` — o sistema gera `SKU+ITEM+MEDIDAS`. `hardware_list` pode repetir os
+  rótulos curtos, mas não substitui a lista estruturada.
 
 ### Garantia / conformidade
 - `warranty`: objeto {"legal_days", "additional_days", "total_days"} quando informado
@@ -308,10 +325,37 @@ Documentos como vista explodida, catálogo de peças e lista de acessórios semp
 }
 ```
 
-Note que a primeira peça (com código) vira dois cadastros de fato — produto principal
-"enxerga" ela como componente da composição, e ela mesma existe como linha própria no
-catálogo, pronta para ser vendida avulsa. A segunda (sem código, item de embalagem) fica só
-como registro de composição, sem entrar no catálogo de venda avulsa.
+Note que a primeira peça (com código de fabricante) vira dois cadastros de fato — produto
+principal "enxerga" ela como componente da composição, e ela mesma existe como linha própria
+no catálogo, pronta para ser vendida avulsa. A segunda (sem código, sem item e sem medidas —
+embalagem) fica só como registro de composição.
+
+Quando a lista for de montagem sem código de fabricante, preencha assim (o sistema completa
+o `code` sintético se você deixar vazio):
+
+```json
+{
+  "components": [
+    {"number": "01", "name": "Base", "dimensions": "400x295x15", "qty_per_unit": 1}
+  ],
+  "spare_parts": [
+    {
+      "product_kind": "spare_part",
+      "code": "",
+      "ref_number": "01",
+      "name": "01 Base 400x295x15",
+      "dimensions": "400x295x15",
+      "qty_per_unit": 1,
+      "compatible_with": ["C364"],
+      "sellable_separately": true,
+      "category": "peça de montagem — base"
+    }
+  ]
+}
+```
+
+Resultado esperado após normalização: `code` ≈ `SKU-01-400x295x15` (SKU do produto + item +
+medidas) e nome `01 Base 400x295x15`.
 
 ## Observações finais
 

@@ -131,7 +131,7 @@
           </div>
           <p class="small text-secondary mb-2">
             Marque as peças que devem ser cadastradas junto com o produto (status rascunho).
-            Itens sem código ficam só na composição e não viram produto de venda.
+            Sem código de fabricante, o sistema usa SKU + item + medidas (ex.: painéis de montagem).
           </p>
           <div class="table-responsive">
             <table class="table table-sm align-middle mb-0">
@@ -149,10 +149,6 @@
           </div>
         </div>
 
-        <details class="mb-3">
-          <summary class="small">Ver JSON completo extraído</summary>
-          <pre class="small tp-scroll-pre mt-2 mb-0" id="product-ai-json"></pre>
-        </details>
         <div class="d-flex flex-wrap gap-2">
           <button type="button" class="btn btn-primary" id="product-ai-approve">
             Aprovar e preencher formulário

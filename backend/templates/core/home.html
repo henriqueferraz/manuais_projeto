@@ -118,6 +118,17 @@
           </div>
 
           <div class="tp-home-filters__group">
+            <label class="tp-home-filters__label" for="home-filter-sort">Ordenar por</label>
+            <select id="home-filter-sort" name="sort" class="form-select" data-auto-submit>
+              <option value="">Padrão</option>
+              <option value="name_asc">Nome A–Z</option>
+              <option value="name_desc">Nome Z–A</option>
+              <option value="price_asc">Preço: menor → maior</option>
+              <option value="price_desc">Preço: maior → menor</option>
+            </select>
+          </div>
+
+          <div class="tp-home-filters__group">
             <p class="tp-home-filters__label" id="home-filter-voltage-label">Tensão elétrica</p>
             <div class="tp-home-filters__voltage" role="group" aria-labelledby="home-filter-voltage-label">
               {% for voltage in filter_voltages %}

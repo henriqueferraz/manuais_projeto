@@ -69,6 +69,37 @@ def test_chunking_preserves_table_and_sections():
     assert any(c.section for c in chunks)
 
 
+def test_chunking_keeps_recipe_title_not_ingredient_line():
+    raw = (
+        "MILK SHAKE CREMOSO DE MAMÃO\n"
+        "Ingredientes\n"
+        "2 Xícaras de leite\n"
+        "Modo de Preparo\n"
+        "Bata o milk shake e sirva.\n\n"
+        "8\n\n"
+        "SUCO DE CENOURA COM LARANJA\n"
+        "Ingredientes\n"
+        "2 Cenouras grandes frescas (500 g);             600 ml de água;\n"
+        "1 Laranja;                                      Açúcar a gosto\n\n"
+        "Modo de Preparo\n"
+        "Corte as cenouras em pedaços de 1,5 cm e bata no liquidificador com a laranja.\n"
+        "Adoce a gosto.\n"
+    )
+    chunks = chunk_manual_text(raw)
+    assert chunks
+    joined_sections = " | ".join(c.section for c in chunks)
+    assert "SUCO DE CENOURA" in joined_sections
+    assert "MILK SHAKE" in joined_sections
+    assert "1 Laranja" not in joined_sections
+    # Página "8" não pode engolir o título do suco.
+    assert not any(s.strip().startswith("8") for s in joined_sections.split(" | "))
+    suco_chunks = [c for c in chunks if "SUCO DE CENOURA" in (c.section or "")]
+    assert suco_chunks
+    assert any(
+        "cenoura" in c.content.lower() and "laranja" in c.content.lower() for c in suco_chunks
+    )
+
+
 @pytest.mark.django_db
 def test_retrieve_finds_capacitor_chunk(indexed_manual):
     hits = retrieve(
@@ -139,11 +170,58 @@ def test_chat_stream_sse(indexed_manual, client: Client):
 def test_chat_fallback_when_no_chunks(db, client: Client):
     response = client.post(
         reverse("ai:chat_stream"),
-        data=json.dumps({"question": "procedimento inexistente xyzzy-123"}),
+        data=json.dumps({"question": "procedimento inexistente xyzzy-123", "mode": "chat"}),
         content_type="application/json",
     )
     body = b"".join(response.streaming_content).decode("utf-8")
-    assert "não encontrei" in body.lower() or "nao encontrei" in body.lower()
+    assert "não sei" in body.lower() or "nao sei" in body.lower() or "confiança" in body.lower()
+    assert "ticket_code" in body
+    assert Ticket.objects.filter(origin=Ticket.Origin.CHAT).exists()
+
+
+@pytest.mark.django_db
+def test_chat_low_confidence_refuses_invented_answer(indexed_manual, client: Client):
+    """Hit fraco (<70%) não deve inventar resposta — recusa e abre chamado."""
+    response = client.post(
+        reverse("ai:chat_stream"),
+        data=json.dumps(
+            {
+                "question": "meu equipamento faz barulho estranho no motor",
+                "product_id": indexed_manual.linked_product_id,
+                "mode": "chat",
+            }
+        ),
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    body = b"".join(response.streaming_content).decode("utf-8")
+    assert "não sei" in body.lower() or "nao sei" in body.lower()
+    assert "ticket_code" in body
+    assistant = ChatMessage.objects.filter(role=ChatMessage.Role.ASSISTANT).latest("created_at")
+    assert assistant.found_in_manual is False
+    assert assistant.confidence is not None and assistant.confidence < 0.70
+    assert assistant.session.escalated_ticket_id is not None
+
+
+@pytest.mark.django_db
+def test_chat_high_confidence_keeps_manual_answer(indexed_manual, client: Client):
+    response = client.post(
+        reverse("ai:chat_stream"),
+        data=json.dumps(
+            {
+                "question": "Qual o capacitor de partida do VTE-02?",
+                "product_id": indexed_manual.linked_product_id,
+                "mode": "chat",
+            }
+        ),
+        content_type="application/json",
+    )
+    body = b"".join(response.streaming_content).decode("utf-8")
+    assistant = ChatMessage.objects.filter(role=ChatMessage.Role.ASSISTANT).latest("created_at")
+    assert assistant.found_in_manual is True
+    assert assistant.confidence is not None and assistant.confidence >= 0.70
+    assert "capacitor" in assistant.content.lower() or "fonte" in assistant.content.lower()
+    assert "não sei a resposta" not in body.lower()
 
 
 @pytest.mark.django_db
@@ -243,3 +321,23 @@ def test_mock_embedding_stable():
     assert cosine_similarity(a, b) > 0.99
     c = embed_query("receita de bolo de chocolate")
     assert cosine_similarity(a, c) < cosine_similarity(a, b)
+
+
+def test_openai_confidence_calibrated(settings):
+    from apps.ai.services.confidence import answer_confidence, retrieval_to_confidence
+
+    settings.EMBEDDING_MODE = "openai"
+    # Hit fraco puro fica abaixo de 70%; hit típico útil (≥~0.32) passa.
+    assert retrieval_to_confidence(0.25) < 0.70
+    assert retrieval_to_confidence(0.35) >= 0.70
+    assert retrieval_to_confidence(0.90) <= 0.95
+    # Boost lexical para receita/título mesmo com score moderado.
+    boosted = answer_confidence(
+        0.30,
+        question="tem uma receita de MASSA PARA PIZZA?",
+        section="MASSA PARA PIZZA DE LIQUIDIFICADOR",
+        content="Bata no liquidificador os ingredientes e despeje a massa.",
+    )
+    assert boosted >= 0.70
+    settings.EMBEDDING_MODE = "mock"
+    assert retrieval_to_confidence(0.204) >= 0.70

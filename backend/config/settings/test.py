@@ -19,6 +19,7 @@ AXES_ENABLED = False
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 EXTRACTION_LLM_MODE = "mock"
 CHAT_LLM_MODE = "mock"
+CHAT_MIN_ANSWER_CONFIDENCE = 0.70
 EMBEDDING_MODE = "mock"
 EMBEDDING_DIMS = 64
 USE_PGVECTOR = False

@@ -1,0 +1,12 @@
+{% extends "two_factor/_base.html" %}
+
+{% block content_wrapper %}
+<section class="tp-auth" aria-label="Autenticação">
+  <div class="tp-auth__atmosphere" aria-hidden="true"></div>
+  <div class="tp-auth__shell tp-container">
+    <div class="tp-auth__panel">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</section>
+{% endblock %}

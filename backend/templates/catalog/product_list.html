@@ -65,11 +65,19 @@
       <label class="form-label" for="id_compat_model">Compatível com</label>
       <input id="id_compat_model" name="compat_model" class="form-control" value="{{ params.compat_model }}" placeholder="modelo aparelho" />
     </div>
+    <div class="col-md-2">
+      <label class="form-label" for="id_sort">Ordenar por</label>
+      <select id="id_sort" name="sort" class="form-select">
+        {% for value, label in sort_choices %}
+        <option value="{{ value }}" {% if params.sort == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
   </form>
 
-  <div id="catalog-skeleton" class="htmx-indicator mb-3">
+  <div id="catalog-skeleton" class="htmx-indicator mb-3" aria-hidden="true" aria-busy="false">
     <div class="tp-skeleton tp-skeleton--title"></div>
-    <div class="row g-3">
+    <div class="row g-3" aria-hidden="true">
       <div class="col-md-4"><div class="tp-skeleton tp-skeleton--card tp-skeleton--h-220"></div></div>
       <div class="col-md-4"><div class="tp-skeleton tp-skeleton--card tp-skeleton--h-220"></div></div>
       <div class="col-md-4"><div class="tp-skeleton tp-skeleton--card tp-skeleton--h-220"></div></div>
