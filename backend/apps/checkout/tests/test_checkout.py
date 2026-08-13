@@ -340,6 +340,84 @@ def test_checkout_preference_redirects(client, cart_ready, settings):
 
 
 @pytest.mark.django_db
+def test_checkout_preference_htmx_uses_hx_redirect(client, cart_ready, settings):
+    settings.PAYMENT_PROVIDER = "mercadopago"
+    settings.MERCADOPAGO_CHECKOUT_MODE = "preference"
+    settings.MERCADOPAGO_ACCESS_TOKEN = "TEST-token"
+    settings.PUBLIC_BASE_URL = "https://shop.test"
+    settings.DEBUG = True
+
+    from unittest.mock import MagicMock, patch
+
+    client.post(reverse("checkout:start"), {**SHIPPING, "email": "mp@example.com"})
+    client.post(reverse("checkout:shipping"), {"shipping_option_id": "fixed-econ"})
+
+    mock_sdk = MagicMock()
+    mock_sdk.preference.return_value.create.return_value = {
+        "response": {
+            "id": "pref-htmx",
+            "init_point": "https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=pref-htmx",
+            "sandbox_init_point": "https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id=pref-htmx",
+        }
+    }
+    with patch("mercadopago.SDK", return_value=mock_sdk):
+        r = client.post(
+            reverse("checkout:payment"),
+            HTTP_HX_REQUEST="true",
+        )
+    assert r.status_code == 204
+    assert "mercadopago.com" in r["HX-Redirect"]
+
+
+@pytest.mark.django_db
+def test_checkout_transparent_json_pays(client, cart_ready, settings):
+    settings.PAYMENT_PROVIDER = "mercadopago"
+    settings.MERCADOPAGO_CHECKOUT_MODE = "transparent"
+    settings.MERCADOPAGO_ACCESS_TOKEN = "TEST-token"
+    settings.MERCADOPAGO_PUBLIC_KEY = "TEST-public"
+
+    from unittest.mock import MagicMock, patch
+
+    client.post(reverse("checkout:start"), {**SHIPPING, "email": "brick@example.com"})
+    client.post(reverse("checkout:shipping"), {"shipping_option_id": "fixed-econ"})
+
+    r = client.get(reverse("checkout:payment"))
+    assert r.status_code == 200
+    assert b"cardPaymentBrick_container" in r.content
+
+    mock_sdk = MagicMock()
+    mock_sdk.payment.return_value.create.return_value = {
+        "response": {
+            "id": 555,
+            "status": "approved",
+            "payment_method_id": "master",
+            "card": {"last_four_digits": "3311"},
+        }
+    }
+    payload = {
+        "token": "card_tok_test",
+        "installments": 1,
+        "payment_method_id": "master",
+        "issuer_id": "24",
+        "payer": {
+            "email": "brick@example.com",
+            "identification": {"type": "CPF", "number": "12345678909"},
+        },
+    }
+    with patch("mercadopago.SDK", return_value=mock_sdk):
+        r = client.post(
+            reverse("checkout:payment"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] is True
+    assert Order.objects.get().status == Order.Status.PAID
+
+
+@pytest.mark.django_db
 def test_mp_webhook_syncs_by_external_reference(client, rf, product, settings):
     settings.PAYMENT_PROVIDER = "mercadopago"
     settings.MERCADOPAGO_ACCESS_TOKEN = "TEST-token"
@@ -380,9 +458,7 @@ def test_mp_webhook_syncs_by_external_reference(client, rf, product, settings):
         "apps.checkout.services.fetch_mercadopago_payment",
         return_value=mp_payment,
     ):
-        r = client.get(
-            reverse("checkout:webhook") + f"?topic=payment&id={mp_payment['id']}"
-        )
+        r = client.get(reverse("checkout:webhook") + f"?topic=payment&id={mp_payment['id']}")
     assert r.status_code == 200
     order.refresh_from_db()
     assert order.status == Order.Status.PAID

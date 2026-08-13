@@ -26,6 +26,7 @@ db.sqlite3
 # Secrets
 .env*
 !.env.example
+conta_mercado_pago.md
 
 # PDFs e acervo local de manuais (muito grande — não versionar)
 manuais/

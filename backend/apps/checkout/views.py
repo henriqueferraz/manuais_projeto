@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -16,7 +17,9 @@ from apps.cart.services import cart_totals, get_or_create_cart
 from apps.checkout.forms import CheckoutAddressForm, CheckoutPaymentForm, CheckoutShippingForm
 from apps.checkout.payments import (
     get_provider_name,
+    mercadopago_public_key,
     mercadopago_uses_preference,
+    mercadopago_uses_transparent,
     parse_webhook_event,
     verify_webhook_signature,
 )
@@ -27,7 +30,7 @@ from apps.checkout.services import (
     start_mercadopago_preference_checkout,
     sync_mercadopago_payment_by_id,
 )
-from apps.checkout.shipping import calculate_shipping
+from apps.checkout.shipping import calculate_shipping, pick_option
 from apps.orders.models import Order
 
 SESSION_CHECKOUT = "checkout_draft"
@@ -118,6 +121,23 @@ def checkout_shipping(request: HttpRequest) -> HttpResponse:
     )
 
 
+def _payable_amount(request: HttpRequest, draft: dict, totals: dict):
+    """Total a cobrar no Brick (itens com desconto + frete)."""
+    from decimal import Decimal
+
+    weight = Decimal("0")
+    for item in totals.get("items") or []:
+        w = getattr(item.product, "weight_kg", None) or Decimal("0.5")
+        weight += w * item.quantity
+    options = calculate_shipping(
+        cep=draft["shipping_cep"],
+        subtotal=totals["total_after_discount"],
+        weight_kg=weight,
+    )
+    option = pick_option(options, draft["shipping_option_id"])
+    return totals["total_after_discount"] + option.price, option
+
+
 @require_http_methods(["GET", "POST"])
 def checkout_payment(request: HttpRequest) -> HttpResponse:
     draft = _draft(request)
@@ -126,13 +146,28 @@ def checkout_payment(request: HttpRequest) -> HttpResponse:
 
     cart, totals, coupon_code = _cart_checkout_totals(request)
     use_mp_preference = mercadopago_uses_preference()
+    use_mp_transparent = mercadopago_uses_transparent()
     form = CheckoutPaymentForm(request.POST or None)
+    wants_json = (
+        "application/json" in (request.content_type or "")
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
 
     if request.GET.get("mp") == "failure":
         messages.error(request, "Pagamento no Mercado Pago não concluído. Tente novamente.")
 
     if request.method == "POST":
         try:
+            brick_payload: dict | None = None
+            if use_mp_transparent and wants_json:
+                try:
+                    brick_payload = json.loads(request.body.decode("utf-8") or "{}")
+                except json.JSONDecodeError as exc:
+                    raise ValidationError("JSON de pagamento inválido.") from exc
+                token = str((brick_payload or {}).get("token") or "").strip()
+                if not token:
+                    raise ValidationError("Token do cartão ausente.")
+
             order = build_order_from_cart(
                 cart=cart,
                 email=draft["email"],
@@ -145,7 +180,25 @@ def checkout_payment(request: HttpRequest) -> HttpResponse:
                 checkout_url = start_mercadopago_preference_checkout(order=order)
                 request.session.pop(SESSION_CHECKOUT, None)
                 request.session.pop(COUPON_SESSION_KEY, None)
+                # hx-boost intercepta 302 externo (CORS); HX-Redirect força navegação full-page.
+                if request.headers.get("HX-Request"):
+                    response = HttpResponse(status=204)
+                    response["HX-Redirect"] = checkout_url
+                    return response
                 return HttpResponseRedirect(checkout_url)
+
+            if use_mp_transparent and brick_payload is not None:
+                pay_order(
+                    order=order,
+                    payment_token=str(brick_payload.get("token")),
+                    charge_extra=brick_payload,
+                )
+                request.session.pop(SESSION_CHECKOUT, None)
+                request.session.pop(COUPON_SESSION_KEY, None)
+                success_url = reverse("checkout:success", kwargs={"order_id": order.id})
+                return JsonResponse(
+                    {"ok": True, "order_id": str(order.id), "redirect": success_url}
+                )
 
             if form.is_valid():
                 pay_order(order=order, payment_token=form.cleaned_data["payment_token"])
@@ -154,9 +207,22 @@ def checkout_payment(request: HttpRequest) -> HttpResponse:
                 messages.success(request, f"Pedido {order.number} pago com sucesso.")
                 return redirect("checkout:success", order_id=order.id)
         except ValidationError as exc:
-            messages.error(request, "; ".join(getattr(exc, "messages", [str(exc)])))
+            msg = "; ".join(getattr(exc, "messages", [str(exc)]))
+            if wants_json:
+                return JsonResponse({"ok": False, "error": msg}, status=400)
+            messages.error(request, msg)
         except Exception as exc:  # noqa: BLE001
+            if wants_json:
+                return JsonResponse({"ok": False, "error": str(exc)}, status=500)
             messages.error(request, f"Erro no checkout: {exc}")
+
+    payable = None
+    shipping_option = None
+    if use_mp_transparent:
+        try:
+            payable, shipping_option = _payable_amount(request, draft, totals)
+        except (ValueError, KeyError, ValidationError):
+            payable = totals["total_after_discount"]
 
     return render(
         request,
@@ -168,6 +234,10 @@ def checkout_payment(request: HttpRequest) -> HttpResponse:
             "step": 3,
             "payment_provider": get_provider_name(),
             "mp_preference": use_mp_preference,
+            "mp_transparent": use_mp_transparent,
+            "mp_public_key": mercadopago_public_key(),
+            "mp_amount": float(payable) if payable is not None else None,
+            "shipping_option": shipping_option,
         },
     )
 

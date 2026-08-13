@@ -89,6 +89,19 @@ def mercadopago_uses_preference() -> bool:
     return mode == "preference"
 
 
+def mercadopago_uses_transparent() -> bool:
+    """True se MP usa Checkout Transparente (Card Payment Brick no site)."""
+    if get_provider_name() != "mercadopago":
+        return False
+    mode = (getattr(settings, "MERCADOPAGO_CHECKOUT_MODE", "preference") or "preference").lower()
+    return mode in {"transparent", "brick", "checkout_api"}
+
+
+def mercadopago_public_key() -> str:
+    """Public Key do frontend (Bricks / tokenização)."""
+    return (getattr(settings, "MERCADOPAGO_PUBLIC_KEY", "") or "").strip()
+
+
 def public_base_url() -> str:
     """Base absoluta para back_urls e notification_url."""
     return (getattr(settings, "PUBLIC_BASE_URL", "") or "http://127.0.0.1:8000").rstrip("/")
@@ -152,7 +165,6 @@ def create_mercadopago_preference(
 
     body: dict = {
         "items": pref_items,
-        "payer": {"email": payer_email},
         "external_reference": order_number,
         "back_urls": {
             "success": success_url,
@@ -162,6 +174,10 @@ def create_mercadopago_preference(
         "metadata": {"order_id": str(order_id), "order_number": order_number},
         "statement_descriptor": "TECHPARTS",
     }
+    # Em DEBUG não pré-preenche payer: e-mail real + sessão MP de produção
+    # gera o erro "uma das partes é de teste" sem tela de login.
+    if payer_email and not getattr(settings, "DEBUG", False):
+        body["payer"] = {"email": payer_email}
     # auto_return exige back_urls.success em HTTPS (MP rejeita http://localhost).
     if success_url.startswith("https://"):
         body["auto_return"] = "approved"
@@ -217,10 +233,17 @@ def create_charge(
     order_number: str,
     customer_email: str,
     metadata: dict | None = None,
+    charge_extra: dict | None = None,
 ) -> ChargeResult:
-    """Cria cobrança no provider configurado (`PAYMENT_PROVIDER`)."""
+    """Cria cobrança no provider configurado (`PAYMENT_PROVIDER`).
+
+    Args:
+        charge_extra: campos extras do Checkout Transparente (installments,
+            payment_method_id, issuer_id, payer.identification, etc.).
+    """
     provider = get_provider_name()
     meta = sanitize_payment_payload(metadata or {})
+    extra = sanitize_payment_payload(charge_extra or {})
     logger.info(
         "payment_charge_start",
         provider=provider,
@@ -232,7 +255,13 @@ def create_charge(
         return _charge_stripe(amount, currency, payment_token, order_number, customer_email, meta)
     if provider == "mercadopago":
         return _charge_mercadopago(
-            amount, currency, payment_token, order_number, customer_email, meta
+            amount,
+            currency,
+            payment_token,
+            order_number,
+            customer_email,
+            meta,
+            extra,
         )
     return _charge_mock(amount, payment_token, order_number)
 
@@ -324,34 +353,93 @@ def _charge_stripe(amount, currency, payment_token, order_number, email, meta) -
         )
 
 
-def _charge_mercadopago(amount, currency, payment_token, order_number, email, meta) -> ChargeResult:
+def _charge_mercadopago(
+    amount,
+    currency,
+    payment_token,
+    order_number,
+    email,
+    meta,
+    extra: dict | None = None,
+) -> ChargeResult:
     try:
         import mercadopago
     except ImportError as exc:
         raise RuntimeError("mercadopago não instalado") from exc
 
+    extra = extra or {}
+    payer_in = extra.get("payer") if isinstance(extra.get("payer"), dict) else {}
+    identification = (
+        payer_in.get("identification") if isinstance(payer_in.get("identification"), dict) else {}
+    )
+    installments = int(extra.get("installments") or 1)
+    payment_method_id = str(extra.get("payment_method_id") or "").strip()
+    issuer_raw = extra.get("issuer_id")
+    payer_email = str(payer_in.get("email") or email or "").strip()
+
     sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
-    payment_data = {
+    payment_data: dict = {
         "transaction_amount": float(amount),
         "token": payment_token,
         "description": f"Pedido {order_number}",
-        "installments": 1,
-        "payer": {"email": email},
+        "installments": max(1, installments),
+        "payer": {"email": payer_email},
         "external_reference": order_number,
         "metadata": meta,
     }
+    if payment_method_id:
+        payment_data["payment_method_id"] = payment_method_id
+    if issuer_raw not in (None, "", "null"):
+        try:
+            payment_data["issuer_id"] = int(issuer_raw)
+        except (TypeError, ValueError):
+            payment_data["issuer_id"] = str(issuer_raw)
+    if identification.get("type") and identification.get("number"):
+        payment_data["payer"]["identification"] = {
+            "type": str(identification["type"]),
+            "number": str(identification["number"]),
+        }
+
     result = sdk.payment().create(payment_data)
-    resp = result.get("response", {})
-    status = resp.get("status", "rejected")
+    resp = result.get("response", {}) if isinstance(result, dict) else {}
+    if not isinstance(resp, dict):
+        resp = {}
+    status = str(resp.get("status") or "")
+    # API error (ex.: 401 Unauthorized use of live credentials) não vem como status de pagamento.
+    http_status = result.get("status") if isinstance(result, dict) else None
     ok = status in {"approved", "authorized"}
+    if not ok:
+        detail = resp.get("status_detail") or resp.get("message") or resp.get("error") or "rejected"
+        causes = resp.get("cause")
+        if isinstance(causes, list) and causes:
+            first = causes[0] if isinstance(causes[0], dict) else {}
+            cause_desc = first.get("description") or first.get("code")
+            if cause_desc:
+                detail = f"{detail}: {cause_desc}"
+        logger.warning(
+            "mp_payment_rejected",
+            http_status=http_status,
+            status=status or None,
+            detail=str(detail)[:240],
+            order=order_number,
+        )
+        return ChargeResult(
+            success=False,
+            status="failed",
+            provider_payment_id=str(resp.get("id", "")),
+            last4=str((resp.get("card") or {}).get("last_four_digits", "")),
+            brand=str(resp.get("payment_method_id", "")),
+            failure_message=str(detail)[:250],
+            failure_code=str(resp.get("error") or status or "rejected")[:64],
+            raw=sanitize_payment_payload(resp),
+        )
     return ChargeResult(
-        success=ok,
-        status="paid" if ok else "failed",
+        success=True,
+        status="paid",
         provider_payment_id=str(resp.get("id", "")),
-        last4=str(resp.get("card", {}).get("last_four_digits", "")),
+        last4=str((resp.get("card") or {}).get("last_four_digits", "")),
         brand=str(resp.get("payment_method_id", "")),
-        failure_message="" if ok else str(resp.get("status_detail", "rejected")),
-        raw=sanitize_payment_payload(resp) if isinstance(resp, dict) else {},
+        raw=sanitize_payment_payload(resp),
     )
 
 

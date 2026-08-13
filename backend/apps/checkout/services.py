@@ -112,8 +112,12 @@ def build_order_from_cart(
     return order
 
 
-def pay_order(*, order: Order, payment_token: str) -> Payment:
-    """Cobra o pedido; em sucesso marca pago, baixa estoque e dispara NF-e/e-mail."""
+def pay_order(*, order: Order, payment_token: str, charge_extra: dict | None = None) -> Payment:
+    """Cobra o pedido; em sucesso marca pago, baixa estoque e dispara NF-e/e-mail.
+
+    Args:
+        charge_extra: payload do Card Payment Brick (Checkout Transparente).
+    """
     if order.status not in {
         Order.Status.AWAITING_PAYMENT,
         Order.Status.PAYMENT_FAILED,
@@ -138,6 +142,7 @@ def pay_order(*, order: Order, payment_token: str) -> Payment:
             order_number=order.number,
             customer_email=order.email,
             metadata={"order_id": str(order.id)},
+            charge_extra=charge_extra,
         )
 
         payment.provider_payment_id = result.provider_payment_id

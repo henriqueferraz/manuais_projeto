@@ -242,17 +242,63 @@ SECURE_BROWSER_XSS_FILTER = True
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": ("'self'",),
-        "script-src": ("'self'",),
+        "script-src": (
+            "'self'",
+            "https://sdk.mercadopago.com",
+            "https://http2.mlstatic.com",
+            "https://www.mercadopago.com",
+            "https://www.mercadopago.com.br",
+            "https://*.mlstatic.com",
+        ),
         # Folhas de estilo externas (inclui <style> / <link>); sem unsafe-inline.
-        "style-src-elem": ("'self'", "https://fonts.googleapis.com"),
+        "style-src-elem": (
+            "'self'",
+            "'unsafe-inline'",
+            "https://fonts.googleapis.com",
+            "https://http2.mlstatic.com",
+            "https://*.mlstatic.com",
+            "https://*.mercadopago.com",
+            "https://*.mercadopago.com.br",
+        ),
         # Bootstrap/Popper precisa setar element.style (dropdown, collapse, etc.).
         "style-src-attr": ("'unsafe-inline'",),
-        "font-src": ("'self'", "https://fonts.gstatic.com", "data:"),
-        "img-src": ("'self'", "data:", "https:"),
-        "connect-src": ("'self'",),
+        "font-src": ("'self'", "https://fonts.gstatic.com", "data:", "https://*.mlstatic.com"),
+        "img-src": ("'self'", "data:", "https:", "blob:"),
+        "connect-src": (
+            "'self'",
+            "https://api.mercadopago.com",
+            "https://api.mercadolibre.com",
+            "https://*.mercadopago.com",
+            "https://*.mercadopago.com.br",
+            "https://*.mlstatic.com",
+            "https://http2.mlstatic.com",
+        ),
+        "frame-src": (
+            "'self'",
+            "https://www.mercadopago.com",
+            "https://www.mercadopago.com.br",
+            "https://*.mercadopago.com",
+            "https://*.mercadopago.com.br",
+            "https://*.mlstatic.com",
+            "blob:",
+        ),
+        "worker-src": ("'self'", "blob:"),
+        "child-src": (
+            "'self'",
+            "blob:",
+            "https://*.mercadopago.com",
+            "https://*.mercadopago.com.br",
+        ),
         "frame-ancestors": ("'none'",),
         "base-uri": ("'self'",),
-        "form-action": ("'self'",),
+        # Checkout Pro: form POST → 302 externo; sem isto o browser bloqueia o MP.
+        "form-action": (
+            "'self'",
+            "https://www.mercadopago.com.br",
+            "https://sandbox.mercadopago.com.br",
+            "https://www.mercadopago.com",
+            "https://sandbox.mercadopago.com",
+        ),
     }
 }
 
@@ -352,11 +398,12 @@ PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="mock")
 PAYMENT_WEBHOOK_SECRET = env("PAYMENT_WEBHOOK_SECRET", default="dev-webhook-secret")
 # Base pública para back_urls / notification_url do Checkout Pro (Preference).
 PUBLIC_BASE_URL = env("PUBLIC_BASE_URL", default="http://127.0.0.1:8000").rstrip("/")
-# preference = Checkout Pro (redirect); token = Payments API com card token.
+# preference = Checkout Pro; transparent = Card Payment Brick; token = token manual.
 MERCADOPAGO_CHECKOUT_MODE = env("MERCADOPAGO_CHECKOUT_MODE", default="preference").lower()
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY", default="")
 STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default="")
 MERCADOPAGO_ACCESS_TOKEN = env("MERCADOPAGO_ACCESS_TOKEN", default="")
+MERCADOPAGO_PUBLIC_KEY = env("MERCADOPAGO_PUBLIC_KEY", default="")
 MERCADOPAGO_WEBHOOK_SECRET = env("MERCADOPAGO_WEBHOOK_SECRET", default="")
 MELHOR_ENVIO_ENABLED = env.bool("MELHOR_ENVIO_ENABLED", default=False)
 MELHOR_ENVIO_TOKEN = env("MELHOR_ENVIO_TOKEN", default="")

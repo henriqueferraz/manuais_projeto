@@ -28,6 +28,7 @@ Validação/sanitização de inputs; cuidado com dados sensíveis; proteção co
 - CSRF, XSS, SQL via ORM, HTTPS/HSTS, cookies secure/HttpOnly/SameSite
 - Sessão: `SESSION_COOKIE_AGE` (24h), `SESSION_SAVE_EVERY_REQUEST`, não expira ao fechar o browser (defaults em `.env.example`)
 - CSP, X-Frame-Options, Referrer-Policy
+- `form-action` inclui domínios do Mercado Pago (Checkout Pro redireciona fora do site)
 - R2 privado + URLs assinadas com expiração curta
 - Anonimização de e-mail/CPF/endereço em logs (structlog)
 

@@ -24,7 +24,7 @@ Atualizado em 2026-08-13.
 | `/carrinho/cupom/remover/` | `cart:remove_coupon` | redirect | Remover cupom | sessão |
 | `/checkout/` | `checkout:start` | `checkout/step_address.html` | Endereço | sessão |
 | `/checkout/frete/` | `checkout:shipping` | `checkout/step_shipping.html` | Frete | sessão |
-| `/checkout/pagamento/` | `checkout:payment` | `checkout/step_payment.html` | Pagamento (mock/token ou Preference MP) | sessão |
+| `/checkout/pagamento/` | `checkout:payment` | `checkout/step_payment.html` | Pagamento (Pro / Transparente / token) | sessão |
 | `/checkout/sucesso/<uuid>/` | `checkout:success` | `checkout/success.html` | Pedido criado | sessão |
 | `/assistente/chat/` | `ai:chat` | `ai/chat.html` | Chat / diagnóstico — [`assistente-chat.md`](assistente-chat.md) | sessão |
 | `/assistente/foto/` | `ai:photo_upload` | JSON / partial | Busca por foto | sessão |

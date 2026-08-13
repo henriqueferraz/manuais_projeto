@@ -33,6 +33,8 @@ Runbook: [`deploy.md`](deploy.md).
 - [x] Limites `MANUAL_MAX_UPLOAD_BYTES` / `PHOTO_MAX_UPLOAD_BYTES` — em settings
 - [x] WhatsApp: verificar token + HMAC; `WHATSAPP_MODE=live` só com BSP homologado (ADR-0002)
 - [x] Webhooks de pagamento com assinatura validada — `checkout/payments.py`
+- [x] CSP `form-action` permite Checkout Pro MP (`www`/`sandbox` mercadopago.com.br) — senão o browser bloqueia o 302 do form
+- [x] CSP `script-src`/`connect-src`/`frame-src` permitem SDK Brick (Checkout Transparente)
 
 ## Observabilidade
 

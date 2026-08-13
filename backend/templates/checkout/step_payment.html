@@ -1,37 +1,74 @@
 {% extends "base.html" %}
-{% load money_tags %}
+{% load money_tags static %}
 {% block title %}Checkout — pagamento{% endblock %}
 {% block content %}
-<section
-  class="tp-section tp-section--narrow"
-  hx-boost="true"
-  hx-target="main#conteudo"
-  hx-select="main#conteudo > *"
-  hx-swap="innerHTML"
-  hx-indicator="#checkout-skeleton"
->
+<section class="tp-section tp-section--narrow">
   {% include "checkout/partials/steps.html" %}
   <h1 class="font-headline-lg">Pagamento</h1>
-
-  <div id="checkout-skeleton" class="tp-checkout-skeleton htmx-indicator" aria-hidden="true">
-    <div class="tp-skeleton tp-skeleton--title"></div>
-    <div class="tp-skeleton tp-skeleton--line"></div>
-    <div class="tp-skeleton tp-skeleton--card tp-skeleton--h-96"></div>
-  </div>
 
   {% if mp_preference %}
     <p class="text-secondary">
       Você será redirecionado ao <strong>Mercado Pago</strong> (Checkout Pro) para concluir
       o pagamento com segurança. Não coletamos dados de cartão neste site.
     </p>
+    {% if debug %}
+    <div class="alert alert-warning small border" role="status">
+      <strong>Sandbox local:</strong> o MP não mostra login se o Chrome já estiver com sua
+      conta <em>real</em> do Mercado Livre. Abra o pagamento em
+      <strong>janela anônima</strong> (ou saia de mercadopago.com.br / mercadolivre.com.br)
+      e entre com o <strong>usuário comprador de teste</strong>
+      (<code>TESTUSER…</code> em <code>conta_mercado_pago.md</code>) — não use a conta vendedor.
+    </div>
+    {% endif %}
     <p class="font-technical mt-2">
       Itens {{ totals.subtotal|brl }}{% if totals.discount %} · Desconto −{{ totals.discount|brl }} · Líquido {{ totals.total_after_discount|brl }}{% endif %}
     </p>
-    <form method="post" class="d-flex gap-2 mt-3" autocomplete="off" hx-boost="false">
+    <form
+      method="post"
+      action="{% url 'checkout:payment' %}"
+      class="d-flex gap-2 mt-3"
+      autocomplete="off"
+      hx-boost="false"
+      hx-disable="true"
+      data-mp-external-checkout="1"
+      target="_blank"
+      rel="noopener"
+    >
       {% csrf_token %}
-      <a class="btn btn-ghost" href="{% url 'checkout:shipping' %}">Voltar</a>
+      <a class="btn btn-ghost" href="{% url 'checkout:shipping' %}" hx-boost="false">Voltar</a>
       <button type="submit" class="btn btn-primary">Pagar com Mercado Pago</button>
     </form>
+    <p class="text-secondary small mt-2">O checkout abre em nova aba (melhor para login do usuário de teste).</p>
+  {% elif mp_transparent %}
+    <p class="text-secondary">
+      Checkout Transparente: pague com cartão sem sair do site.
+      Os dados sensíveis ficam no <strong>Mercado Pago</strong> (PCI).
+    </p>
+    <p class="font-technical mt-2">
+      Total
+      {% if mp_amount %}R$ {{ mp_amount|floatformat:2 }}{% else %}{{ totals.total_after_discount|brl }}{% endif %}
+      {% if shipping_option %} · Frete {{ shipping_option.service }}{% endif %}
+    </p>
+    {% if not mp_public_key %}
+      <div class="alert alert-warning" role="alert">
+        Configure <code>MERCADOPAGO_PUBLIC_KEY</code> no ambiente para carregar o Brick.
+      </div>
+    {% else %}
+      <div
+        id="mp-brick-wrap"
+        class="mt-3"
+        data-mp-public-key="{{ mp_public_key }}"
+        data-mp-amount="{{ mp_amount }}"
+        data-mp-email="{{ draft.email }}"
+        data-mp-pay-url="{% url 'checkout:payment' %}"
+      >
+        <p id="mp-brick-status" class="text-secondary small" role="status">Preparando formulário…</p>
+        <div id="cardPaymentBrick_container"></div>
+      </div>
+      <form id="mp-csrf-holder" class="d-none">{% csrf_token %}</form>
+      <p id="mp-brick-error" class="text-danger small mt-2" hidden></p>
+      <a class="btn btn-ghost mt-3" href="{% url 'checkout:shipping' %}">Voltar</a>
+    {% endif %}
   {% else %}
     <p class="text-secondary">
       O servidor recebe apenas o <strong>token</strong> do gateway — nunca o número do cartão.
@@ -43,7 +80,8 @@
         Modo token MP ativo (<code>MERCADOPAGO_CHECKOUT_MODE=token</code>).
       {% endif %}
     </div>
-    <form method="post" class="vstack gap-3 mt-3" autocomplete="off">
+    <form method="post" class="vstack gap-3 mt-3" autocomplete="off" hx-boost="true"
+          hx-target="main#conteudo" hx-select="main#conteudo > *" hx-swap="innerHTML">
       {% csrf_token %}
       <div>
         <label class="form-label" for="{{ form.payment_token.id_for_label }}">{{ form.payment_token.label }}</label>
