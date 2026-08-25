@@ -7,6 +7,7 @@ E-commerce de peças de reposição com **assistente de IA**: extração de manu
 **Stack:** Python 3.13+ · Django 6 · htmx · PostgreSQL/pgvector · Celery · LangGraph · OpenAI (`*_LLM_MODE`, default `mock` no CI)
 
 **Repositório:** [henriqueferraz/manuais_projeto](https://github.com/henriqueferraz/manuais_projeto)  
+**Quadro Kanban:** [TechParts Senac M2.2](https://github.com/users/henriqueferraz/projects/2)  
 **Entrega Senac M2.2:** enunciado [`docs/senac.md`](docs/senac.md) · plano [`docs/entrega.md`](docs/entrega.md)  
 **Vídeo:** a publicar na Fase E (YouTube **não listado**; link neste README quando existir).
 
@@ -323,9 +324,9 @@ Teste A: `pytest apps/ai/tests/test_diagnosis.py -k adversarial`.
 
 Refinamento (problema → prompt/grafo → resultado): [`docs/prompts/ciclo-refinamento.md`](docs/prompts/ciclo-refinamento.md).
 
-**Limitações:** TechParts local precisa de túnel para o n8n público; nightly E2E de chat desatualizado; Kanban/`develop` ainda na Fase D; vídeo na Fase E.
+**Limitações:** TechParts local precisa de túnel para o n8n público; nightly E2E de chat desatualizado; vídeo e submissão AVA na Fase E; professor ainda sem convite no GitHub (username no AVA).
 
-**Evolução:** corrigir o spec Playwright; named tunnel Cloudflare se a demo for longa; GitHub Project.
+**Evolução:** corrigir o spec Playwright; named tunnel Cloudflare se a demo for longa.
 
 ---
 
@@ -337,7 +338,7 @@ Refinamento (problema → prompt/grafo → resultado): [`docs/prompts/ciclo-refi
 | [`docs/prompts/`](docs/prompts/) | Prompts + ciclo de refinamento |
 | [`docs/qa/`](docs/qa/) | Review de commit real + teste por risco |
 | [`docs/evidencias/`](docs/evidencias/) | CI, logs correlacionados, anomalia |
-| [`docs/github-kanban.md`](docs/github-kanban.md) | Fase D: `develop`, issues Senac, Project |
+| [`docs/github-kanban.md`](docs/github-kanban.md) | Fase D: Kanban, `develop`, issues Senac |
 | [`docs/lowcode/README.md`](docs/lowcode/README.md) | n8n / Fase B |
 | [`docs/regra-ouro-documentacao.md`](docs/regra-ouro-documentacao.md) | Atualizar docs após cada mudança |
 | [`docs/pages/`](docs/pages/) | Inventário de telas |
