@@ -3,7 +3,7 @@
 Auditoria do TechParts AI contra o enunciado [`senac.md`](senac.md) (IA para Desenvolvedores T1, Módulo 2, Semana 12).
 
 **Data da análise:** 20/08/2026  
-**Veredito (atualizado 25/08/2026 após Fase C):** o sistema **ainda não cumpre 100%**. Fases A–C fechadas (grafo, n8n, README 5.2, `docs/prompts|qa|evidencias`). Restam D–E (Kanban/`develop`, vídeo, AVA).
+**Veredito (atualizado 25/08/2026 após Fase D):** o sistema **ainda não cumpre 100%**. Fases A–D fechadas (grafo, n8n, README 5.2, evidências, Kanban + `develop`). Resta E (vídeo, AVA) e o convite do professor (username no AVA).
 
 **Peso:** Avaliação M2.2 — 60% da nota do módulo.  
 **Liberação:** 21/08/26 às 22h.  
@@ -39,8 +39,9 @@ Entrega individual: repositório GitHub, GitHub Project Kanban, README completo,
 | Low-code / no-code visual | Sim (Fase B) | n8n importável + `OpsAlert` no painel |
 | README Senac (item 5.2) | Sim (Fase C) | Seções no [`README.md`](../README.md); vídeo TBD |
 | `/docs/prompts`, `/docs/qa`, `/docs/evidencias` | Sim (Fase C) | Pastas criadas |
-| Fluxo `develop` → `feature/*` → `main` | Parcial | [`develop`](https://github.com/henriqueferraz/manuais_projeto/tree/develop) criada; PRs ainda não |
-| GitHub Project Kanban | Parcial | Issues `#43`–`#53`; Project V2 pede `gh auth refresh -s project` |
+| Fluxo `develop` → `feature/*` → `main` | Sim (Fase D) | PRs [#54](https://github.com/henriqueferraz/manuais_projeto/pull/54) e [#55](https://github.com/henriqueferraz/manuais_projeto/pull/55) |
+| GitHub Project Kanban | Sim (Fase D) | [Project nº 2](https://github.com/users/henriqueferraz/projects/2); `#48` em Andamento |
+| Professor colaborador | Não | Username só no AVA |
 | Vídeo 5.5 | Não | Sem gravação nem link |
 
 O produto é **maior** que o pedido. O risco de nota é **não demonstrar** o que o avaliador vai procurar, não falta de loja.
@@ -110,9 +111,9 @@ Nota 0–10. Projetos com plágio, credenciais expostas, artefatos inacessíveis
 | Nº | Critério | Peso | Status | Ação |
 |---|---|---|---|---|
 | 1 | Vídeo YouTube não listado, ≤ 12 min, pontos do 5.5 | 1,00 | Ausente | Fase E |
-| 2 | Cards no quadro GitHub | 0,50 | Issues criadas; Project V2 TBD | Arrastar no board |
-| 3 | Quadro atualizado durante o desenvolvimento | 0,50 | Histórico nas issues; board TBD | Mover `#48` |
-| 4 | Branches `develop` / feature / `main`, commits semânticos | 0,75 | `develop` existe; PRs daqui pra frente | PR A–C |
+| 2 | Cards no quadro GitHub | 0,50 | Feito ([Project nº 2](https://github.com/users/henriqueferraz/projects/2)) | URL no AVA |
+| 3 | Quadro atualizado durante o desenvolvimento | 0,50 | Feito; `#48` em Andamento | Fase E fecha `#48` |
+| 4 | Branches `develop` / feature / `main`, commits semânticos | 0,75 | Feito (PRs #54 → develop, #55 → main) | — |
 | 5 | README + docs para compreender, executar e avaliar | 0,75 | Feito (Fase C); falta URL do vídeo | Fase E |
 | 6 | App funcional + 2 cenários + saída estruturada | 0,75 | Feito (README + `seed_beta`) | Demo no vídeo |
 | 7 | LangGraph (state, seq, condicional, **paralelo**, parada) | 0,75 | Feito (Fase A) | — |
@@ -154,16 +155,16 @@ Sugestão de branches (enunciado): `feature/langgraph-agente`, `feature/tool-int
 - [x] [`evidencias/`](evidencias/README.md) — CI (Ruff + Pytest), correlação `request_id`/`diagnosis_done`, anomalia E2E nightly, tendência
 - [x] README item 5.2 (cenários, diagrama, low-code). **URL do vídeo** = Fase E.
 
-### Fase D — GitHub (contínuo até 31/08) — **iniciada 2026-08-25**
+### Fase D — GitHub — **feita (2026-08-25)**
 
 Guia: [`github-kanban.md`](github-kanban.md).
 
-11. [ ] GitHub Project com colunas do enunciado — **falta criar no browser** (`gh` sem scope `project`). Depois colar a URL no guia e no AVA.
-12. [x] Um card por tema (issues `#43`–`#53`).
-13. [x] Cada card: objetivo, resultado, evidência; `#48` aberto (vídeo/AVA).
-14. [x] Branch [`develop`](https://github.com/henriqueferraz/manuais_projeto/tree/develop); PRs `feature/*` → `develop` daqui pra frente. Merge na `main` **antes** do prazo (código A–C ainda local até o PR).
-15. [ ] Commits semânticos no fluxo `develop` (ao abrir o PR das Fases A–C).
-16. [ ] Professor colaborador (username no AVA).
+11. [x] GitHub Project com colunas do enunciado: [TechParts Senac M2.2](https://github.com/users/henriqueferraz/projects/2).
+12. [x] Um card por tema (issues `#43`–`#53` no Project).
+13. [x] Cada card: objetivo, resultado, evidência; `#48` em **Em Andamento** (vídeo/AVA = Fase E).
+14. [x] Branch [`develop`](https://github.com/henriqueferraz/manuais_projeto/tree/develop); PRs `feature/*` → `develop` → `main` ([#54](https://github.com/henriqueferraz/manuais_projeto/pull/54), [#55](https://github.com/henriqueferraz/manuais_projeto/pull/55)).
+15. [x] Commits semânticos no fluxo `develop` / `main`.
+16. [ ] Professor colaborador (username no AVA — fora do repo).
 17. [x] `.env` não versionado (`.gitignore`); só `.env.example`.
 
 ### Fase E — Vídeo e AVA (último dia útil)
@@ -193,10 +194,10 @@ Marcar à medida que fechar. Estado na data da análise: quase tudo **aberto** n
 
 ### Repositório e organização
 
-- [ ] Repositório no GitHub; professor colaborador; nenhum segredo/`.env` versionado
-- [ ] Quadro Kanban criado e atualizado **durante** o desenvolvimento
-- [ ] Fluxo `develop` → `feature/*` → `develop` → `main`, commits semânticos
-- [ ] Versão final funcional na `main`
+- [x] Repositório no GitHub; nenhum segredo/`.env` versionado — **falta** professor colaborador (AVA)
+- [x] Quadro Kanban criado e atualizado ([Project nº 2](https://github.com/users/henriqueferraz/projects/2); `#48` ainda em andamento)
+- [x] Fluxo `develop` → `feature/*` → `develop` → `main`, commits semânticos
+- [x] Versão funcional na `main` (congelar só após o vídeo/AVA)
 
 ### Domínio, arquitetura e agente
 
