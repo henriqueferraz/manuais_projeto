@@ -780,7 +780,7 @@ Itens entregues após o backlog T-P.1–T-P.6, sem nova fase numerada:
 - [x] **Senac Fase A** — LangGraph paralelo, tools, `recursion_limit`, adversarial, GET `/ops/hooks/lowcode/` — [`entrega.md`](entrega.md)
 - [x] **Senac Fase B** — n8n (JSON importável) + POST `/ops/hooks/lowcode/report/` → `OpsAlert`; [`lowcode/README.md`](lowcode/README.md)
 - [x] **Senac Fase C** — README 5.2, [`prompts/`](prompts/README.md), [`qa/`](qa/README.md), [`evidencias/`](evidencias/README.md) — [`entrega.md`](entrega.md)
-- [x] **Senac Fase D (início)** — branch `develop` + issues `#43`–`#53`; Project V2 e professor TBD — [`github-kanban.md`](github-kanban.md)
+- [x] **Senac Fase D** — Project [nº 2](https://github.com/users/henriqueferraz/projects/2), issues `#43`–`#53`, fluxo `develop` (PRs #54/#55); professor TBD (AVA) — [`github-kanban.md`](github-kanban.md)
 
 ### Ordem sugerida pós-F8
 
