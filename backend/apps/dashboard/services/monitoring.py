@@ -146,6 +146,31 @@ def raise_ops_alert(
     return alert
 
 
+def ingest_lowcode_report(payload: dict, *, notify: bool = True) -> OpsAlert:
+    """Grava o relatório do n8n/Make como alerta visível em `/dashboard/monitoramento/`."""
+    from apps.core.lowcode import parse_lowcode_report
+
+    report = parse_lowcode_report(payload)
+    severity = report.severity
+    if severity not in {c.value for c in OpsAlert.Severity}:
+        severity = OpsAlert.Severity.WARNING
+    message = report.message.strip() or (
+        f"Falhas 24h: {report.failures_24h}. Filas: {report.queues}"
+    )
+    return raise_ops_alert(
+        kind=OpsAlert.Kind.QUEUE,
+        severity=severity,
+        title=report.title,
+        message=message,
+        payload={
+            "source": report.source,
+            "failures_24h": report.failures_24h,
+            "queues": report.queues,
+        },
+        notify=notify,
+    )
+
+
 def _dispatch_alert(alert: OpsAlert) -> None:
     """E-mail ops + webhook Slack opcional."""
     import structlog

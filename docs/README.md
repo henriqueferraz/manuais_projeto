@@ -52,6 +52,18 @@ Guia rápido de **quais documentos usar**. Evita ler rascunhos obsoletos ou font
 | [`design/design.md`](design/design.md) | **Obsoleto** (rascunho; cyan como CTA — não seguir) |
 | [`design/PROTOTYPE-CONFRONTATION.md`](design/PROTOTYPE-CONFRONTATION.md) | Confronto protótipo × produção |
 
+## Entrega Senac (M2.2)
+
+| Documento | Uso |
+|---|---|
+| [`senac.md`](senac.md) | Enunciado oficial (requisitos, critérios, checklist) |
+| [`entrega.md`](entrega.md) | Gap analysis e plano para cumprir 100% da entrega |
+| [`prompts/`](prompts/README.md) | Prompts vigentes + ciclo de refinamento |
+| [`qa/`](qa/README.md) | Review de commit real + teste priorizado por risco |
+| [`evidencias/`](evidencias/README.md) | CI, correlação de logs, anomalia E2E |
+| [`github-kanban.md`](github-kanban.md) | Fase D: `develop`, issues, como criar o Project |
+| [`lowcode/README.md`](lowcode/README.md) | Fluxo n8n (gatilho, HTTP, alerta no painel) |
+
 ## Beta e qualidade
 
 | Documento | Uso |

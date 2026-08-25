@@ -11,7 +11,14 @@ SECRET_KEY = env("SECRET_KEY", default="dev-only-change-me-techparts-f2")
 
 # runserver em 0.0.0.0:8000 — Host do browser costuma ser localhost/127.0.0.1
 _local_hosts = ("localhost", "127.0.0.1", "web")
-ALLOWED_HOSTS = list(dict.fromkeys([*BASE_ALLOWED_HOSTS, *_local_hosts]))
+# Túnel para o n8n EasyPanel falar com o Django só-local (Fase B Senac).
+_tunnel_hosts = (
+    ".trycloudflare.com",
+    ".ngrok-free.app",
+    ".ngrok.io",
+    ".ngrok.app",
+)
+ALLOWED_HOSTS = list(dict.fromkeys([*BASE_ALLOWED_HOSTS, *_local_hosts, *_tunnel_hosts]))
 _local_origins = (
     "http://localhost:8000",
     "http://127.0.0.1:8000",

@@ -41,6 +41,13 @@ nav:
       - Plano de tarefas: plano-tarefas.md
       - Deploy: deploy.md
       - Hardening: security-hardening.md
+  - Entrega Senac:
+      - Plano: entrega.md
+      - Prompts: prompts/README.md
+      - QA: qa/README.md
+      - Evidências: evidencias/README.md
+      - Low-code: lowcode/README.md
+      - GitHub / Kanban: github-kanban.md
   - ADRs: adr/README.md
   - API interna (código):
       - Visão geral: api/index.md

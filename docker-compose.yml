@@ -161,7 +161,26 @@ services:
       retries: 5
       start_period: 120s
 
+  # UI: http://localhost:5678 — importar docs/lowcode/n8n-techparts-ops.json
+  n8n:
+    profiles: ["n8n"]
+    image: docker.n8n.io/n8nio/n8n:latest
+    ports:
+      - "${N8N_PUBLISH_PORT:-5678}:5678"
+    environment:
+      GENERIC_TIMEZONE: America/Sao_Paulo
+      N8N_HOST: localhost
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      WEBHOOK_URL: http://localhost:5678/
+      LOWCODE_WEBHOOK_SECRET: ${LOWCODE_WEBHOOK_SECRET:-}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   pgdata:
   media_data:
   clamav_data:
+  n8n_data:

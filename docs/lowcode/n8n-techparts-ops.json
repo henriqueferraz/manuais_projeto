@@ -1,0 +1,181 @@
+{
+  "name": "TechParts — snapshot ops",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Executar agora (demo)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "A cada 15 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 220]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.TECHPARTS_BASE_URL }}/ops/hooks/lowcode/?demo=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Lowcode-Secret",
+              "value": "={{ $env.LOWCODE_WEBHOOK_SECRET }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "GET snapshot TechParts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [280, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-alert",
+              "leftValue": "={{ $json.alert_recommended }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "App pediu alerta?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [560, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TECHPARTS_BASE_URL }}/ops/hooks/lowcode/report/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Lowcode-Secret",
+              "value": "={{ $env.LOWCODE_WEBHOOK_SECRET }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ source: 'n8n', title: 'Alerta ops (n8n)', message: 'Falhas 24h: ' + $json.failures_24h + ' | filas: ' + JSON.stringify($json.queues), failures_24h: $json.failures_24h, queues: $json.queues, severity: 'warning' }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "a1b2c3d4-0005-4000-8000-000000000005",
+      "name": "POST relatório no painel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [840, 0]
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0006-4000-8000-000000000006",
+      "name": "Sem alerta",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [840, 220]
+    }
+  ],
+  "connections": {
+    "Executar agora (demo)": {
+      "main": [
+        [
+          {
+            "node": "GET snapshot TechParts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A cada 15 min": {
+      "main": [
+        [
+          {
+            "node": "GET snapshot TechParts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET snapshot TechParts": {
+      "main": [
+        [
+          {
+            "node": "App pediu alerta?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "App pediu alerta?": {
+      "main": [
+        [
+          {
+            "node": "POST relatório no painel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sem alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "techparts-lowcode-v1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

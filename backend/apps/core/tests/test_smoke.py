@@ -1,5 +1,7 @@
 """Smoke tests — R3 desde o primeiro PR de código (F2)."""
 
+import json
+
 import pytest
 from django.contrib.auth.models import Group, User
 from django.test import Client
@@ -13,6 +15,94 @@ def test_health_ok():
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
     assert "X-Request-ID" in response
+
+
+@pytest.mark.django_db
+def test_lowcode_hook_open_when_secret_empty(settings):
+    settings.LOWCODE_WEBHOOK_SECRET = ""
+    client = Client()
+    response = client.get(reverse("core:lowcode_hook"))
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert "queues" in body
+    assert "failures_24h" in body
+
+    posted = client.post(reverse("core:lowcode_hook"))
+    assert posted.status_code == 200
+
+
+@pytest.mark.django_db
+def test_lowcode_hook_requires_secret_when_configured(settings):
+    settings.LOWCODE_WEBHOOK_SECRET = "n8n-dev-secret"
+    client = Client()
+    denied = client.get(reverse("core:lowcode_hook"))
+    assert denied.status_code == 401
+    ok = client.get(
+        reverse("core:lowcode_hook"),
+        HTTP_X_LOWCODE_SECRET="n8n-dev-secret",
+    )
+    assert ok.status_code == 200
+    assert ok.json()["service"] == "techparts"
+
+
+@pytest.mark.django_db
+def test_lowcode_report_creates_ops_alert(settings):
+    from apps.dashboard.models import OpsAlert
+
+    settings.LOWCODE_WEBHOOK_SECRET = ""
+    client = Client()
+    res = client.post(
+        reverse("core:lowcode_report"),
+        data=json.dumps(
+            {
+                "source": "n8n",
+                "title": "Alerta ops (n8n)",
+                "message": "Falhas 24h: 3",
+                "failures_24h": 3,
+                "queues": {"awaiting_review": 1},
+                "severity": "warning",
+            }
+        ),
+        content_type="application/json",
+    )
+    assert res.status_code == 201
+    body = res.json()
+    assert body["status"] == "ok"
+    assert OpsAlert.objects.filter(pk=body["alert_id"]).exists()
+    alert = OpsAlert.objects.get(pk=body["alert_id"])
+    assert alert.payload.get("source") == "n8n"
+    assert "3" in alert.message or alert.payload.get("failures_24h") == 3
+
+
+@pytest.mark.django_db
+def test_lowcode_report_rejects_invalid_json(settings):
+    settings.LOWCODE_WEBHOOK_SECRET = ""
+    client = Client()
+    res = client.post(
+        reverse("core:lowcode_report"),
+        data="not-json",
+        content_type="application/json",
+    )
+    assert res.status_code == 400
+
+
+@pytest.mark.django_db
+def test_lowcode_snapshot_includes_alert_flag(settings):
+    settings.LOWCODE_WEBHOOK_SECRET = ""
+    client = Client()
+    body = client.get(reverse("core:lowcode_hook")).json()
+    assert "alert_recommended" in body
+    assert body["alert_recommended"] in {True, False}
+
+
+@pytest.mark.django_db
+def test_lowcode_snapshot_demo_forces_alert(settings):
+    settings.LOWCODE_WEBHOOK_SECRET = ""
+    client = Client()
+    body = client.get(reverse("core:lowcode_hook"), {"demo": "1"}).json()
+    assert body["demo"] is True
+    assert body["alert_recommended"] is True
 
 
 @pytest.mark.django_db
