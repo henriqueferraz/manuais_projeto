@@ -1,4 +1,9 @@
-"""Grafo de extração com interrupt HITL (F6 / T-6.2)."""
+"""Grafo de extração com interrupt HITL (F6 / T-6.2).
+
+Condição de parada: `human_review` chama `interrupt()` e o grafo não segue
+para `finalize` até aprovação/rejeição humana. `recursion_limit` em
+`run_extraction_graph` / `resume_extraction_graph` evita loop indefinido.
+"""
 
 from __future__ import annotations
 
@@ -22,6 +27,7 @@ logger = structlog.get_logger(__name__)
 # no mesmo worker; thread_id fica no ExtractionLog para correlacionar.
 _CHECKPOINTER = MemorySaver()
 _COMPILED = None
+EXTRACTION_RECURSION_LIMIT = 12
 
 
 class ExtractionGraphState(TypedDict, total=False):
@@ -187,7 +193,10 @@ def get_extraction_graph():
 def run_extraction_graph(extraction_id: int) -> ExtractionLog:
     """Inicia o grafo e pausa no interrupt HITL."""
     graph = get_extraction_graph()
-    config = {"configurable": {"thread_id": thread_id_for(extraction_id)}}
+    config = {
+        "configurable": {"thread_id": thread_id_for(extraction_id)},
+        "recursion_limit": EXTRACTION_RECURSION_LIMIT,
+    }
     try:
         graph.invoke({"extraction_id": extraction_id}, config=config)
     except Exception as exc:  # noqa: BLE001
@@ -212,7 +221,10 @@ def resume_extraction_graph(
 ) -> ExtractionLog:
     """Retoma o grafo a partir do interrupt (não reinicia extract/structure)."""
     graph = get_extraction_graph()
-    config = {"configurable": {"thread_id": thread_id_for(extraction_id)}}
+    config = {
+        "configurable": {"thread_id": thread_id_for(extraction_id)},
+        "recursion_limit": EXTRACTION_RECURSION_LIMIT,
+    }
     payload = {
         "action": action,
         "reviewer_id": reviewer_id,

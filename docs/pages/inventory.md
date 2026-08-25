@@ -78,6 +78,8 @@ Demais rotas `django-two-factor` (setup/profile/QR) usam templates em `two_facto
 | `/checkout/api/frete/` | Cotação de frete |
 | `/checkout/webhooks/pagamento/` | Webhook pagamento (Stripe/mock assinatura; MP IPN) |
 | `/canais/whatsapp/webhook/` | WhatsApp |
+| `/ops/hooks/lowcode/` | Snapshot n8n/Make (saúde, filas, `alert_recommended`) |
+| `/ops/hooks/lowcode/report/` | POST: cria alerta ops a partir do fluxo visual |
 | `/dashboard/produtos/ia/extrair-manual/` | Extração IA (JSON) |
 | `/dashboard/produtos/ia/extrair-manual/<id>/descartar/` | Descartar extração |
 | `/dashboard/produtos/ia/buscar-fotos/` | Busca fotos web (JSON) |

@@ -20,11 +20,12 @@ Chunking de domínio; pgvector; metadados como filtro; LangGraph; citação de f
 ## Chat e diagnóstico
 
 ```
-Pergunta → (contexto produto?) → Embedding → Busca pgvector
-  → LLM OpenAI (ou mock) → groundedness/confiança → Resposta (+ fonte) + stream SSE
+Pergunta → (contexto produto?) → search_context (RAG + pedidos)
+  → suggest → [paralelo: emit_trace ∥ emit_done]
+  → groundedness/confiança → Resposta (+ fonte) + stream SSE
 ```
 
-Diagnóstico assistido: entender relato → decidir busca (`ask_product` / `ask_details` / manual / pedidos) → sugerir causa e peça só com evidência de falha no trecho, sempre citando o manual.
+Diagnóstico assistido: entender relato → se faltar tipo/modelo, **parar** → senão tools de busca → sugerir causa/peça só com evidência → fan-out de observabilidade. Tools: `retrieve_manual_chunks` e `search_user_orders` (`apps.ai.graphs.tools`). A paralelização LangGraph é `emit_trace` ∥ `emit_done` (sem ORM): o SQLite do CI não admite duas queries Django em threads ao mesmo tempo.
 
 ## Canais futuros (mesma base RAG)
 

@@ -14,6 +14,9 @@ _INJECTION_PATTERNS = [
     re.compile(r"(?i)new\s+instructions?\s*:"),
     re.compile(r"(?i)\[\s*INST\s*\]"),
     re.compile(r"(?i)do\s+not\s+follow\s+the\s+developer"),
+    re.compile(r"(?i)reveal\s+(the\s+)?(openai\s+)?(api[_-]?key|secrets?|system\s+prompt)"),
+    re.compile(r"(?i)(show|print|dump)\s+(me\s+)?(the\s+)?(system\s+)?prompt"),
+    re.compile(r"(?i)openai_api_key"),
 ]
 
 

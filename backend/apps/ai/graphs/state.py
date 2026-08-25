@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, TypedDict
+import operator
+from typing import Annotated, Any, TypedDict
 
 
 class DiagnosisState(TypedDict, total=False):
@@ -17,6 +18,9 @@ class DiagnosisState(TypedDict, total=False):
     ask_message: str
     chunks: list[dict[str, Any]]
     orders_summary: str
+    tool_errors: Annotated[list[str], operator.add]
+    search_started_ms: int
+    graph_fanout_done: bool
     cause: str
     confidence: float
     ref_manual: str
