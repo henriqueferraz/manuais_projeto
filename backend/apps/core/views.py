@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib.staticfiles.finders import find
 from django.http import FileResponse, Http404, HttpRequest, JsonResponse
 from django.urls import reverse
-from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_http_methods
 from django.views.generic import TemplateView
 
 from apps.catalog.models import Brand, Category
@@ -87,6 +89,87 @@ class HomeView(TemplateView):
 def health(request):
     """Healthcheck para Docker/CI — sem auth."""
     return JsonResponse({"status": "ok", "service": "techparts"})
+
+
+def _lowcode_authorized(request: HttpRequest):
+    """Confere ``X-Lowcode-Secret`` quando ``LOWCODE_WEBHOOK_SECRET`` está definido."""
+    import secrets as secrets_mod
+
+    expected = getattr(settings, "LOWCODE_WEBHOOK_SECRET", "") or ""
+    if not expected:
+        return None
+    got = request.headers.get("X-Lowcode-Secret", "")
+    if not secrets_mod.compare_digest(got, expected):
+        return JsonResponse({"error": "unauthorized"}, status=401)
+    return None
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def lowcode_hook(request: HttpRequest) -> JsonResponse:
+    """
+    Snapshot para automação low-code (n8n/Make).
+
+    Sem ``LOWCODE_WEBHOOK_SECRET``: aberto (local). Com secret: header
+    ``X-Lowcode-Secret``. Query ``?demo=1`` força ``alert_recommended``
+    (útil no n8n EasyPanel / vídeo).
+    """
+    denied = _lowcode_authorized(request)
+    if denied is not None:
+        return denied
+
+    from apps.core.lowcode import snapshot_should_alert
+    from apps.dashboard.services.monitoring import collect_monitoring
+
+    snap = collect_monitoring(limit=5)
+    failures = len(snap.failures)
+    demo = (request.GET.get("demo") or "").strip().lower() in {"1", "true", "yes"}
+    return JsonResponse(
+        {
+            "status": "ok",
+            "service": "techparts",
+            "queues": snap.queues,
+            "failures_24h": failures,
+            "alert_recommended": demo or snapshot_should_alert(snap.queues, failures),
+            "demo": demo,
+            "checked_at": snap.health.get("checked_at"),
+        }
+    )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def lowcode_report(request: HttpRequest) -> JsonResponse:
+    """Recebe o relatório do n8n e cria ``OpsAlert`` (saída observável no painel)."""
+    denied = _lowcode_authorized(request)
+    if denied is not None:
+        return denied
+
+    import json
+
+    from pydantic import ValidationError
+
+    from apps.dashboard.services.monitoring import ingest_lowcode_report
+
+    try:
+        raw = json.loads(request.body.decode("utf-8") or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "json_invalido"}, status=400)
+    if not isinstance(raw, dict):
+        return JsonResponse({"error": "json_objeto_esperado"}, status=400)
+    try:
+        alert = ingest_lowcode_report(raw, notify=True)
+    except ValidationError as exc:
+        return JsonResponse({"error": "payload_invalido", "detail": exc.errors()}, status=400)
+    return JsonResponse(
+        {
+            "status": "ok",
+            "alert_id": str(alert.pk),
+            "title": alert.title,
+            "panel": "/dashboard/monitoramento/",
+        },
+        status=201,
+    )
 
 
 @require_GET

@@ -1,4 +1,10 @@
-"""Grafo LangGraph: relato → busca → causa/peça (F6 / T-6.1)."""
+"""Grafo LangGraph: relato → buscas em paralelo → causa/peça (F6 / Senac Fase A).
+
+Parada: `ask_product` / `ask_details` vão a END; `suggest` encerra o fluxo.
+`recursion_limit` em `run_diagnosis` evita loop indefinido.
+Fan-out: após `suggest`, `emit_trace` ∥ `emit_done` (paralelização simples, sem ORM).
+Tools RAG e pedidos em `search_context` (mesma thread — SQLite/CI).
+"""
 
 from __future__ import annotations
 
@@ -8,6 +14,9 @@ from typing import Any, Literal
 from langgraph.graph import END, START, StateGraph
 
 from apps.ai.graphs.state import DiagnosisState
+from apps.ai.graphs.tools import retrieve_manual_chunks, search_user_orders
+
+DIAGNOSIS_RECURSION_LIMIT = 8
 
 _DETAIL_HINTS = re.compile(
     r"\b(barulho|ru[ií]do|n[aã]o liga|n[aã]o gira|esquenta|cheiro|"
@@ -81,47 +90,47 @@ def understand_node(state: DiagnosisState) -> dict[str, Any]:
     return out
 
 
-def search_manual_node(state: DiagnosisState) -> dict[str, Any]:
-    from apps.ai.services.retrieval import retrieve
+def search_context_node(state: DiagnosisState) -> dict[str, Any]:
+    """
+    Tools RAG + pedidos na mesma thread (SQLite/CI não suporta ORM paralelo).
 
-    hits = retrieve(
-        state.get("symptom") or "",
-        product_id=state.get("product_id"),
-        category_id=state.get("category_id"),
-        category_name=state.get("category_name") or state.get("product_type") or "",
-        model_code=state.get("model_code") or "",
-    )
-    chunks = [
+    O fan-out paralelo do grafo é este node ∥ ``emit_trace``.
+    """
+    manual = retrieve_manual_chunks(
         {
-            "chunk_id": h.chunk.pk,
-            "section": h.chunk.section,
-            "page": h.chunk.page,
-            "score": round(h.score, 4),
-            "manual_id": h.chunk.manual_id,
-            "excerpt": h.chunk.content[:240],
-            "content": h.chunk.content,
+            "symptom": state.get("symptom") or "",
+            "product_id": state.get("product_id"),
+            "category_id": state.get("category_id"),
+            "category_name": state.get("category_name") or state.get("product_type") or "",
+            "model_code": state.get("model_code") or "",
         }
-        for h in hits
-    ]
-    return {"chunks": chunks, "sources": chunks, "found_in_manual": bool(chunks)}
-
-
-def search_orders_node(state: DiagnosisState) -> dict[str, Any]:
-    from apps.orders.models import Order
-
-    user_id = state.get("user_id")
-    if not user_id:
-        return {"orders_summary": "", "decision": "manual"}
-    orders = (
-        Order.objects.filter(user_id=user_id).prefetch_related("items").order_by("-created_at")[:5]
     )
-    lines: list[str] = []
-    for order in orders:
-        skus = ", ".join(i.sku for i in order.items.all()[:6])
-        lines.append(f"{order.number} [{order.status}]: {skus or '—'}")
-    summary = "\n".join(lines) if lines else "Nenhum pedido recente encontrado."
-    # Após checar pedidos, ainda consulta o manual para causa técnica
-    return {"orders_summary": summary, "decision": "manual"}
+    orders = search_user_orders({"user_id": state.get("user_id")})
+    chunks = manual.get("chunks") or []
+    errors = list(manual.get("tool_errors") or []) + list(orders.get("tool_errors") or [])
+    return {
+        "chunks": chunks,
+        "sources": chunks,
+        "found_in_manual": bool(chunks),
+        "orders_summary": orders.get("orders_summary") or "",
+        "tool_errors": errors,
+    }
+
+
+def emit_trace_node(state: DiagnosisState) -> dict[str, Any]:
+    """Node irmão no fan-out: log estruturado sem I/O de banco."""
+    import time
+
+    import structlog
+
+    started = int(time.time() * 1000)
+    structlog.get_logger(__name__).info(
+        "diagnosis_graph_fanout",
+        decision=state.get("decision") or "",
+        has_user=bool(state.get("user_id")),
+        search_started_ms=started,
+    )
+    return {"search_started_ms": started}
 
 
 def suggest_node(state: DiagnosisState) -> dict[str, Any]:
@@ -203,6 +212,7 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
 
     prefix = "Diagnóstico com base no manual" if fault else "Com base no manual"
     answer = f"{prefix} ({cite}): {excerpt} Fonte técnica: {cite}.{orders_note}"
+    answer = _redact_secrets(answer)
     if skus and fault:
         answer += f" Peças sugeridas: {', '.join(skus)}."
 
@@ -248,6 +258,8 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
         section=section,
         content=str(best.get("content") or best.get("excerpt") or ""),
     )
+    answer = _redact_secrets(answer)
+    cause = _redact_secrets(cause)
     return {
         "cause": cause,
         "confidence": conf,
@@ -345,31 +357,49 @@ def _enrich_diagnosis_openai(
         return ""
 
 
-def _after_understand(state: DiagnosisState) -> str:
+def _redact_secrets(text: str) -> str:
+    """Garante que credenciais de env não vazem na resposta do agente."""
+    from django.conf import settings
+
+    out = text or ""
+    key = getattr(settings, "OPENAI_API_KEY", "") or ""
+    if key and key in out:
+        out = out.replace(key, "[REDACTED]")
+    return out
+
+
+def _after_understand(state: DiagnosisState):
+    """Para se faltar contexto; senão segue para as tools de busca."""
     decision = state.get("decision") or "manual"
     if decision in {"ask_details", "ask_product"}:
-        return "ask_details"
-    if decision == "orders":
-        return "orders"
-    return "manual"
+        return END
+    return "search_context"
+
+
+def _after_suggest(_state: DiagnosisState):
+    """Paralelização simples: trace de observabilidade ∥ fechamento."""
+    return ["emit_trace", "emit_done"]
+
+
+def emit_done_node(state: DiagnosisState) -> dict[str, Any]:
+    """Irmão de ``emit_trace`` no fan-out pós-suggest (sem banco)."""
+    return {"graph_fanout_done": True}
 
 
 def build_diagnosis_graph():
     graph = StateGraph(DiagnosisState)
     graph.add_node("understand", understand_node)
-    graph.add_node("search_manual", search_manual_node)
-    graph.add_node("search_orders", search_orders_node)
+    graph.add_node("search_context", search_context_node)
     graph.add_node("suggest", suggest_node)
+    graph.add_node("emit_trace", emit_trace_node)
+    graph.add_node("emit_done", emit_done_node)
 
     graph.add_edge(START, "understand")
-    graph.add_conditional_edges(
-        "understand",
-        _after_understand,
-        {"ask_details": END, "orders": "search_orders", "manual": "search_manual"},
-    )
-    graph.add_edge("search_orders", "search_manual")
-    graph.add_edge("search_manual", "suggest")
-    graph.add_edge("suggest", END)
+    graph.add_conditional_edges("understand", _after_understand)
+    graph.add_edge("search_context", "suggest")
+    graph.add_conditional_edges("suggest", _after_suggest)
+    graph.add_edge("emit_trace", END)
+    graph.add_edge("emit_done", END)
     return graph.compile()
 
 
@@ -397,6 +427,9 @@ def run_diagnosis(
             "product_id": product_id,
             "category_id": category_id,
             "user_id": user_id,
-        }
+        },
+        {
+            "recursion_limit": DIAGNOSIS_RECURSION_LIMIT,
+        },
     )
     return result  # type: ignore[return-value]

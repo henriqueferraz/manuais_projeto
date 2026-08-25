@@ -7,3 +7,5 @@
 ::: apps.ai.services.retrieval
 ::: apps.ai.services.chunking
 ::: apps.ai.services.escalate
+::: apps.ai.graphs.tools
+::: apps.ai.graphs.diagnosis

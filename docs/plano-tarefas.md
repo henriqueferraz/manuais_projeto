@@ -692,7 +692,8 @@ Ordem de merge na `main` (R2): **F1 → F0 → F2 → F3 → F4a → F4b → F4c
 **Aceite (fase):** cada item acima com escopo próprio e ADR antes de iniciar.  
 **ADRs:** `docs/adr/0001`–`0008` · Hardening: `docs/security-hardening.md`  
 **Status F0–F8:** concluídas e mergeadas na `main` (última fase de produto: F8 / PR `#15`; DoD visual pós-F8: PR `#16`).  
-**Pós-F8:** T-P.1–T-P.6 concluídos (hardening `#22`, live `#23`, E2E `#24`, escala/PWA nesta entrega).
+**Pós-F8:** T-P.1–T-P.6 concluídos (hardening `#22`, live `#23`, E2E `#24`, escala/PWA nesta entrega).  
+**Senac M2.2:** Fase A (grafo paralelo, tools, adversarial, gancho low-code) — ver [`entrega.md`](entrega.md).
 
 ---
 
@@ -776,6 +777,10 @@ Itens entregues após o backlog T-P.1–T-P.6, sem nova fase numerada:
 - [x] **Sessão autenticada 24h** — `SESSION_COOKIE_AGE` / `SESSION_SAVE_EVERY_REQUEST` (`.env.example`)
 - [x] **Docs de páginas** — [`pages/inventory.md`](pages/inventory.md), [`pages/assistente-chat.md`](pages/assistente-chat.md)
 - [x] **Regra de ouro de documentação** — [`regra-ouro-documentacao.md`](regra-ouro-documentacao.md) + Cursor rule; docstrings P0; MkDocs + `interrogate` no CI (`make docs` / `make docs-coverage`)
+- [x] **Senac Fase A** — LangGraph paralelo, tools, `recursion_limit`, adversarial, GET `/ops/hooks/lowcode/` — [`entrega.md`](entrega.md)
+- [x] **Senac Fase B** — n8n (JSON importável) + POST `/ops/hooks/lowcode/report/` → `OpsAlert`; [`lowcode/README.md`](lowcode/README.md)
+- [x] **Senac Fase C** — README 5.2, [`prompts/`](prompts/README.md), [`qa/`](qa/README.md), [`evidencias/`](evidencias/README.md) — [`entrega.md`](entrega.md)
+- [x] **Senac Fase D (início)** — branch `develop` + issues `#43`–`#53`; Project V2 e professor TBD — [`github-kanban.md`](github-kanban.md)
 
 ### Ordem sugerida pós-F8
 

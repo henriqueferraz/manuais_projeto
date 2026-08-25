@@ -14,11 +14,13 @@ Responder dúvidas técnicas com RAG sobre manuais e, em relatos de falha, suger
 ## Fluxo
 
 1. Cliente envia mensagem → `POST /assistente/chat/stream/` (SSE).
-2. Sem tipo/modelo resolvido → agente **pede o produto** (`product_context`) antes de buscar.
-3. Retrieval com filtro de produto/categoria → trechos do manual.
-4. Geração (LLM `mock` \| `openai`) + checagem de groundedness / confiança (`confidence.py`).
-5. Se confiança &lt; `CHAT_MIN_ANSWER_CONFIDENCE` (default **0.70**) → não trata como resposta firme; sugere chamado.
-6. Feedback 👍/👎 em `/assistente/chat/feedback/`; 👎 / baixa confiança pode abrir `Ticket`.
+2. Sem tipo/modelo resolvido → agente **pede o produto** (`product_context`) e o grafo **para** (`END`).
+3. Com contexto: `search_context` chama as tools RAG e pedidos (mesma thread). Depois o grafo **ramifica em paralelo** `emit_trace` ∥ `emit_done` e encerra.
+4. `run_diagnosis` usa `recursion_limit=8` (evita loop). Extração HITL pausa em `interrupt()` até revisão humana (`recursion_limit=12`).
+5. Retrieval com filtro de produto/categoria → trechos do manual (payload validado na tool).
+6. Geração (LLM `mock` \| `openai`) + groundedness / confiança (`confidence.py`). Injection no relato é sanitizada (`sanitize_manual_text`); chaves de env não entram na resposta.
+7. Se confiança &lt; `CHAT_MIN_ANSWER_CONFIDENCE` (default **0.70**) → não trata como resposta firme; sugere chamado.
+8. Feedback 👍/👎 em `/assistente/chat/feedback/`; 👎 / baixa confiança pode abrir `Ticket`.
 
 ## Endpoints relacionados
 

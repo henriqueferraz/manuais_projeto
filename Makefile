@@ -1,4 +1,4 @@
-.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden golden-rag up-staging backup restore e2e docs docs-coverage
+.PHONY: help up down build migrate bootstrap shell test lint fmt ci collectstatic runserver golden golden-rag up-staging backup restore e2e docs docs-coverage n8n
 
 help:
 	@echo "Targets:"
@@ -19,7 +19,7 @@ help:
 	@echo "  make docs-coverage - cobertura de docstrings (interrogate)"
 	@echo "  make ci           - lint + test + golden + check migrations"
 	@echo "  make backup       - dump Postgres (RPO ≤24h — docs/deploy.md)"
-	@echo "  make restore FILE=backups/....sql.gz"
+	@echo "  make n8n          - sobe n8n (profile; UI :5678) para o fluxo low-code Senac"
 
 up:
 	docker compose up --build -d
@@ -29,6 +29,9 @@ up-staging:
 
 down:
 	docker compose down
+
+n8n:
+	docker compose --profile n8n up -d n8n
 
 backup:
 	bash scripts/backup_postgres.sh

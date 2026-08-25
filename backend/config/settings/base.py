@@ -77,6 +77,7 @@ env = environ.Env(
     GRAFANA_URL=(str, ""),
     SLACK_WEBHOOK_URL=(str, ""),
     OPS_ALERT_EMAILS=(list, []),
+    LOWCODE_WEBHOOK_SECRET=(str, ""),
 )
 
 environ.Env.read_env(REPO_ROOT / ".env")
@@ -392,6 +393,7 @@ SENTRY_UI_URL = env("SENTRY_UI_URL")
 GRAFANA_URL = env("GRAFANA_URL")
 SLACK_WEBHOOK_URL = env("SLACK_WEBHOOK_URL")
 OPS_ALERT_EMAILS = env("OPS_ALERT_EMAILS")
+LOWCODE_WEBHOOK_SECRET = env("LOWCODE_WEBHOOK_SECRET")
 
 # --- F4b: checkout / pagamento / frete / NF-e ---
 PAYMENT_PROVIDER = env("PAYMENT_PROVIDER", default="mock")
