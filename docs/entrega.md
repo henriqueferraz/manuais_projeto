@@ -3,7 +3,7 @@
 Auditoria do TechParts AI contra o enunciado [`senac.md`](senac.md) (IA para Desenvolvedores T1, Módulo 2, Semana 12).
 
 **Data da análise:** 20/08/2026  
-**Veredito (atualizado 25/08/2026 após Fase D):** o sistema **ainda não cumpre 100%**. Fases A–D fechadas (grafo, n8n, README 5.2, evidências, Kanban + `develop`). Resta E (vídeo, AVA) e o convite do professor (username no AVA).
+**Veredito (atualizado 25/08/2026 após Fase D):** o sistema **ainda não cumpre 100%**. Fases A–D fechadas (grafo, n8n, README 5.2, evidências, Kanban + `develop`). Resta E (vídeo e AVA).
 
 **Peso:** Avaliação M2.2 — 60% da nota do módulo.  
 **Liberação:** 21/08/26 às 22h.  
@@ -35,13 +35,13 @@ Entrega individual: repositório GitHub, GitHub Project Kanban, README completo,
 | Segurança + cenário adversarial | Sim (docs) | Testes + cenário 2 no README; demo no vídeo ainda Fase E |
 | Observabilidade + resiliência | Sim (docs) | Investigação `request_id` + `diagnosis_done` em evidencias |
 | IA para QA | Sim (docs) | [`docs/qa/`](qa/README.md) — review `eebcc7e` + teste adversarial |
-| DevOps inteligente | Sim (docs) | CI + anomalia E2E nightly + tendência |
+| DevOps inteligente | Parcial (docs) | CI + anomalia E2E + tendência; build explícito e execução verde ainda pendentes |
 | Low-code / no-code visual | Sim (Fase B) | n8n importável + `OpsAlert` no painel |
 | README Senac (item 5.2) | Sim (Fase C) | Seções no [`README.md`](../README.md); vídeo TBD |
 | `/docs/prompts`, `/docs/qa`, `/docs/evidencias` | Sim (Fase C) | Pastas criadas |
 | Fluxo `develop` → `feature/*` → `main` | Sim (Fase D) | PRs [#54](https://github.com/henriqueferraz/manuais_projeto/pull/54) e [#55](https://github.com/henriqueferraz/manuais_projeto/pull/55) |
 | GitHub Project Kanban | Sim (Fase D) | [Project nº 2](https://github.com/users/henriqueferraz/projects/2); `#48` em Andamento |
-| Professor colaborador | Não | Username só no AVA |
+| Professor colaborador | Sim | Convite concluído; confirmação externa ao repositório |
 | Vídeo 5.5 | Não | Sem gravação nem link |
 
 O produto é **maior** que o pedido. O risco de nota é **não demonstrar** o que o avaliador vai procurar, não falta de loja.
@@ -60,7 +60,7 @@ O produto é **maior** que o pedido. O risco de nota é **não demonstrar** o qu
 | Ação irreversível com humano | Fila `/manuais/revisao/` |
 | Memória / RAG | pgvector, state, `MemorySaver` na extração; [`pilares/10-rag-duvidas-tecnicas.md`](pilares/10-rag-duvidas-tecnicas.md) |
 | Segredos fora do repo | `.env.example`; modelo via `*_LLM_MODE` / `OPENAI_*` |
-| Observabilidade (pelo menos 2 sinais) | structlog (`request_id`) + auditoria + `langsmith_trace_id` |
+| Observabilidade (pelo menos 2 sinais) | structlog (`request_id`) + `diagnosis_done`/auditoria; LangSmith apenas quando configurado |
 | Timeout / retry / fallback | NF-e (`max_retries`), frete, chat `low-confidence-fallback` |
 | Pipeline lint + testes | `.github/workflows/ci.yml` (ruff, black, bandit, pytest, golden) |
 | Integração / E2E | pytest de integração + Playwright (`e2e/test_chat.py`, checkout, ticket) |
@@ -85,22 +85,22 @@ Isso já sustenta bem os critérios **6, 8, 9** e parte de **7, 10, 11**.
 
 Fases A–C **fecharam** paralelização LangGraph, n8n, adversarial no README, `docs/prompts|qa|evidencias` e README 5.2 (falta só o **URL do vídeo**).
 
-### 4.2 Ainda aberto (critérios 1–4)
+### 4.2 Ainda aberto ou parcial
 
 **Link do vídeo no README (item 5.5 / critério 1 e 5)**  
 Seções 5.2 existem; o campo do YouTube não listado é Fase E.
 
 **Fluxo Git Senac (item 5.4 / critério 4)**  
-Não há branch `develop`. O histórico usa `fase/*` → `main` (squash). Para o restante: criar `develop` e `feature/*` a partir dela.
+A branch `develop` e o fluxo documentado existem no estado atual. A sequência de PRs é evidência externa ao clone e deve ser conferida no GitHub.
 
 **GitHub Project Kanban (item 5.3 / critérios 2–3)**  
-Não há evidência no repositório. Precisa existir **agora**, com cards reais e movimentação durante os próximos dias (não só no fim). Colunas pedidas: Backlog, A Fazer, Em Andamento, Bloqueado, Em Revisão, Concluído.
+O Project e os cards estão informados como existentes, mas sua criação, atualização e movimentação são evidências externas ao repositório. Colunas pedidas: Backlog, A Fazer, Em Andamento, Bloqueado, Em Revisão, Concluído.
 
 **Vídeo (item 5.5 / critério 1) — 1,00 ponto**  
 Não há gravação, YouTube não listado nem link no README.
 
 **Processo AVA**  
-Adicionar o professor como colaborador; submeter links; **não** alterar o repositório após o prazo.
+Convite do professor concluído; ainda falta submeter os links no AVA e **não** alterar o repositório após o prazo.
 
 ---
 
@@ -120,9 +120,9 @@ Nota 0–10. Projetos com plágio, credenciais expostas, artefatos inacessíveis
 | 8 | Tool integrada com validação e falhas | 0,75 | Feito (tools Pydantic) | Demo no vídeo |
 | 9 | Memória / RAG adequada ao domínio | 0,75 | Feito (README + pilar 10) | Demo no vídeo |
 | 10 | Segurança, autonomia, cenário adversarial | 0,75 | Documentado + testes; demo no vídeo | Fase E |
-| 11 | Dois sinais correlacionados + timeout/retry/fallback | 0,75 | Feito ([`evidencias/anomalia-e2e-chat.md`](evidencias/anomalia-e2e-chat.md)) | Demo no vídeo |
+| 11 | Dois sinais correlacionados + timeout/retry/fallback | 0,75 | Parcial: sinais locais e resiliência feitos; trace LangSmith não é garantido | Demo no vídeo |
 | 12 | IA em code review + testes (integração/aceitação/E2E) + risco | 0,50 | Feito ([`docs/qa/`](qa/README.md)) | — |
-| 13 | Pipeline + IA em logs (2 etapas) + anomalia + tendência | 0,50 | Feito ([`docs/evidencias/`](evidencias/README.md)) | — |
+| 13 | Pipeline + IA em logs (2 etapas) + anomalia + tendência | 0,50 | Parcial: lint/testes/golden feitos; build explícito não está no CI | — |
 | 14 | Low-code/no-code integrado (trigger + saída) | 0,50 | Feito (n8n + POST report) | Demo no vídeo |
 | 15 | Refinamento documentado + evidências | 0,50 | Feito ([`prompts/ciclo-refinamento.md`](prompts/ciclo-refinamento.md)) | — |
 | | **Total** | **10,00** | | |
@@ -155,7 +155,7 @@ Sugestão de branches (enunciado): `feature/langgraph-agente`, `feature/tool-int
 - [x] [`evidencias/`](evidencias/README.md) — CI (Ruff + Pytest), correlação `request_id`/`diagnosis_done`, anomalia E2E nightly, tendência
 - [x] README item 5.2 (cenários, diagrama, low-code). **URL do vídeo** = Fase E.
 
-### Fase D — GitHub — **feita (2026-08-25)**
+### Fase D — GitHub — **implementada (evidências externas pendentes de conferência)**
 
 Guia: [`github-kanban.md`](github-kanban.md).
 
@@ -164,7 +164,7 @@ Guia: [`github-kanban.md`](github-kanban.md).
 13. [x] Cada card: objetivo, resultado, evidência; `#48` em **Em Andamento** (vídeo/AVA = Fase E).
 14. [x] Branch [`develop`](https://github.com/henriqueferraz/manuais_projeto/tree/develop); PRs `feature/*` → `develop` → `main` ([#54](https://github.com/henriqueferraz/manuais_projeto/pull/54), [#55](https://github.com/henriqueferraz/manuais_projeto/pull/55)).
 15. [x] Commits semânticos no fluxo `develop` / `main`.
-16. [ ] Professor colaborador (username no AVA — fora do repo).
+16. [x] Professor colaborador (convite concluído; confirmação externa ao repo).
 17. [x] `.env` não versionado (`.gitignore`); só `.env.example`.
 
 ### Fase E — Vídeo e AVA (último dia útil)
@@ -194,7 +194,7 @@ Marcar à medida que fechar. Estado na data da análise: quase tudo **aberto** n
 
 ### Repositório e organização
 
-- [x] Repositório no GitHub; nenhum segredo/`.env` versionado — **falta** professor colaborador (AVA)
+- [x] Repositório no GitHub; nenhum segredo/`.env` versionado; professor colaborador convidado
 - [x] Quadro Kanban criado e atualizado ([Project nº 2](https://github.com/users/henriqueferraz/projects/2); `#48` ainda em andamento)
 - [x] Fluxo `develop` → `feature/*` → `develop` → `main`, commits semânticos
 - [x] Versão funcional na `main` (congelar só após o vídeo/AVA)
@@ -209,13 +209,13 @@ Marcar à medida que fechar. Estado na data da análise: quase tudo **aberto** n
 ### Segurança, observabilidade e resiliência
 
 - [x] Validação de payloads/schemas, limites de autonomia, HITL, cenário adversarial
-- [x] Dois sinais correlacionados (logs estruturados + trace/métrica/auditoria); erros e latência
+- [x] Dois sinais correlacionados (logs estruturados + `request_id`/auditoria); erros e latência
 - [x] Timeout, retry limitado ou fallback nas integrações
 
 ### QA, DevOps e low-code
 
 - [x] Code review com IA + testes relevantes (integração, aceitação ou E2E) + priorização por risco
-- [x] Pipeline lint/testes/build (ou equivalente) + IA em logs de 2 etapas + anomalia + tendência/risco
+- [ ] Pipeline lint/testes/build + IA em logs de 2 etapas + anomalia + tendência/risco (lint/testes/golden feitos; build explícito pendente)
 - [x] Automação low-code/no-code com trigger e saída observável
 
 ### README e evidências

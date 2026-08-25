@@ -25,7 +25,8 @@ make runserver
 # ou: cd backend && python3 manage.py runserver
 ```
 
-Confirme: http://127.0.0.1:8000/ops/hooks/lowcode/ mostra `"status": "ok"`.
+Configure `LOWCODE_WEBHOOK_SECRET` no `.env` e use o mesmo valor no header
+`X-Lowcode-Secret` do n8n. Sem esse segredo o endpoint responde `503`.
 
 Deixe este terminal **aberto**. Reinicie o `runserver` se acabou de puxar o código (hosts de túnel entram no `settings.local`).
 
@@ -70,7 +71,7 @@ Caminho mais simples: **colar a URL do túnel** nos nodes (não precisa reinicia
 https://random-words-1234.trycloudflare.com/ops/hooks/lowcode/?demo=1
 ```
 
-   - Header `X-Lowcode-Secret`: o valor de `LOWCODE_WEBHOOK_SECRET` no `.env` (token, **não** a URL do túnel). Vazio só se o `.env` também estiver vazio.
+   - Header `X-Lowcode-Secret`: o valor de `LOWCODE_WEBHOOK_SECRET` no `.env` (token, **não** a URL do túnel).
 3. Node **POST relatório no painel**
    - Method: `POST`
    - URL:

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import time
-import uuid
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -159,7 +158,7 @@ def diagnose_question(
         tokens_out=tokens_out,
         cost_estimate=_estimate_cost(tokens_in, tokens_out),
         model_name=result.get("model_name") or "langgraph-diagnosis-mock",
-        langsmith_trace_id=f"diag-{uuid.uuid4().hex[:12]}",
+        langsmith_trace_id="",
         diagnosis_card={},
     )
     assistant.save()

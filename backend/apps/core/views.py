@@ -92,12 +92,15 @@ def health(request):
 
 
 def _lowcode_authorized(request: HttpRequest):
-    """Confere ``X-Lowcode-Secret`` quando ``LOWCODE_WEBHOOK_SECRET`` está definido."""
+    """Exige ``X-Lowcode-Secret`` configurado para expor o webhook."""
     import secrets as secrets_mod
 
     expected = getattr(settings, "LOWCODE_WEBHOOK_SECRET", "") or ""
     if not expected:
-        return None
+        return JsonResponse(
+            {"error": "lowcode_secret_not_configured"},
+            status=503,
+        )
     got = request.headers.get("X-Lowcode-Secret", "")
     if not secrets_mod.compare_digest(got, expected):
         return JsonResponse({"error": "unauthorized"}, status=401)
@@ -110,9 +113,8 @@ def lowcode_hook(request: HttpRequest) -> JsonResponse:
     """
     Snapshot para automação low-code (n8n/Make).
 
-    Sem ``LOWCODE_WEBHOOK_SECRET``: aberto (local). Com secret: header
-    ``X-Lowcode-Secret``. Query ``?demo=1`` força ``alert_recommended``
-    (útil no n8n EasyPanel / vídeo).
+    Requer ``LOWCODE_WEBHOOK_SECRET`` e o header ``X-Lowcode-Secret``.
+    Query ``?demo=1`` força ``alert_recommended`` (útil no n8n EasyPanel / vídeo).
     """
     denied = _lowcode_authorized(request)
     if denied is not None:
