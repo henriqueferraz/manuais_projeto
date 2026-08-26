@@ -1,0 +1,53 @@
+[README.md:12] (Term: não) -> **Vídeo:** a publicar na Fase E (YouTube **não listado**; link neste README quando existir).
+[README.md:31] (Term: não) -> Híbrido: o LLM **não** decide cadastro nem publicação. `understand` / HITL / `sanitize` são regras. Extração e texto RAG são modelo, filtrados por confiança.
+[README.md:59] (Term: não) -> Tools: `backend/apps/ai/graphs/tools.py`. Falha de tool não cadastra produto.
+[README.md:67] (Term: memorysaver) -> - Extração: `MemorySaver` / checkpoint até o staff aprovar.
+[README.md:76] (Term: não) -> - Sem tipo/modelo → o grafo **para** (não busca).
+[README.md:119] (Term: não) -> | `LOWCODE_WEBHOOK_SECRET` | obrigatório para habilitar o gancho | Token; **não** use a URL do túnel |
+[README.md:215] (Term: não) -> Com `USE_R2_STORAGE=true`, **todo** `FileField`/`ImageField` (manuais, fotos de diagnóstico, imagens de produto) e os assets da home (`branding/home-*.jpg`) usam o bucket R2 — não há cópia em `backend/media/` nem `backend/static/img/`.
+[README.md:284] (Term: langsmith) -> | Sinais | structlog `request_id` + `diagnosis_done`; trace LangSmith só quando configurado |
+[README.md:294] (Term: não) -> O n8n EasyPanel **não** alcança `localhost`. Túnel `cloudflared` + URL `https://….trycloudflare.com` nos nodes. Passo a passo: [`docs/lowcode/README.md`](docs/lowcode/README.md). Header `X-Lowcode-Secret` = `LOWCODE_WEBHOOK_SECRET` (não a URL do túnel).
+[README.md:304] (Term: não) -> | **Entrada** | Chat: “ventilador VTE-02 faz barulho e não gira” (após `seed_beta`) |
+[README.md:327] (Term: langsmith) -> **Limitações:** TechParts local precisa de túnel para o n8n público; trace LangSmith depende de configuração; vídeo e submissão AVA continuam na Fase E.
+[README.md:351] (Term: não) -> **Não use** `docs/design/design.md` (rascunho obsoleto) nem um segundo `.env.example` em `docs/` (removido).
+[docs/entrega.md:6] (Term: não) -> **Veredito (atualizado 25/08/2026 após Fase D):** o sistema **ainda não cumpre 100%**. Fases A–D fechadas (grafo, n8n, README 5.2, evidências, Kanban + `develop`). Resta E (vídeo e AVA).
+[docs/entrega.md:13] (Term: não) -> Este documento não substitui o README da entrega: é o **plano de fechamento**. O enunciado canônico permanece em [`senac.md`](senac.md).
+[docs/entrega.md:21] (Term: não) -> O domínio pode ser qualquer um (incluindo continuidade do mini-projeto). O objetivo **não** é acumular funcionalidades de e-commerce; é evidenciar os conteúdos do Módulo 2.
+[docs/entrega.md:23] (Term: não) -> Entrega individual: repositório GitHub, GitHub Project Kanban, README completo, evidências em `/docs`, vídeo YouTube não listado.
+[docs/entrega.md:38] (Term: pendente) -> | DevOps inteligente | Parcial (docs) | CI + anomalia E2E + tendência; execução verde confirmada, build explícito pendente |
+[docs/entrega.md:40] (Term: tbd) -> | README Senac (item 5.2) | Sim (Fase C) | Seções no [`README.md`](../README.md); vídeo TBD |
+[docs/entrega.md:45] (Term: não) -> | Vídeo 5.5 | Não | Sem gravação nem link |
+[docs/entrega.md:47] (Term: não) -> O produto é **maior** que o pedido. O risco de nota é **não demonstrar** o que o avaliador vai procurar, não falta de loja.
+[docs/entrega.md:56] (Term: não) -> | Lógica real de IA (não só respostas fixas) | Extração, RAG, diagnóstico |
+[docs/entrega.md:61] (Term: memorysaver) -> | Memória / RAG | pgvector, state, `MemorySaver` na extração; [`pilares/10-rag-duvidas-tecnicas.md`](pilares/10-rag-duvidas-tecnicas.md) |
+[docs/entrega.md:63] (Term: langsmith) -> | Observabilidade (pelo menos 2 sinais) | structlog (`request_id`) + `diagnosis_done`/auditoria; LangSmith apenas quando configurado |
+[docs/entrega.md:88] (Term: parcial) -> ### 4.2 Ainda aberto ou parcial
+[docs/entrega.md:91] (Term: não) -> Seções 5.2 existem; o campo do YouTube não listado é Fase E.
+[docs/entrega.md:97] (Term: evidências externas) -> O Project e os cards estão informados como existentes, mas sua criação, atualização e movimentação são evidências externas ao repositório. Colunas pedidas: Backlog, A Fazer, Em Andamento, Bloqueado, Em Revisão, Concluído.
+[docs/entrega.md:100] (Term: não) -> Não há gravação, YouTube não listado nem link no README.
+[docs/entrega.md:103] (Term: não) -> Convite do professor concluído; ainda falta submeter os links no AVA e **não** alterar o repositório após o prazo.
+[docs/entrega.md:109] (Term: não) -> Nota 0–10. Projetos com plágio, credenciais expostas, artefatos inacessíveis ou código que o estudante não explica podem zerar.
+[docs/entrega.md:113] (Term: não) -> | 1 | Vídeo YouTube não listado, ≤ 12 min, pontos do 5.5 | 1,00 | Ausente | Fase E |
+[docs/entrega.md:123] (Term: parcial) -> | 11 | Dois sinais correlacionados + timeout/retry/fallback | 0,75 | Parcial: sinais locais e resiliência feitos; trace LangSmith não é garantido | Demo no vídeo |
+[docs/entrega.md:125] (Term: parcial) -> | 13 | Pipeline + IA em logs (2 etapas) + anomalia + tendência | 0,50 | Parcial: lint/testes/golden feitos; build explícito não está no CI | — |
+[docs/entrega.md:168] (Term: não) -> 17. [x] `.env` não versionado (`.gitignore`); só `.env.example`.
+[docs/entrega.md:172] (Term: não) -> 18. Gravar duração recomendada **até 10 minutos** (máximo **12**), YouTube **não listado**, link no README.
+[docs/entrega.md:187] (Term: não) -> 19. Submeter no AVA os três links **antes** das 15h de 31/08. **Não** alterar o repositório depois.
+[docs/entrega.md:218] (Term: pendente) -> - [ ] Pipeline lint/testes/build + IA em logs de 2 etapas + anomalia + tendência/risco (lint/testes/golden e execução verde confirmados; build explícito pendente)
+[docs/entrega.md:230] (Term: não) -> - [ ] Vídeo ≤ 12 min, não listado, pontos do 5.5
+[docs/entrega.md:246] (Term: langsmith) -> | Observabilidade | `backend/apps/core/logging.py`, structlog, `langsmith_trace_id` |
+[docs/entrega.md:256] (Term: não) -> Não reconstruir o e-commerce. Fechar **somente** o que o avaliador Senac exige: paralelo no grafo, low-code visual, cenário adversarial, pastas de evidência, README no formato 5.2, Kanban + `develop`, vídeo e AVA.
+[docs/evidencias/anomalia-e2e-chat.md:28] (Term: não) -> Conclusão da execução: o HTTP **200** e o stream **terminaram**; a falha é **assert de UI desatualizado**, não timeout nem 5xx. Latência 22 ms (mock). Confiança 0,2 < 0,70 → não tratar como resposta firme (sem SKU).
+[docs/evidencias/anomalia-e2e-chat.md:32] (Term: não) -> Erro **recorrente** no nightly: o mesmo spec falhou em runs sucessivos (pelo menos 22–25/08/2026, mesmo `AssertionError` / mesma pergunta sem modelo). Não foi flutuação de rede.
+[docs/evidencias/anomalia-e2e-chat.md:34] (Term: não) -> Causa raiz: commit de grounding (`eebcc7e`) passou a **exigir contexto de produto** antes do RAG; o E2E T-P.6 não foi ajustado.
+[docs/evidencias/README.md:13] (Term: não) -> 2. Log `diagnosis_done` / header `X-Request-ID`. O campo `langsmith_trace_id` só é preenchido por fluxos com trace LangSmith real; o diagnóstico local não fabrica um identificador externo.
+[docs/evidencias/ci-e-logs.md:12] (Term: não) -> O step `Ruff` executa `ruff check backend`. No run acima concluiu **verde** (exit 0). Falhas históricas no histórico `fix(ci):` (`f86b243`, `1006553`) mostram o padrão: falso positivo Bandit B106 em Preference de pagamento; correção no código, não desligar o gate.
+[docs/evidencias/ci-e-logs.md:14] (Term: não) -> **Leitura com IA:** lint vermelho neste repo costuma ser **formatação/import** ou **nosec pontual**, não falha de domínio. Risco de merge bloqueado é alto e imediato; risco de peça errada no cliente é baixo nessa etapa.
+[docs/evidencias/ci-e-logs.md:20] (Term: não) -> **Leitura com IA:** pytest verde valida regras determinísticas (HITL, injection, schema). Não substitui o nightly Playwright (outro workflow). Separar “CI de qualidade” de “E2E de UI” evita tratar um gate como o outro.
+[docs/evidencias/ci-e-logs.md:24] (Term: não) -> `run_golden_set` e `run_rag_golden_set` com `--min-score 0.66` no mesmo job. São regressões de extração/RAG, não de layout.
+[docs/lowcode/README.md:3] (Term: não) -> O n8n (**https://n8n.hferraz.com.br/**) está na internet. O TechParts no seu PC **não** é visível como `localhost`. A solução da demo é um **túnel HTTPS** que aponta para `http://127.0.0.1:8000`. Enquanto o túnel e o `runserver` estiverem ligados, o n8n consegue chamar o app.
+[docs/lowcode/README.md:5] (Term: não) -> Não use no n8n: `localhost`, `127.0.0.1`, `host.docker.internal`.
+[docs/lowcode/README.md:61] (Term: não) -> Workflow já criado no projeto pessoal: [TechParts — snapshot ops](https://n8n.hferraz.com.br/workflow/xOru4XDHJhmWLSB4) (rascunho, não publicado). Se precisar recriar: **⋮ → Import from File** → `docs/lowcode/n8n-techparts-ops.json`.
+[docs/lowcode/README.md:63] (Term: não) -> Caminho mais simples: **colar a URL do túnel** nos nodes (não precisa reiniciar o EasyPanel).
+[docs/lowcode/README.md:74] (Term: não) -> - Header `X-Lowcode-Secret`: o valor de `LOWCODE_WEBHOOK_SECRET` no `.env` (token, **não** a URL do túnel).
+[docs/lowcode/README.md:125] (Term: não) -> | A cada 15 min | Não ative o workflow até gravar a demo |
