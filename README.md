@@ -64,7 +64,7 @@ Tools: `backend/apps/ai/graphs/tools.py`. Falha de tool não cadastra produto.
 
 - **Curto:** `DiagnosisState` + sessão de chat (`ChatSession`).
 - **Longo / RAG:** `ManualChunk` + embeddings (`EMBEDDING_MODE`); filtro por produto.
-- Extração: `MemorySaver` / checkpoint até o staff aprovar.
+- Extração: checkpoint SQLite persistente até o staff aprovar (`LANGGRAPH_CHECKPOINT_DB`).
 - Documentação: [`docs/pages/assistente-chat.md`](docs/pages/assistente-chat.md), [`docs/pilares/10-rag-duvidas-tecnicas.md`](docs/pilares/10-rag-duvidas-tecnicas.md).
 
 ---

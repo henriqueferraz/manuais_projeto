@@ -35,7 +35,7 @@ Entrega individual: repositório GitHub, GitHub Project Kanban, README completo,
 | Segurança + cenário adversarial | Sim (docs) | Testes + cenário 2 no README; demo no vídeo ainda Fase E |
 | Observabilidade + resiliência | Sim (docs) | Investigação `request_id` + `diagnosis_done` em evidencias |
 | IA para QA | Sim (docs) | [`docs/qa/`](qa/README.md) — review `eebcc7e` + teste adversarial |
-| DevOps inteligente | Parcial (docs) | CI + anomalia E2E + tendência; execução verde confirmada, build explícito pendente |
+| DevOps inteligente | Sim (docs) | CI + anomalia E2E + tendência; build Docker explícito e execução verde confirmados |
 | Low-code / no-code visual | Sim (Fase B) | n8n importável + `OpsAlert` no painel |
 | README Senac (item 5.2) | Sim (Fase C) | Seções no [`README.md`](../README.md); vídeo TBD |
 | `/docs/prompts`, `/docs/qa`, `/docs/evidencias` | Sim (Fase C) | Pastas criadas |
@@ -58,7 +58,7 @@ O produto é **maior** que o pedido. O risco de nota é **não demonstrar** o qu
 | LangGraph com state tipado, nodes, edges, ramificação, **paralelização**, parada | `diagnosis.py` (condicional + fan-out) + `extraction.py` (HITL / `interrupt` + `recursion_limit`) |
 | Tool/integração (MCP **ou** API/serviço/webhook) | `apps.ai.graphs.tools`, webhook de pagamento, RAG, Melhor Envio, WhatsApp, `/ops/hooks/lowcode/` |
 | Ação irreversível com humano | Fila `/manuais/revisao/` |
-| Memória / RAG | pgvector, state, `MemorySaver` na extração; [`pilares/10-rag-duvidas-tecnicas.md`](pilares/10-rag-duvidas-tecnicas.md) |
+| Memória / RAG | pgvector, state, checkpoint SQLite persistente na extração; [`pilares/10-rag-duvidas-tecnicas.md`](pilares/10-rag-duvidas-tecnicas.md) |
 | Segredos fora do repo | `.env.example`; modelo via `*_LLM_MODE` / `OPENAI_*` |
 | Observabilidade (pelo menos 2 sinais) | structlog (`request_id`) + `diagnosis_done`/auditoria; LangSmith apenas quando configurado |
 | Timeout / retry / fallback | NF-e (`max_retries`), frete, chat `low-confidence-fallback` |
@@ -122,7 +122,7 @@ Nota 0–10. Projetos com plágio, credenciais expostas, artefatos inacessíveis
 | 10 | Segurança, autonomia, cenário adversarial | 0,75 | Documentado + testes; demo no vídeo | Fase E |
 | 11 | Dois sinais correlacionados + timeout/retry/fallback | 0,75 | Parcial: sinais locais e resiliência feitos; trace LangSmith não é garantido | Demo no vídeo |
 | 12 | IA em code review + testes (integração/aceitação/E2E) + risco | 0,50 | Feito ([`docs/qa/`](qa/README.md)) | — |
-| 13 | Pipeline + IA em logs (2 etapas) + anomalia + tendência | 0,50 | Parcial: lint/testes/golden feitos; build explícito não está no CI | — |
+| 13 | Pipeline + IA em logs (2 etapas) + anomalia + tendência | 0,50 | Feito ([`evidencias/`](evidencias/README.md)); CI inclui build Docker explícito | — |
 | 14 | Low-code/no-code integrado (trigger + saída) | 0,50 | Feito (n8n + POST report) | Demo no vídeo |
 | 15 | Refinamento documentado + evidências | 0,50 | Feito ([`prompts/ciclo-refinamento.md`](prompts/ciclo-refinamento.md)) | — |
 | | **Total** | **10,00** | | |
@@ -215,7 +215,7 @@ Marcar à medida que fechar. Estado na data da análise: quase tudo **aberto** n
 ### QA, DevOps e low-code
 
 - [x] Code review com IA + testes relevantes (integração, aceitação ou E2E) + priorização por risco
-- [ ] Pipeline lint/testes/build + IA em logs de 2 etapas + anomalia + tendência/risco (lint/testes/golden e execução verde confirmados; build explícito pendente)
+- [x] Pipeline lint/testes/build + IA em logs de 2 etapas + anomalia + tendência/risco (lint/testes/golden, build Docker e execução verde confirmados)
 - [x] Automação low-code/no-code com trigger e saída observável
 
 ### README e evidências

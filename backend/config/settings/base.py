@@ -17,6 +17,7 @@ env = environ.Env(
     DATABASE_URL=(str, f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
     REDIS_URL=(str, "redis://127.0.0.1:6379/0"),
     CELERY_BROKER_URL=(str, "redis://127.0.0.1:6379/1"),
+    LANGGRAPH_CHECKPOINT_DB=(str, str(BASE_DIR / "langgraph_checkpoints.sqlite3")),
     SENTRY_DSN=(str, ""),
     SENTRY_ENVIRONMENT=(str, "local"),
     SECURE_SSL_REDIRECT=(bool, False),
@@ -355,6 +356,7 @@ EXTRACTION_LLM_MODE = env("EXTRACTION_LLM_MODE")
 LANGSMITH_TRACING = env("LANGSMITH_TRACING")
 LANGSMITH_API_KEY = env("LANGSMITH_API_KEY")
 LANGSMITH_PROJECT = env("LANGSMITH_PROJECT")
+LANGGRAPH_CHECKPOINT_DB = env("LANGGRAPH_CHECKPOINT_DB")
 # Propaga vars oficiais LangSmith/LangChain no processo (chat, extração, diagnóstico).
 if LANGSMITH_TRACING and LANGSMITH_API_KEY:
     os.environ.setdefault("LANGSMITH_TRACING", "true")
