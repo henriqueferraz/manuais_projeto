@@ -7,12 +7,14 @@ para `finalize` até aprovação/rejeição humana. `recursion_limit` em
 
 from __future__ import annotations
 
+import sqlite3
 from decimal import Decimal
 from typing import Any, TypedDict
 
 import structlog
+from django.conf import settings
 from django.utils import timezone
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 
@@ -23,9 +25,14 @@ from apps.manuals.services.structure import dump_product_json, structure_manual_
 
 logger = structlog.get_logger(__name__)
 
-# Checkpointer em memória (processo). Em Celery eager/CI a retomada funciona
-# no mesmo worker; thread_id fica no ExtractionLog para correlacionar.
-_CHECKPOINTER = MemorySaver()
+# SQLite mantém checkpoints entre workers e reinícios; os testes usam :memory:.
+_CHECKPOINT_CONNECTION = sqlite3.connect(
+    settings.LANGGRAPH_CHECKPOINT_DB,
+    check_same_thread=False,
+    timeout=30,
+)
+_CHECKPOINTER = SqliteSaver(_CHECKPOINT_CONNECTION)
+_CHECKPOINTER.setup()
 _COMPILED = None
 EXTRACTION_RECURSION_LIMIT = 12
 
