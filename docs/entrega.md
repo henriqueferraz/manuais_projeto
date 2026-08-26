@@ -35,11 +35,11 @@ Entrega individual: repositório GitHub, GitHub Project Kanban, README completo,
 | Segurança + cenário adversarial | Sim (docs) | Testes + cenário 2 no README; demo no vídeo ainda Fase E |
 | Observabilidade + resiliência | Sim (docs) | Investigação `request_id` + `diagnosis_done` em evidencias |
 | IA para QA | Sim (docs) | [`docs/qa/`](qa/README.md) — review `eebcc7e` + teste adversarial |
-| DevOps inteligente | Parcial (docs) | CI + anomalia E2E + tendência; build explícito e execução verde ainda pendentes |
+| DevOps inteligente | Parcial (docs) | CI + anomalia E2E + tendência; execução verde confirmada, build explícito pendente |
 | Low-code / no-code visual | Sim (Fase B) | n8n importável + `OpsAlert` no painel |
 | README Senac (item 5.2) | Sim (Fase C) | Seções no [`README.md`](../README.md); vídeo TBD |
 | `/docs/prompts`, `/docs/qa`, `/docs/evidencias` | Sim (Fase C) | Pastas criadas |
-| Fluxo `develop` → `feature/*` → `main` | Sim (Fase D) | PRs [#54](https://github.com/henriqueferraz/manuais_projeto/pull/54) e [#55](https://github.com/henriqueferraz/manuais_projeto/pull/55) |
+| Fluxo `develop` → `feature/*` → `main` | Sim (Fase D) | PRs [#54](https://github.com/henriqueferraz/manuais_projeto/pull/54), [#55](https://github.com/henriqueferraz/manuais_projeto/pull/55) e [#58](https://github.com/henriqueferraz/manuais_projeto/pull/58) |
 | GitHub Project Kanban | Sim (Fase D) | [Project nº 2](https://github.com/users/henriqueferraz/projects/2); `#48` em Andamento |
 | Professor colaborador | Sim | Convite concluído; confirmação externa ao repositório |
 | Vídeo 5.5 | Não | Sem gravação nem link |
@@ -155,14 +155,14 @@ Sugestão de branches (enunciado): `feature/langgraph-agente`, `feature/tool-int
 - [x] [`evidencias/`](evidencias/README.md) — CI (Ruff + Pytest), correlação `request_id`/`diagnosis_done`, anomalia E2E nightly, tendência
 - [x] README item 5.2 (cenários, diagrama, low-code). **URL do vídeo** = Fase E.
 
-### Fase D — GitHub — **implementada (evidências externas pendentes de conferência)**
+### Fase D — GitHub — **implementada e conferida em 2026-08-25**
 
 Guia: [`github-kanban.md`](github-kanban.md).
 
 11. [x] GitHub Project com colunas do enunciado: [TechParts Senac M2.2](https://github.com/users/henriqueferraz/projects/2).
 12. [x] Um card por tema (issues `#43`–`#53` no Project).
 13. [x] Cada card: objetivo, resultado, evidência; `#48` em **Em Andamento** (vídeo/AVA = Fase E).
-14. [x] Branch [`develop`](https://github.com/henriqueferraz/manuais_projeto/tree/develop); PRs `feature/*` → `develop` → `main` ([#54](https://github.com/henriqueferraz/manuais_projeto/pull/54), [#55](https://github.com/henriqueferraz/manuais_projeto/pull/55)).
+14. [x] Branch [`develop`](https://github.com/henriqueferraz/manuais_projeto/tree/develop); PRs `feature/*` → `develop` → `main` ([#54](https://github.com/henriqueferraz/manuais_projeto/pull/54), [#55](https://github.com/henriqueferraz/manuais_projeto/pull/55), [#58](https://github.com/henriqueferraz/manuais_projeto/pull/58)).
 15. [x] Commits semânticos no fluxo `develop` / `main`.
 16. [x] Professor colaborador (convite concluído; confirmação externa ao repo).
 17. [x] `.env` não versionado (`.gitignore`); só `.env.example`.
@@ -215,7 +215,7 @@ Marcar à medida que fechar. Estado na data da análise: quase tudo **aberto** n
 ### QA, DevOps e low-code
 
 - [x] Code review com IA + testes relevantes (integração, aceitação ou E2E) + priorização por risco
-- [ ] Pipeline lint/testes/build + IA em logs de 2 etapas + anomalia + tendência/risco (lint/testes/golden feitos; build explícito pendente)
+- [ ] Pipeline lint/testes/build + IA em logs de 2 etapas + anomalia + tendência/risco (lint/testes/golden e execução verde confirmados; build explícito pendente)
 - [x] Automação low-code/no-code com trigger e saída observável
 
 ### README e evidências
