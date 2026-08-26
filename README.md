@@ -326,7 +326,7 @@ Refinamento (problema → prompt/grafo → resultado): [`docs/prompts/ciclo-refi
 
 **Limitações:** TechParts local precisa de túnel para o n8n público; trace LangSmith depende de configuração; vídeo e submissão AVA continuam na Fase E.
 
-**Evolução:** confirmar a correção do spec Playwright no próximo nightly; usar named tunnel Cloudflare se a demo for longa.
+**Evolução:** correção do spec Playwright confirmada no nightly; usar named tunnel Cloudflare se a demo for longa.
 
 ---
 

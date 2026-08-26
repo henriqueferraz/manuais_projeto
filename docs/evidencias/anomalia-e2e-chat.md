@@ -45,7 +45,7 @@ Causa raiz: commit de grounding (`eebcc7e`) passou a **exigir contexto de produt
 
 Probabilidade de o nightly chat voltar a verde **sem** mudar o teste ou a pergunta: ≈ 0 (comportamento determinístico).
 
-Mitigação aplicada: o E2E espera `Qual é o produto?`, que é a saída esperada para uma pergunta sem tipo/modelo. A próxima execução nightly deve confirmar a correção no GitHub Actions.
+Mitigação aplicada: o E2E espera `Qual é o produto?`, que é a saída esperada para uma pergunta sem tipo/modelo. A execução seguinte confirmou a correção no GitHub Actions: o workflow terminou com sucesso em 25/08/2026.
 
 ## Extração ≥ 3 falhas / 24 h
 
