@@ -18,18 +18,12 @@ def test_health_ok():
 
 
 @pytest.mark.django_db
-def test_lowcode_hook_open_when_secret_empty(settings):
+def test_lowcode_hook_rejects_missing_secret(settings):
     settings.LOWCODE_WEBHOOK_SECRET = ""
     client = Client()
     response = client.get(reverse("core:lowcode_hook"))
-    assert response.status_code == 200
-    body = response.json()
-    assert body["status"] == "ok"
-    assert "queues" in body
-    assert "failures_24h" in body
-
-    posted = client.post(reverse("core:lowcode_hook"))
-    assert posted.status_code == 200
+    assert response.status_code == 503
+    assert response.json()["error"] == "lowcode_secret_not_configured"
 
 
 @pytest.mark.django_db
@@ -50,7 +44,7 @@ def test_lowcode_hook_requires_secret_when_configured(settings):
 def test_lowcode_report_creates_ops_alert(settings):
     from apps.dashboard.models import OpsAlert
 
-    settings.LOWCODE_WEBHOOK_SECRET = ""
+    settings.LOWCODE_WEBHOOK_SECRET = "n8n-dev-secret"
     client = Client()
     res = client.post(
         reverse("core:lowcode_report"),
@@ -65,6 +59,7 @@ def test_lowcode_report_creates_ops_alert(settings):
             }
         ),
         content_type="application/json",
+        HTTP_X_LOWCODE_SECRET="n8n-dev-secret",
     )
     assert res.status_code == 201
     body = res.json()
@@ -77,30 +72,38 @@ def test_lowcode_report_creates_ops_alert(settings):
 
 @pytest.mark.django_db
 def test_lowcode_report_rejects_invalid_json(settings):
-    settings.LOWCODE_WEBHOOK_SECRET = ""
+    settings.LOWCODE_WEBHOOK_SECRET = "n8n-dev-secret"
     client = Client()
     res = client.post(
         reverse("core:lowcode_report"),
         data="not-json",
         content_type="application/json",
+        HTTP_X_LOWCODE_SECRET="n8n-dev-secret",
     )
     assert res.status_code == 400
 
 
 @pytest.mark.django_db
 def test_lowcode_snapshot_includes_alert_flag(settings):
-    settings.LOWCODE_WEBHOOK_SECRET = ""
+    settings.LOWCODE_WEBHOOK_SECRET = "n8n-dev-secret"
     client = Client()
-    body = client.get(reverse("core:lowcode_hook")).json()
+    body = client.get(
+        reverse("core:lowcode_hook"),
+        HTTP_X_LOWCODE_SECRET="n8n-dev-secret",
+    ).json()
     assert "alert_recommended" in body
     assert body["alert_recommended"] in {True, False}
 
 
 @pytest.mark.django_db
 def test_lowcode_snapshot_demo_forces_alert(settings):
-    settings.LOWCODE_WEBHOOK_SECRET = ""
+    settings.LOWCODE_WEBHOOK_SECRET = "n8n-dev-secret"
     client = Client()
-    body = client.get(reverse("core:lowcode_hook"), {"demo": "1"}).json()
+    body = client.get(
+        reverse("core:lowcode_hook"),
+        {"demo": "1"},
+        HTTP_X_LOWCODE_SECRET="n8n-dev-secret",
+    ).json()
     assert body["demo"] is True
     assert body["alert_recommended"] is True
 

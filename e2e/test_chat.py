@@ -14,6 +14,6 @@ def test_chat_stream_basic(page: Page, live_server, db):
     page.fill("#tp-chat-input", "Qual a voltagem do capacitor de partida?")
     page.get_by_role("button", name="Enviar").click()
 
-    # Mock responde no body do chat (bolha AI)
+    # Sem modelo, o grafo pede contexto antes de consultar o manual.
     chat_body = page.locator("#tp-chat-body")
-    expect(chat_body).to_contain_text("manual", ignore_case=True, timeout=20000)
+    expect(chat_body).to_contain_text("Qual é o produto?", timeout=20000)

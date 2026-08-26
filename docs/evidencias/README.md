@@ -10,4 +10,4 @@
 Dois sinais correlacionáveis em toda execução do assistente:
 
 1. Log estruturado `django_structlog` (`request_id` no request HTTP).
-2. Log `diagnosis_done` / headers `X-Request-ID` e `X-LangSmith-Trace` (`langsmith_trace_id` no `ChatMessage`).
+2. Log `diagnosis_done` / header `X-Request-ID`. O campo `langsmith_trace_id` só é preenchido por fluxos com trace LangSmith real; o diagnóstico local não fabrica um identificador externo.

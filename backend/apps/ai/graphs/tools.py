@@ -26,7 +26,8 @@ def _with_db_retry(fn: Callable[[], Any], *, attempts: int = 6) -> Any:
             if "locked" not in str(exc).lower():
                 raise
             time.sleep(0.04 * (i + 1))
-    assert last is not None
+    if last is None:
+        raise RuntimeError("database retry exhausted without an error")
     raise last
 
 

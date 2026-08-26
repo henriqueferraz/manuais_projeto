@@ -2,7 +2,7 @@
 
 Investigação de **uma execução real** (Senac 4.6) e **detecção de anomalia + tendência** (4.8).
 
-## O que quebrou
+## O que quebrou (resolvido)
 
 Workflow **E2E Playwright (nightly)** — run 2026-08-25 06:23 UTC  
 https://github.com/henriqueferraz/manuais_projeto/actions/runs/32816737222  
@@ -14,7 +14,7 @@ AssertionError: Locator expected to contain text 'manual'
 
 O teste envia só: *“Qual a voltagem do capacitor de partida?”* e espera a palavra `manual` em `#tp-chat-body` (`e2e/test_chat.py`).
 
-A UI respondeu com o card **“Qual é o produto?”** (pedir tipo/modelo). Isso é o grafo `ask_product` → `END`, alinhado a `diagnosis_system_v2`.
+A UI respondeu com o card **“Qual é o produto?”** (pedir tipo/modelo). Isso é o grafo `ask_product` → `END`, alinhado a `diagnosis_system_v2`. O teste foi corrigido para validar esse comportamento.
 
 ## Correlação de dois sinais (mesma execução)
 
@@ -27,9 +27,9 @@ A UI respondeu com o card **“Qual é o produto?”** (pedir tipo/modelo). Isso
 
 Conclusão da execução: o HTTP **200** e o stream **terminaram**; a falha é **assert de UI desatualizado**, não timeout nem 5xx. Latência 22 ms (mock). Confiança 0,2 < 0,70 → não tratar como resposta firme (sem SKU).
 
-## Anomalia
+## Anomalia histórica
 
-Erro **recorrente** no nightly: o mesmo spec falha em runs sucessivos (pelo menos 22–25/08/2026, mesmo `AssertionError` / mesma pergunta sem modelo). Não é flutuação de rede.
+Erro **recorrente** no nightly: o mesmo spec falhou em runs sucessivos (pelo menos 22–25/08/2026, mesmo `AssertionError` / mesma pergunta sem modelo). Não foi flutuação de rede.
 
 Causa raiz: commit de grounding (`eebcc7e`) passou a **exigir contexto de produto** antes do RAG; o E2E T-P.6 não foi ajustado.
 
@@ -45,7 +45,7 @@ Causa raiz: commit de grounding (`eebcc7e`) passou a **exigir contexto de produt
 
 Probabilidade de o nightly chat voltar a verde **sem** mudar o teste ou a pergunta: ≈ 0 (comportamento determinístico).
 
-Mitigação proposta (Fase C só documenta; implementação pode ser Fase D): no E2E, perguntar `ventilador VTE-02: qual a voltagem do capacitor de partida?` **ou** esperar o texto “tipo de produto”.
+Mitigação aplicada: o E2E espera `Qual é o produto?`, que é a saída esperada para uma pergunta sem tipo/modelo. A próxima execução nightly deve confirmar a correção no GitHub Actions.
 
 ## Extração ≥ 3 falhas / 24 h
 

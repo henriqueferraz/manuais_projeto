@@ -1,6 +1,6 @@
 # Fase D — GitHub (Kanban, `develop`, colaborador)
 
-Enunciado: [`senac.md`](senac.md) §§ 5.3–5.4. Fechada em 2026-08-25, salvo convite do professor (username só no AVA).
+Enunciado: [`senac.md`](senac.md) §§ 5.3–5.4. Fechada em 2026-08-25.
 
 ## Quadro Kanban
 
@@ -54,7 +54,7 @@ As issues fechadas `#43`–`#47` e `#49`–`#53` carregam a data de fechamento; 
 
 ## Professor colaborador
 
-Ainda **não** convidado: o GitHub do professor está no AVA, não neste repositório. Settings → **Collaborators** → convite. Hoje o único colaborador é `henriqueferraz`.
+Convite concluído em 2026-08-25. A confirmação do colaborador é uma evidência externa ao repositório.
 
 ## Segredos
 
