@@ -185,7 +185,7 @@ def test_guess_model_from_mondial_slug_filename():
     from apps.manuals.services.structure import (
         _guess_brand,
         _guess_model,
-    _structure_mock,
+        _structure_mock,
         enrich_product_identity,
     )
 
@@ -215,7 +215,7 @@ def test_guess_identity_from_ma_manual_vte02_filename():
     from apps.manuals.services.structure import (
         _guess_brand,
         _guess_model,
-    _structure_mock,
+        _structure_mock,
         enrich_product_identity,
     )
 
@@ -241,10 +241,7 @@ def test_guess_identity_from_ma_manual_vte02_filename():
     assert mock.product.sku_suggestion.startswith("MONDIAL-")
     assert "VTE-02" in mock.product.sku_suggestion
 
-    ocr = (
-        "VENTILADOR DE TETO MONDIAL\nVTE-02\n"
-        "M.K. Eletrodomésticos Mondial S.A.\nVTE-04\n"
-    )
+    ocr = "VENTILADOR DE TETO MONDIAL\nVTE-02\n" "M.K. Eletrodomésticos Mondial S.A.\nVTE-04\n"
     both = _structure_mock(ocr, filename=fname)
     assert both.product.brand == "Mondial"
     assert both.product.model_code == "VTE-02"
@@ -272,8 +269,7 @@ def test_wiring_diagram_pdf_needs_ocr():
 
     stub = (
         "ON DIP ON DIP ON DIP ON DIP\n"
-        "1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4\n" * 4
-        + "REDE (FASE / NEUTRO)\nFIO MARROM\nRECEPTOR\n"
+        "1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4\n" * 4 + "REDE (FASE / NEUTRO)\nFIO MARROM\nRECEPTOR\n"
     )
     assert native_text_needs_ocr(stub)
 

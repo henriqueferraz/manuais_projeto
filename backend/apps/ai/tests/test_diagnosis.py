@@ -500,9 +500,7 @@ def test_enrich_none_on_usage_keeps_manual_excerpt(
 
 
 @pytest.mark.django_db
-def test_enrich_none_on_fault_keeps_manual_excerpt(
-    indexed_diagnosis_manual, settings, monkeypatch
-):
+def test_enrich_none_on_fault_keeps_manual_excerpt(indexed_diagnosis_manual, settings, monkeypatch):
     """NO_EVIDENCE do LLM não descarta trecho que já passou no groundedness."""
     from apps.ai.models import ChatSession
 

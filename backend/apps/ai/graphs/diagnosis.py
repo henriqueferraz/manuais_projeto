@@ -230,9 +230,7 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
         # Trechos já passaram em evidence_supports_answer: NO_EVIDENCE do LLM
         # não pode zerar a confiança (mesmo padrão do chat RAG).
         if enriched is None:
-            model_name = (
-                f"{getattr(settings, 'OPENAI_CHAT_MODEL', 'gpt-4o-mini')}+excerpt-fallback"
-            )
+            model_name = f"{getattr(settings, 'OPENAI_CHAT_MODEL', 'gpt-4o-mini')}+excerpt-fallback"
         elif enriched:
             low = enriched.lower()
             llm_refused = any(m in low for m in ("não encontrei", "nao encontrei", "no_evidence"))

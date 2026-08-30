@@ -232,12 +232,7 @@ def _canonical_faults(text: str) -> set[str]:
     keys: set[str] = set()
     for match in _FAULT_SYMPTOM_RE.finditer(text or ""):
         raw = match.group(0).lower()
-        n = (
-            raw.replace("ã", "a")
-            .replace("á", "a")
-            .replace("í", "i")
-            .replace("ç", "c")
-        )
+        n = raw.replace("ã", "a").replace("á", "a").replace("í", "i").replace("ç", "c")
         n = re.sub(r"\s+", " ", n)
         if "barulho" in n or "ruido" in n:
             keys.add("noise")

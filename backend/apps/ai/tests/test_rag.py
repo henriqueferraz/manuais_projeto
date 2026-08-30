@@ -372,8 +372,7 @@ def test_retrieve_barulho_finds_ruido_troubleshooting(db):
     )
     assert hits
     assert any(
-        "ruído" in hit.chunk.content.lower() or "ruido" in hit.chunk.content.lower()
-        for hit in hits
+        "ruído" in hit.chunk.content.lower() or "ruido" in hit.chunk.content.lower() for hit in hits
     )
 
 

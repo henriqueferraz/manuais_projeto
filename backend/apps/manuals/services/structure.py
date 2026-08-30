@@ -50,9 +50,7 @@ def structure_manual_text(
     """Roteia mock (CI/local) ou OpenAI conforme EXTRACTION_LLM_MODE."""
     mode = getattr(settings, "EXTRACTION_LLM_MODE", "mock").lower()
     if mode == "openai":
-        return _structure_with_openai(
-            text, manufacturer_hint=manufacturer_hint, filename=filename
-        )
+        return _structure_with_openai(text, manufacturer_hint=manufacturer_hint, filename=filename)
     return _structure_mock(text, manufacturer_hint=manufacturer_hint, filename=filename)
 
 
@@ -205,9 +203,7 @@ def _structure_with_openai(
         result = recompute_extraction_confidence(result)
     except Exception as exc:  # noqa: BLE001
         logger.warning("extraction_llm_failed_fallback_heuristic", error=str(exc))
-        fallback = _structure_mock(
-            text, manufacturer_hint=manufacturer_hint, filename=filename
-        )
+        fallback = _structure_mock(text, manufacturer_hint=manufacturer_hint, filename=filename)
         return fallback
 
     # Usage metadata nem sempre disponível no structured output
@@ -829,9 +825,7 @@ def enrich_product_identity(
 
     model = (product.model_code or "").strip()
     chosen_model = ""
-    if file_model and re.search(
-        r"(?i)Manual[-_]" + re.escape(file_model), filename or ""
-    ):
+    if file_model and re.search(r"(?i)Manual[-_]" + re.escape(file_model), filename or ""):
         chosen_model = file_model
     elif model.casefold() in _UNKNOWN_MODELS and guessed_model:
         chosen_model = guessed_model
@@ -843,9 +837,7 @@ def enrich_product_identity(
                 lows.append("model_code")
 
     existing_variants = [
-        _normalize_model_code(str(v))
-        for v in (product.model_variants or [])
-        if str(v).strip()
+        _normalize_model_code(str(v)) for v in (product.model_variants or []) if str(v).strip()
     ]
     merged_variants: list[str] = []
     for code in [*variants, *existing_variants]:
