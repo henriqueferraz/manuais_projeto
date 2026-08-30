@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 import structlog
@@ -17,6 +18,27 @@ from apps.manuals.services.pdf_extract import extract_pdf_text
 from apps.manuals.services.sanitize import sanitize_manual_text
 
 logger = structlog.get_logger(__name__)
+
+# OCR/manuais usam "ruído" onde o cliente diz "barulho"; top-k curto perdia a tabela.
+_RETRIEVAL_SYNONYMS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"\bbarulho\b", re.I), "ruído ruido ruidoso magnético problema solução"),
+    (re.compile(r"\bn[aã]o\s+gira\b|\bnao\s+gira\b", re.I), "motor capacitor"),
+    (re.compile(r"\bn[aã]o\s+liga\b|\bnao\s+liga\b", re.I), "capacitor partida"),
+)
+_SMALL_CORPUS = 120
+DIAGNOSIS_RETRIEVE_TOP_K = 12
+
+
+def expand_retrieval_query(query: str) -> str:
+    """Acrescenta sinônimos de sintoma à query (barulho → ruído / tabela de problemas)."""
+    q = (query or "").strip()
+    extra: list[str] = []
+    for pattern, syns in _RETRIEVAL_SYNONYMS:
+        if pattern.search(q):
+            extra.append(syns)
+    if extra:
+        return f"{q} {' '.join(extra)}".strip()
+    return q
 
 
 @dataclass(frozen=True)
@@ -88,7 +110,11 @@ def retrieve(
     top_k: int | None = None,
     min_score: float | None = None,
 ) -> list[RetrievedChunk]:
-    """Filtro por produto/categoria/modelo antes da similaridade coseno + lexical."""
+    """Busca chunks com filtro de produto/categoria/modelo.
+
+    Se ``product_id`` não tiver chunks (manual não indexado/vinculado), relaxa o
+    escopo para modelo e categoria em vez de devolver lista vazia.
+    """
     top_k = top_k or int(getattr(settings, "RAG_TOP_K", 4))
     min_score = (
         min_score if min_score is not None else float(getattr(settings, "RAG_MIN_SCORE", 0.12))
@@ -101,11 +127,41 @@ def retrieve(
         category_name=category_name,
         model_code=model_code,
     )
+    # Produto resolvido (ex.: VTE-02) sem chunks indexados: não devolver vazio —
+    # relaxa o FK e busca por modelo/categoria (manuais ainda não vinculados).
+    scoped_product_id = product_id
+    scoped_category_id = category_id
+    if product_id and not qs.exists():
+        logger.info(
+            "retrieve_empty_product_scope",
+            product_id=product_id,
+            model_code=model_code,
+            category_id=category_id,
+        )
+        scoped_product_id = None
+        qs = ManualChunk.objects.select_related("manual", "product", "category")
+        qs = _apply_product_scope(
+            qs,
+            product_id=None,
+            category_id=category_id,
+            category_name=category_name,
+            model_code=model_code,
+        )
+        if not qs.exists() and category_id:
+            scoped_category_id = None
+            qs = ManualChunk.objects.select_related("manual", "product", "category")
+            qs = _apply_product_scope(
+                qs,
+                product_id=None,
+                category_id=None,
+                category_name=category_name,
+                model_code=model_code,
+            )
     # Inclui tipo/modelo na query para reforçar lexical quando o filtro for amplo.
-    scoped_query = query
+    scoped_query = expand_retrieval_query(query)
     extras = [p for p in (category_name, model_code) if p]
     if extras:
-        scoped_query = f"{query} {' '.join(extras)}".strip()
+        scoped_query = f"{scoped_query} {' '.join(extras)}".strip()
 
     query_vec = embed_query(scoped_query)
     hybrid_hits: list[RetrievedChunk] = []
@@ -114,8 +170,8 @@ def retrieve(
         pg_hits = _retrieve_pgvector(
             query_vec,
             query=scoped_query,
-            product_id=product_id,
-            category_id=category_id,
+            product_id=scoped_product_id,
+            category_id=scoped_category_id,
             top_k=max(top_k * 3, 12),
             min_score=min_score,
         )
@@ -124,7 +180,8 @@ def retrieve(
         if pg_hits:
             hybrid_hits = pg_hits
 
-    if not hybrid_hits:
+    small_corpus = qs.count() <= _SMALL_CORPUS
+    if not hybrid_hits or small_corpus:
         scored: list[RetrievedChunk] = []
         for chunk in qs.iterator(chunk_size=200):
             doc_text = f"{chunk.section or ''}\n{chunk.content or ''}".strip()
@@ -132,7 +189,12 @@ def retrieve(
             if score >= min_score:
                 scored.append(RetrievedChunk(chunk=chunk, score=score))
         scored.sort(key=lambda item: item.score, reverse=True)
-        hybrid_hits = scored
+        if hybrid_hits and small_corpus:
+            hybrid_hits = _merge_hits(
+                hybrid_hits, scored, top_k=max(top_k * 3, 12), min_score=min_score
+            )
+        else:
+            hybrid_hits = scored
 
     # Sempre mescla lexical: títulos/receitas ("MILK SHAKE CREMOSO") podem
     # perder no embedding e nunca aparecer se o fallback só rodar com lista vazia.

@@ -25,6 +25,8 @@ Aplica-se a: `name`, `description` (cada linha), `material`, `color`, `mounting`
 ### R2 — Trim e espaços
 Remover espaços no início/fim e colapsar espaços internos duplicados.
 Não deixar linha em branco no meio da descrição.
+Na extração, `name` vazio não é persistido: o schema usa marca+modelo ou
+`Produto sem nome extraído` e marca `low_confidence_fields` (HITL).
 
 ### R3 — SKU técnico
 `sku` sempre em **MAIÚSCULAS**, só `A-Z`, `0-9` e `-`, sem espaços.

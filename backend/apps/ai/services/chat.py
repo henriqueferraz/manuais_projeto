@@ -16,6 +16,7 @@ from apps.ai.models import ChatMessage, ChatSession
 from apps.ai.services.confidence import (
     answer_confidence,
     evidence_supports_answer,
+    floor_grounded_confidence,
     format_low_confidence_message,
     is_below_answer_threshold,
     min_answer_confidence,
@@ -119,31 +120,26 @@ def answer_question(
         # Se o LLM recusar mas o trecho lexicalmente embasa a pergunta, usa o trecho.
         if meta.get("no_evidence") or _looks_like_not_found(full_text):
             best = grounded_hits[0]
-            strong = answer_confidence(
-                best.score,
-                question=cleaned_q,
-                section=best.chunk.section or "",
-                content=best.chunk.content or "",
+            full_text, token_iter, mock_meta = _answer_mock(cleaned_q, grounded_hits)
+            model_name = "openai+excerpt-fallback"
+            confidence = floor_grounded_confidence(
+                answer_confidence(
+                    best.score,
+                    question=cleaned_q,
+                    section=best.chunk.section or "",
+                    content=best.chunk.content or "",
+                )
             )
-            if strong >= min_answer_confidence():
-                full_text, token_iter, mock_meta = _answer_mock(cleaned_q, grounded_hits)
-                model_name = "openai+excerpt-fallback"
-                confidence = strong
-                tokens_out = mock_meta["tokens_out"]
-            else:
-                found = False
-                sources = []
-                chunk_ids = []
-                confidence = 0.0
-                full_text = FALLBACK_MSG
-                token_iter = _stream_words(full_text)
+            tokens_out = mock_meta["tokens_out"]
+        elif found:
+            confidence = floor_grounded_confidence(confidence)
     else:
         full_text, token_iter, meta = _answer_mock(cleaned_q, grounded_hits)
         model_name = meta["model_name"]
         tokens_in = meta["tokens_in"]
         tokens_out = meta["tokens_out"]
         trace_id = meta["trace_id"]
-        confidence = meta["confidence"]
+        confidence = floor_grounded_confidence(meta["confidence"])
 
     assistant = ChatMessage(
         session=session,

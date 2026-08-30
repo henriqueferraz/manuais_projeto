@@ -51,7 +51,7 @@ def retrieve_manual_chunks(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Busca trechos de manual com validação de payload.
 
-    Em falha de schema ou de retrieval, devolve chunks vazios e `error`.
+    Usa ``DIAGNOSIS_RETRIEVE_TOP_K`` para não perder tabela de problemas no OCR.
     """
     try:
         args = RetrieveManualInput.model_validate(payload)
@@ -60,7 +60,7 @@ def retrieve_manual_chunks(payload: dict[str, Any]) -> dict[str, Any]:
         return {"ok": False, "chunks": [], "error": "payload_invalido", "tool_errors": ["retrieve"]}
 
     try:
-        from apps.ai.services.retrieval import retrieve
+        from apps.ai.services.retrieval import DIAGNOSIS_RETRIEVE_TOP_K, retrieve
 
         def _run():
             return retrieve(
@@ -69,6 +69,7 @@ def retrieve_manual_chunks(payload: dict[str, Any]) -> dict[str, Any]:
                 category_id=args.category_id,
                 category_name=args.category_name,
                 model_code=args.model_code,
+                top_k=DIAGNOSIS_RETRIEVE_TOP_K,
             )
 
         hits = _with_db_retry(_run)

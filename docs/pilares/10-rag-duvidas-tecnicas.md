@@ -10,7 +10,7 @@ Chunking de domínio; pgvector; metadados como filtro; LangGraph; citação de f
 
 - **Chunking:** por seção/parágrafo semântico; preservar tabelas; metadados (produto, seção, página)
 - **Banco vetorial:** pgvector no PostgreSQL (sem vector DB externo no início)
-- **Filtro por metadados:** produto / categoria (FK principal ou contexto resolvido) antes da busca semântica
+- **Filtro por metadados:** produto / categoria (FK principal ou contexto resolvido) antes da busca semântica; se o produto não tiver `ManualChunk`, relaxa para modelo/categoria (`retrieve`); sinônimos `barulho`→`ruído` e `top_k=12` no diagnóstico
 - **Fluxo LangGraph:** identificação do produto → retrieval → geração → verificação
 - **Citação:** toda resposta técnica referencia página/seção do manual
 - **Fallback:** “não encontrei no manual” — especialmente segurança

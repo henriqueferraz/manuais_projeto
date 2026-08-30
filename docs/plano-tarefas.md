@@ -772,6 +772,8 @@ Itens entregues após o backlog T-P.1–T-P.6, sem nova fase numerada:
 
 - [x] **Multi-categoria no produto** — `Product.categories` (M2M) + FK `category` principal; form com checkboxes; filtro catálogo e cupons — [`pages/dashboard-produto.md`](pages/dashboard-produto.md)
 - [x] **Grounding / confiança no chat** — `CHAT_MIN_ANSWER_CONFIDENCE` + `apps.ai.services.confidence`; evidência de falha no diagnóstico
+- [x] **Diagnóstico: produto sem chunks** — `retrieve` relaxa o filtro; LLM `NO_EVIDENCE` não zera trecho grounded (`floor_grounded_confidence`)
+- [x] **Diagnóstico: barulho vs ruído** — `expand_retrieval_query` + `top_k=12` para tabela OCR do VTE-02
 - [x] **Contexto de produto no diagnóstico** — pedir tipo/modelo antes do retrieval (`product_context`)
 - [x] **Login 2FA no design system** — `templates/two_factor/` + `auth.css`
 - [x] **Sessão autenticada 24h** — `SESSION_COOKIE_AGE` / `SESSION_SAVE_EVERY_REQUEST` (`.env.example`)
@@ -780,7 +782,9 @@ Itens entregues após o backlog T-P.1–T-P.6, sem nova fase numerada:
 - [x] **Senac Fase A** — LangGraph paralelo, tools, `recursion_limit`, adversarial, GET `/ops/hooks/lowcode/` — [`entrega.md`](entrega.md)
 - [x] **Senac Fase B** — n8n (JSON importável) + POST `/ops/hooks/lowcode/report/` → `OpsAlert`; [`lowcode/README.md`](lowcode/README.md)
 - [x] **Senac Fase C** — README 5.2, [`prompts/`](prompts/README.md), [`qa/`](qa/README.md), [`evidencias/`](evidencias/README.md) — [`entrega.md`](entrega.md)
-- [x] **Senac Fase D** — Project [nº 2](https://github.com/users/henriqueferraz/projects/2), issues `#43`–`#53`, fluxo `develop` (PRs #54/#55); professor TBD (AVA) — [`github-kanban.md`](github-kanban.md)
+- [x] **Extração: `name` vazio** — coerce no `ExtractedProduct` (placeholder / marca+modelo) para não quebrar Pydantic `string_too_short`
+- [x] **Extração: PDF capa Mondial** — OCR mesmo com URL nativa; marca/modelo/SKU pelo slug (`bg-03`)
+- [x] **Extração: diagrama DIP nativo** — OCR se o PDF nativo for só fiação/`ON DIP` (VTE-02)
 
 ### Ordem sugerida pós-F8
 

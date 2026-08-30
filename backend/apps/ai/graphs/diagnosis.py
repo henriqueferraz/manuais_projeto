@@ -139,6 +139,7 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
     from apps.ai.services.confidence import (
         answer_confidence,
         evidence_supports_answer,
+        floor_grounded_confidence,
         is_fault_symptom,
     )
     from apps.ai.services.sku_recommend import recommend_skus_for_symptom
@@ -226,37 +227,32 @@ def suggest_node(state: DiagnosisState) -> dict[str, Any]:
             skus=skus if fault else [],
             fault=fault,
         )
-        # NO_EVIDENCE só recusa em perguntas de falha; uso/receita mantém o trecho.
-        if enriched is None and fault:
-            return {
-                "answer": (
-                    "Não encontrei no manual evidência suficiente para diagnosticar este sintoma. "
-                    "Não vou inventar uma causa. Abra um chamado para atendimento humano."
-                ),
-                "cause": "",
-                "confidence": 0.0,
-                "ref_manual": "",
-                "recommended_skus": [],
-                "found_in_manual": False,
-                "sources": [],
-                "model_name": getattr(settings, "OPENAI_CHAT_MODEL", "gpt-4o-mini"),
-            }
-        if enriched:
+        # Trechos já passaram em evidence_supports_answer: NO_EVIDENCE do LLM
+        # não pode zerar a confiança (mesmo padrão do chat RAG).
+        if enriched is None:
+            model_name = (
+                f"{getattr(settings, 'OPENAI_CHAT_MODEL', 'gpt-4o-mini')}+excerpt-fallback"
+            )
+        elif enriched:
             low = enriched.lower()
             llm_refused = any(m in low for m in ("não encontrei", "nao encontrei", "no_evidence"))
-            if llm_refused and not fault:
+            if llm_refused:
                 # Mantém o trecho do manual já montado em `answer`.
-                model_name = getattr(settings, "OPENAI_CHAT_MODEL", "gpt-4o-mini")
+                model_name = (
+                    f"{getattr(settings, 'OPENAI_CHAT_MODEL', 'gpt-4o-mini')}+excerpt-fallback"
+                )
             else:
                 answer = enriched
                 cause = enriched[:240]
                 model_name = getattr(settings, "OPENAI_CHAT_MODEL", "gpt-4o-mini")
 
-    conf = answer_confidence(
-        best.get("score") or 0,
-        question=symptom,
-        section=section,
-        content=str(best.get("content") or best.get("excerpt") or ""),
+    conf = floor_grounded_confidence(
+        answer_confidence(
+            best.get("score") or 0,
+            question=symptom,
+            section=section,
+            content=str(best.get("content") or best.get("excerpt") or ""),
+        )
     )
     answer = _redact_secrets(answer)
     cause = _redact_secrets(cause)

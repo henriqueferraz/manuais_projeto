@@ -4,7 +4,7 @@
 > Alinhado a F3 (extração) e F4a (catálogo). Implementação Django na F2/F4a.
 
 **Status:** schema F1 aprovado; **evoluído** com multi-categoria (`categories` M2M) — ver seção abaixo.  
-**Data:** 2026-08-04 · atualização categorias: 2026-08-13
+**Data:** 2026-08-04 · categorias: 2026-08-13 · extração `name` vazio: 2026-08-26
 
 ---
 
@@ -137,7 +137,7 @@ Populada pela extração + revisão; consulta do verificador = ORM, sem LLM.
 
 | Trecho típico do manual | Campo destino |
 |---|---|
-| Nome / título do produto | `ProductTranslation.name` |
+| Nome / título do produto | `ProductTranslation.name` (extração: `name` vazio vira marca+modelo ou `Produto sem nome extraído` + `low_confidence_fields`) |
 | Modelo / referência | `model_code`, parte do `sku` |
 | Marca / fabricante | `brand` |
 | Voltagem | `voltage` |
@@ -151,7 +151,7 @@ Populada pela extração + revisão; consulta do verificador = ORM, sem LLM.
 | Divergências entre trechos/documentos | `document_conflicts` → merge em `Product.specs` (HITL; não escolher em silêncio) |
 | Esquemas / segurança | resumos podem ir a `specs`; texto completo segue nos chunks RAG (F5) |
 
-Saída da IA: JSON validado contra schema Pydantic (`ExtractedProduct` / prompt `extraction_v3`) **antes** de gravar rascunho.
+Saída da IA: JSON validado contra schema Pydantic (`ExtractedProduct` / prompt `extraction_v3`) **antes** de gravar rascunho. `brand`/`model_code`/`name` vazios são preenchidos no schema (não derrubam o job).
 
 ### Status da materialização no approve (HITL)
 

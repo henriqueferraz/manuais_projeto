@@ -34,7 +34,8 @@ O campo **Categorias** é multi-seleção (checkboxes), não um select único.
 
 ### UI / JS
 
-- Checkboxes em `.tp-category-checks` (estilo em `design-system/components.css`).
+- Checkboxes em `.tp-category-checks`. Django 5+ renderiza um `<div>` por opção (não `ul/li`).
+  Não usar `form-check-input` no widget: essa classe no wrapper (1em×1em) empilha os nomes.
 - Assistente IA (`product_ai_assist.js`): ao sugerir categoria, marca o checkbox correspondente (`name="categories"`).
 - Busca de fotos web (`product_web_images.js`): usa a primeira categoria marcada.
 
@@ -47,7 +48,7 @@ O campo **Categorias** é multi-seleção (checkboxes), não um select único.
 | Specs | Potência, peso, dimensões, material, etc. — regra de ouro em [`../regra-ouro-campos-produto.md`](../regra-ouro-campos-produto.md) |
 | Estoque | Disponível + alerta mínimo |
 | Galeria | Até N fotos; upload local e/ou URLs da busca web |
-| IA | Upload de PDF → extração → aplicar sugestões (HITL) |
+| IA | Upload de PDF → extração (OCR se capa/scan) → aplicar sugestões (HITL). Nome do arquivo (ex. `mondial-bg-03`) completa marca/modelo/SKU se a IA omitir |
 
 ## Lista e exclusão
 

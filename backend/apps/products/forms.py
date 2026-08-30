@@ -286,7 +286,8 @@ class InternalProductForm(forms.Form):
             if name == "sku":
                 continue
             if isinstance(field.widget, forms.CheckboxSelectMultiple):
-                field.widget.attrs.setdefault("class", "form-check-input")
+                # attrs.class vai no wrapper <div> (Django 5+), não em cada input.
+                # `form-check-input` no wrapper vira caixa 1em e os nomes se sobrepõem.
                 continue
             if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.setdefault("class", "form-check-input")

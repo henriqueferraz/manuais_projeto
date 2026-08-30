@@ -82,7 +82,9 @@ def extract_manual_for_product_form(
     raw = log.raw_json or {}
     try:
         schema = ExtractedProduct.model_validate(raw)
-        schema = prepare_extracted_product(schema, log.raw_text_preview or "")
+        schema = prepare_extracted_product(
+            schema, log.raw_text_preview or "", filename=manual.original_filename
+        )
         product_data = schema.model_dump(mode="json")
     except Exception:  # noqa: BLE001
         schema = None
@@ -705,7 +707,11 @@ def link_approved_extraction_to_product(
     try:
         schema = ExtractedProduct.model_validate(data)
         # Reaplica normalização no save (extrações antigas / JSON sem código sintético).
-        schema = prepare_extracted_product(schema, log.raw_text_preview or "")
+        schema = prepare_extracted_product(
+            schema,
+            log.raw_text_preview or "",
+            filename=log.manual.original_filename,
+        )
     except Exception:  # noqa: BLE001
         schema = None
 

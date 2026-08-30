@@ -28,7 +28,7 @@ _FAULT_SYMPTOM_RE = re.compile(
 _FAULT_EVIDENCE_RE = re.compile(
     r"("
     r"n[aã]o\s+liga|nao\s+liga|n[aã]o\s+gira|nao\s+gira|"
-    r"faz\s+barulho|quando\s+o\s+.+\s+(faz|n[aã]o)|"
+    r"faz\s+barulho|ru[ií]do\s+magn[eé]tico|quando\s+o\s+.+\s+(faz|n[aã]o)|"
     r"problema|solu[cç][aã]o\s+de\s+problema|tabela\s+de\s+solu|"
     r"verifique\s+o\s+capacitor|capacitor\s+de\s+partida|"
     r"causa\s+prov[aá]vel|poss[ií]vel\s+causa"
@@ -212,6 +212,11 @@ def is_below_answer_threshold(confidence: float) -> bool:
     return float(confidence or 0.0) < min_answer_confidence()
 
 
+def floor_grounded_confidence(confidence: float) -> float:
+    """Eleva ao limiar mínimo quando o trecho já passou em ``evidence_supports_answer``."""
+    return round(max(float(confidence or 0.0), min_answer_confidence()), 3)
+
+
 def format_low_confidence_message(ticket_code: str) -> str:
     """Mensagem de recusa + código do chamado aberto automaticamente."""
     pct = int(round(min_answer_confidence() * 100))
@@ -221,6 +226,34 @@ def format_low_confidence_message(ticket_code: str) -> str:
         f"(confiança abaixo de {pct}%). Não vou inventar uma resposta. "
         f"Abri o chamado {code} para atendimento humano — um especialista vai te ajudar."
     )
+
+
+def _canonical_faults(text: str) -> set[str]:
+    keys: set[str] = set()
+    for match in _FAULT_SYMPTOM_RE.finditer(text or ""):
+        raw = match.group(0).lower()
+        n = (
+            raw.replace("ã", "a")
+            .replace("á", "a")
+            .replace("í", "i")
+            .replace("ç", "c")
+        )
+        n = re.sub(r"\s+", " ", n)
+        if "barulho" in n or "ruido" in n:
+            keys.add("noise")
+        elif "liga" in n:
+            keys.add("wont_start")
+        elif "gira" in n:
+            keys.add("wont_spin")
+        elif "vibra" in n:
+            keys.add("vibrate")
+        elif "esquenta" in n:
+            keys.add("heat")
+        elif "cheiro" in n:
+            keys.add("smell")
+        else:
+            keys.add(n)
+    return keys
 
 
 def evidence_supports_answer(
@@ -234,6 +267,7 @@ def evidence_supports_answer(
 
     Evita o falso positivo clássico: seção de segurança preventiva
     ("antes de ligar, trave a tampa") usada como diagnóstico de "não liga".
+    Barulho e ruído são o mesmo sintoma (tabela de problemas Mondial VTE-02).
     """
     body = (content or "").strip()
     if not body:
@@ -258,8 +292,9 @@ def evidence_supports_answer(
         return False
 
     # Sintoma da pergunta precisa aparecer no trecho (não ligar ≠ não girar).
-    q_faults = {m.group(0).lower() for m in _FAULT_SYMPTOM_RE.finditer(q)}
-    doc_faults = {m.group(0).lower() for m in _FAULT_SYMPTOM_RE.finditer(text)}
+    # barulho e ruído contam como o mesmo sintoma (tabela Mondial VTE-02).
+    q_faults = _canonical_faults(q)
+    doc_faults = _canonical_faults(text)
     if q_faults and doc_faults and q_faults.isdisjoint(doc_faults):
         from apps.ai.services.embeddings import tokenize
 

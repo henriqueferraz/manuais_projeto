@@ -169,20 +169,20 @@ Guia: [`github-kanban.md`](github-kanban.md).
 
 ### Fase E — Vídeo e AVA (último dia útil)
 
-18. Gravar duração recomendada **até 10 minutos** (máximo **12**), YouTube **não listado**, link no README.
+18. Gravar **11:00–11:30** (teto **12:00**), YouTube **não listado**, link no README. Roteiro falado: [`video-roteiro-venda.txt`](video-roteiro-venda.txt).
 
-Roteiro sugerido pelo enunciado:
+Roteiro do enunciado (expandido no doc para caber 10–12 min):
 
 | Tempo | Conteúdo |
 |---|---|
-| 0:00–1:00 | Problema, objetivo, classificação (híbrido) |
-| 1:00–2:00 | Arquitetura e integrações |
-| 2:00–4:00 | Dois cenários (principal + risco/falha/injection) |
-| 4:00–5:00 | Segurança, bloqueio ou HITL |
-| 5:00–6:00 | Uma evidência de QA |
-| 6:00–8:00 | Pipeline, análise de logs, anomalia, tendência/risco |
-| 8:00–9:00 | Low-code/no-code |
-| 9:00–10:00 | Limitações e melhorias futuras |
+| 0:00–1:10 | Problema, objetivo, classificação (híbrido) |
+| 1:10–2:25 | Arquitetura e integrações |
+| 2:25–4:50 | Dois cenários (principal + risco/falha/injection) |
+| 4:50–6:00 | Segurança, bloqueio ou HITL |
+| 6:00–7:10 | Uma evidência de QA |
+| 7:10–9:20 | Pipeline, análise de logs, anomalia, tendência/risco |
+| 9:20–10:40 | Low-code/no-code |
+| 10:40–11:30 | Limitações e melhorias futuras |
 
 19. Submeter no AVA os três links **antes** das 15h de 31/08. **Não** alterar o repositório depois.
 

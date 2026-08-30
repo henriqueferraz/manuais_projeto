@@ -340,6 +340,7 @@ Refinamento (problema → prompt/grafo → resultado): [`docs/prompts/ciclo-refi
 | [`docs/evidencias/`](docs/evidencias/) | CI, logs correlacionados, anomalia |
 | [`docs/github-kanban.md`](docs/github-kanban.md) | Fase D: Kanban, `develop`, issues Senac |
 | [`docs/lowcode/README.md`](docs/lowcode/README.md) | n8n / Fase B |
+| [`docs/video-roteiro-venda.txt`](docs/video-roteiro-venda.txt) | Fase E: teleprompter do vídeo (~12 min) |
 | [`docs/regra-ouro-documentacao.md`](docs/regra-ouro-documentacao.md) | Atualizar docs após cada mudança |
 | [`docs/pages/`](docs/pages/) | Inventário de telas |
 | [`docs/plano-tarefas.md`](docs/plano-tarefas.md) | Fases e aceite |

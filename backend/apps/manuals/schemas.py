@@ -179,8 +179,26 @@ class DocumentConflictHint(BaseModel):
         return [str(x).strip() for x in value if str(x).strip()]
 
 
+_PLACEHOLDER_BRAND = "Desconhecida"
+_PLACEHOLDER_MODEL = "SEM-MODELO"
+_PLACEHOLDER_NAME = "SEM-NOME"
+
+
+def _nonempty_str(value: Any, fallback: str) -> str:
+    """Normaliza string; lista vira o primeiro item útil; vazio usa fallback."""
+    if isinstance(value, list):
+        parts = [str(x).strip() for x in value if str(x).strip()]
+        return parts[0] if parts else fallback
+    text = str(value or "").strip()
+    return text if text else fallback
+
+
 class ExtractedProduct(BaseModel):
-    """JSON estruturado espelhando o schema de produto (prompt v3)."""
+    """JSON estruturado espelhando o schema de produto (prompt v3).
+
+    A LLM às vezes devolve `name`/`brand` vazios; o schema preenche placeholder
+    (marca+modelo ou `Produto sem nome extraído`) e marca `low_confidence_fields`.
+    """
 
     brand: str = Field(..., min_length=1)
     model_code: str = Field(..., min_length=1)
@@ -221,13 +239,25 @@ class ExtractedProduct(BaseModel):
     confidence: float = Field(default=0.5, ge=0.0, le=1.0)
     manufacturer: str = ""
 
+    @field_validator("brand", mode="before")
+    @classmethod
+    def coerce_brand(cls, value: Any) -> str:
+        """Evita ValidationError quando a LLM omite a marca comercial."""
+        return _nonempty_str(value, _PLACEHOLDER_BRAND)
+
     @field_validator("model_code", mode="before")
     @classmethod
     def coerce_model_code(cls, value: Any) -> str:
         if isinstance(value, list):
             parts = [str(x).strip() for x in value if str(x).strip()]
-            return " / ".join(parts) if parts else "SEM-MODELO"
-        return str(value or "").strip() or "SEM-MODELO"
+            return " / ".join(parts) if parts else _PLACEHOLDER_MODEL
+        return str(value or "").strip() or _PLACEHOLDER_MODEL
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def coerce_name(cls, value: Any) -> str:
+        """Evita `string_too_short` em `name=""` na extração estruturada."""
+        return _nonempty_str(value, _PLACEHOLDER_NAME)
 
     @field_validator("product_kind")
     @classmethod
@@ -282,7 +312,31 @@ class ExtractedProduct(BaseModel):
             self.barcode = self.ean
         if not self.ean and self.barcode:
             self.ean = self.barcode
+        self._fill_placeholder_name()
         return self
+
+    def _fill_placeholder_name(self) -> None:
+        """Troca SEM-NOME por descrição, marca+modelo ou rótulo explícito."""
+        current = (self.name or "").strip()
+        if current.casefold() not in {_PLACEHOLDER_NAME.casefold(), "n/a", "unknown", "-"}:
+            return
+        first_desc = ""
+        for line in (self.description or "").splitlines():
+            if line.strip():
+                first_desc = line.strip()[:180]
+                break
+        brand_ok = (self.brand or "").strip()
+        if brand_ok.casefold() in {_PLACEHOLDER_BRAND.casefold(), "unknown", "n/a"}:
+            brand_ok = ""
+        model_ok = (self.model_code or "").strip()
+        if model_ok.casefold() in {_PLACEHOLDER_MODEL.casefold(), "unknown", "n/a"}:
+            model_ok = ""
+        combo = " ".join(part for part in (brand_ok, model_ok) if part).strip()
+        self.name = first_desc or combo or "Produto sem nome extraído"
+        lows = list(self.low_confidence_fields or [])
+        if "name" not in lows:
+            lows.append("name")
+        self.low_confidence_fields = lows
 
 
 class ExtractionResult(BaseModel):

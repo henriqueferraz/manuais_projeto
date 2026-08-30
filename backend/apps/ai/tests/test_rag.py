@@ -314,6 +314,73 @@ def test_retrieve_falls_back_when_pgvector_vecs_null(indexed_manual, settings, m
     assert any("capacitor" in h.chunk.content.lower() for h in hits)
 
 
+@pytest.mark.django_db
+def test_retrieve_relaxes_when_product_has_no_chunks(indexed_manual):
+    """Produto cadastrado sem RAG não pode esconder o manual do mesmo modelo."""
+    empty = Product.objects.create(
+        sku="MONDIAL-VTE-02-EMPTY",
+        brand="Mondial",
+        model_code="VTE-02",
+        status=Product.Status.PUBLISHED,
+        price=199,
+    )
+    assert not indexed_manual.linked_product_id == empty.pk
+    hits = retrieve(
+        "Qual o capacitor de partida do VTE-02?",
+        product_id=empty.pk,
+        model_code="VTE-02",
+    )
+    assert hits
+    assert any("capacitor" in h.chunk.content.lower() for h in hits)
+
+
+@pytest.mark.django_db
+def test_retrieve_barulho_finds_ruido_troubleshooting(db):
+    """Cliente diz 'barulho'; o manual OCR traz 'ruído magnético' — tem que entrar no top-k."""
+    product = Product.objects.create(
+        sku="VTE-NOISE",
+        brand="Mondial",
+        model_code="VTE-02",
+        status=Product.Status.PUBLISHED,
+        price=199,
+    )
+    filler = (
+        "# Instalação\nPágina 2\n"
+        "Antes de instalar desligue a energia. Use parafusos adequados ao forro.\n"
+        "Mantenha o produto limpo. Não use água no motor.\n"
+    )
+    table = (
+        "# Problemas\nPágina 5\n"
+        "PROBLEMA CAUSA SOLUÇÃO. O produto apresenta ruído magnético. "
+        "Defeito no motor ou capacitor. Encaminhe à assistência autorizada.\n"
+    )
+    manual = Manual(
+        original_filename="noise.pdf",
+        mime_type="application/pdf",
+        manufacturer="Mondial",
+        linked_product=product,
+        scan_status=Manual.ScanStatus.SKIPPED,
+    )
+    manual.file.save("noise.pdf", ContentFile(b"%PDF-1.4\n%%EOF\n"), save=False)
+    manual.compute_and_set_sha256(b"%PDF-1.4\n%%EOF\n")
+    manual.save()
+    index_manual(manual.pk, text=filler + table)
+    hits = retrieve(
+        "ventilador VTE-02 faz barulho e não gira",
+        product_id=product.pk,
+        model_code="VTE-02",
+    )
+    assert hits
+    assert any("ruído" in h.chunk.content.lower() or "ruido" in h.chunk.content.lower() for h in hits)
+
+
+def test_expand_retrieval_query_adds_ruido():
+    from apps.ai.services.retrieval import expand_retrieval_query
+
+    expanded = expand_retrieval_query("ventilador faz barulho e não gira")
+    assert "ruído" in expanded.lower() or "ruido" in expanded.lower()
+
+
 def test_mock_embedding_stable():
     a = embed_query("capacitor de partida VTE-02")
     b = embed_query("capacitor de partida VTE-02")

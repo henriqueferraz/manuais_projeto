@@ -67,7 +67,11 @@ def extract_and_structure_node(state: ExtractionGraphState) -> dict[str, Any]:
         manual.file.seek(0)
 
     pdf = extract_pdf_text(content)
-    cleaned = sanitize_manual_text(pdf.text)
+    filename = (manual.original_filename or "").strip()
+    blob = pdf.text or ""
+    if filename:
+        blob = f"Nome do arquivo: {filename}\n\n{blob}"
+    cleaned = sanitize_manual_text(blob)
     if len(cleaned) < 40:
         from django.conf import settings
 
@@ -86,7 +90,7 @@ def extract_and_structure_node(state: ExtractionGraphState) -> dict[str, Any]:
     result = structure_manual_text(
         cleaned,
         manufacturer_hint=manual.manufacturer,
-        filename=manual.original_filename,
+        filename=filename,
     )
     product_data = dump_product_json(result.product)
     return {

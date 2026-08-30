@@ -63,6 +63,7 @@ Guia rápido de **quais documentos usar**. Evita ler rascunhos obsoletos ou font
 | [`evidencias/`](evidencias/README.md) | CI, correlação de logs, anomalia E2E |
 | [`github-kanban.md`](github-kanban.md) | Fase D: quadro [Project nº 2](https://github.com/users/henriqueferraz/projects/2), `develop`, issues |
 | [`lowcode/README.md`](lowcode/README.md) | Fluxo n8n (gatilho, HTTP, alerta no painel) |
+| [`video-roteiro-venda.txt`](video-roteiro-venda.txt) | Teleprompter ~12 min (venda da ideia + mapa Senac) |
 
 ## Beta e qualidade
 

@@ -5,6 +5,7 @@ dist/
 coverage/
 .venv/
 venv/
+video/
 __pycache__/
 *.py[cod]
 *.egg-info/

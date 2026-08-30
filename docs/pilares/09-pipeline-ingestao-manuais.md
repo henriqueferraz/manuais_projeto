@@ -17,7 +17,7 @@ Manual (PDF) → upload R2 → Extração (OCR/texto) → LangGraph/LangChain
 
 | Etapa | Como |
 |---|---|
-| Extração | OCR se escaneado; parsing texto/tabelas se PDF nativo (pdfplumber/unstructured) |
+| Extração | OCR se scan/capa; nome do arquivo no texto; linha Mondial VTE-02 **e** VTE-04 vira `model_variants` + SKU do modelo principal (`MONDIAL-VTE-02`) |
 | Estruturação | Grafo com nós: specs, SKU, descrição comercial, categoria/compatibilidade |
 | Saída | JSON com schema fixo (`with_structured_output` + Pydantic) |
 | Human-in-the-loop | **Obrigatório** — nunca publicar sem revisão |

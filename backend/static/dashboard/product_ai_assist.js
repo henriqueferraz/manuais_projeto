@@ -432,9 +432,11 @@
       matched.dispatchEvent(new Event("change", { bubbles: true }));
       return;
     }
-    const wrap = document.querySelector(".tp-category-checks ul, .tp-category-checks");
+    const wrap = document.querySelector(
+      ".tp-category-checks #id_categories, .tp-category-checks ul, .tp-category-checks"
+    );
     if (!wrap) return;
-    const li = document.createElement("li");
+    const row = document.createElement(wrap.tagName === "UL" ? "li" : "div");
     const id = "id_categories_ai_" + strVal;
     const input = document.createElement("input");
     input.type = "checkbox";
@@ -442,14 +444,12 @@
     input.value = strVal;
     input.id = id;
     input.checked = true;
-    input.className = "form-check-input";
     const lab = document.createElement("label");
     lab.htmlFor = id;
     lab.textContent = label || strVal;
-    li.appendChild(input);
-    li.appendChild(lab);
-    const list = wrap.tagName === "UL" ? wrap : wrap.querySelector("ul") || wrap;
-    list.appendChild(li);
+    row.appendChild(input);
+    row.appendChild(lab);
+    wrap.appendChild(row);
     input.dispatchEvent(new Event("change", { bubbles: true }));
   }
 

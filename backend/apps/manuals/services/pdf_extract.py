@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import re
 from dataclasses import dataclass, field
 
 import pdfplumber
@@ -14,6 +15,57 @@ logger = structlog.get_logger(__name__)
 MIN_NATIVE_CHARS = 80
 # PSM 6 = bloco uniforme de texto (manuais/fichas); ajuda scans medianos
 _OCR_TESSERACT_CONFIG = "--oem 3 --psm 6"
+_URL_RE = re.compile(r"https?://\S+|www\.\S+", flags=re.IGNORECASE)
+_TABLE_MARK_RE = re.compile(r"\[Tabela\s+\d+\]")
+_REV_MARK_RE = re.compile(r"\b\d{2}/\d{2}\s*Rev\.?\s*\d+\b", flags=re.IGNORECASE)
+
+
+def substantive_native_char_count(text: str) -> int:
+    """Conta caracteres úteis, ignorando URL, marca de tabela e data de revisão."""
+    cleaned = _URL_RE.sub(" ", text or "")
+    cleaned = _TABLE_MARK_RE.sub(" ", cleaned)
+    cleaned = _REV_MARK_RE.sub(" ", cleaned)
+    cleaned = re.sub(r"[|\s]+", " ", cleaned).strip()
+    return len(cleaned)
+
+
+_DIAGRAM_NOISE_RE = re.compile(r"\bon\s*dip\b", flags=re.IGNORECASE)
+_MANUAL_PROSE_RE = re.compile(
+    r"\b("
+    r"instru[cç][oõ]es|manual|aten[cç][aã]o|instala[cç]|garantia|"
+    r"ventilador|liquidificador|pot[eê]ncia|voltagem|manuten"
+    r")\b",
+    flags=re.IGNORECASE,
+)
+
+
+def _alpha_token_diversity(text: str) -> float:
+    """Fração de tokens alfabéticos únicos (diagramas repetem ON/DIP)."""
+    tokens = [t.lower() for t in re.findall(r"[A-Za-zÀ-ÿ]{2,}", text or "")]
+    if len(tokens) < 12:
+        return 1.0
+    return len(set(tokens)) / len(tokens)
+
+
+def native_text_needs_ocr(text: str) -> bool:
+    """True se o PDF nativo parece capa/scan (pouco texto, URL ou só diagrama)."""
+    raw = (text or "").strip()
+    if len(raw) < MIN_NATIVE_CHARS:
+        return True
+    if substantive_native_char_count(raw) < MIN_NATIVE_CHARS:
+        return True
+    folded = re.sub(r"\s+", "", raw.casefold())
+    if "formatodigital" in folded and "emondial" in folded:
+        return True
+    # Esquema elétrico extraído como texto nativo (VTE-02) sem o corpo do manual.
+    if len(_DIAGRAM_NOISE_RE.findall(raw)) >= 2:
+        return True
+    if not _MANUAL_PROSE_RE.search(raw):
+        if _alpha_token_diversity(raw) < 0.35:
+            return True
+        if substantive_native_char_count(raw) < 800:
+            return True
+    return False
 
 
 @dataclass
@@ -26,8 +78,9 @@ class PdfExtraction:
 
 def extract_pdf_text(content: bytes, *, max_pages: int | None = None) -> PdfExtraction:
     """
-    Extrai texto e tabelas. Se o PDF parecer escaneado (pouco texto),
-    tenta OCR quando MANUAL_OCR_ENABLED=true (pypdfium2 + Tesseract).
+    Extrai texto e tabelas. Se o PDF parecer escaneado (pouco texto nativo,
+    só capa com URL, ou só diagrama DIP/fiação), tenta OCR quando
+    ``MANUAL_OCR_ENABLED=true``.
     """
     pages_limit = max_pages
     if pages_limit is None:
@@ -50,8 +103,13 @@ def extract_pdf_text(content: bytes, *, max_pages: int | None = None) -> PdfExtr
     text = "\n\n".join(p for p in pages_text if p).strip()
     used_ocr = False
 
-    if len(text) < MIN_NATIVE_CHARS:
-        logger.info("pdf_looks_scanned", chars=len(text), pages=page_count)
+    if native_text_needs_ocr(text):
+        logger.info(
+            "pdf_looks_scanned",
+            chars=len(text),
+            substantive=substantive_native_char_count(text),
+            pages=page_count,
+        )
         ocr_text = _try_ocr(content, max_pages=pages_limit)
         if ocr_text.strip():
             text = ocr_text.strip()

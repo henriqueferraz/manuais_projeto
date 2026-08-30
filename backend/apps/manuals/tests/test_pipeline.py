@@ -75,6 +75,22 @@ def test_sanitize_strips_secret_and_prompt_leak_requests():
     assert "Capacitor" in clean
 
 
+def test_extracted_product_accepts_empty_name_from_llm():
+    from apps.manuals.schemas import ExtractedProduct
+
+    product = ExtractedProduct.model_validate(
+        {"brand": "Mondial", "model_code": "VTE-02", "name": ""}
+    )
+    assert product.name == "Mondial VTE-02"
+    assert "name" in product.low_confidence_fields
+
+    bare = ExtractedProduct.model_validate({"brand": "", "model_code": "", "name": ""})
+    assert bare.name == "Produto sem nome extraído"
+    assert bare.brand == "Desconhecida"
+    assert bare.model_code == "SEM-MODELO"
+    assert "name" in bare.low_confidence_fields
+
+
 def test_structure_mock_mondial():
     text = (
         "Mondial Manual Ventilador de Teto\nModelo: VTE-02\n"
@@ -162,6 +178,104 @@ def test_promote_canonical_fields_accent_and_idempotent():
     assert once.power_w == 120.0
     assert twice.power_w == 120.0
     assert once.specs == twice.specs == {}
+
+
+def test_guess_model_from_mondial_slug_filename():
+    from apps.manuals.schemas import ExtractedProduct
+    from apps.manuals.services.structure import (
+        _guess_brand,
+        _guess_model,
+        enrich_product_identity,
+        _structure_mock,
+    )
+
+    fname = "MA_aparador-de-pelos-mondial-bg-03-9-pentes-sem-fio-172407332427.pdf"
+    stub = (
+        "Para obter o manual em formato digital, consulte nosso site:\n"
+        "www.emondial.com.br\n09/20 Rev. 01"
+    )
+    assert _guess_brand(stub, fname) == "Mondial"
+    assert _guess_model(stub, fname) == "BG-03"
+    assert _guess_model("BG-03\nMONDIAL SuperGroom-10", "scan.pdf") == "BG-03"
+
+    empty = ExtractedProduct(brand="Desconhecida", model_code="SEM-MODELO", name="X")
+    filled = enrich_product_identity(empty, stub, fname)
+    assert filled.brand == "Mondial"
+    assert filled.model_code == "BG-03"
+    assert filled.sku_suggestion.startswith("MONDIA")
+    assert "BG-03" in filled.sku_suggestion
+
+    mock = _structure_mock(stub, filename=fname)
+    assert mock.product.brand == "Mondial"
+    assert mock.product.model_code == "BG-03"
+
+
+def test_guess_identity_from_ma_manual_vte02_filename():
+    from apps.manuals.schemas import ExtractedProduct
+    from apps.manuals.services.structure import (
+        _guess_brand,
+        _guess_model,
+        enrich_product_identity,
+        _structure_mock,
+    )
+
+    fname = "MA_Manual-VTE-02.pdf"
+    stub = "\n\n[Tabela 1]\n | "
+    assert _guess_brand(stub, fname) == "Mondial"
+    assert _guess_model(stub, fname) == "VTE-02"
+
+    weak = ExtractedProduct(
+        brand="M.K. Eletrodomésticos",
+        model_code="VTE-04",
+        name="Produto",
+        sku_suggestion="",
+    )
+    filled = enrich_product_identity(weak, stub, fname)
+    assert filled.brand == "Mondial"
+    assert filled.model_code == "VTE-02"
+    assert "VTE-02" in filled.sku_suggestion
+
+    mock = _structure_mock(stub, filename=fname)
+    assert mock.product.brand == "Mondial"
+    assert mock.product.model_code == "VTE-02"
+    assert mock.product.sku_suggestion.startswith("MONDIAL-")
+    assert "VTE-02" in mock.product.sku_suggestion
+
+    ocr = (
+        "VENTILADOR DE TETO MONDIAL\nVTE-02\n"
+        "M.K. Eletrodomésticos Mondial S.A.\nVTE-04\n"
+    )
+    both = _structure_mock(ocr, filename=fname)
+    assert both.product.brand == "Mondial"
+    assert both.product.model_code == "VTE-02"
+    assert "VTE-02" in both.product.model_variants
+    assert "VTE-04" in both.product.model_variants
+    assert both.product.sku_suggestion == "MONDIAL-VTE-02"
+
+
+def test_cover_url_pdf_needs_ocr():
+    from apps.manuals.services.pdf_extract import native_text_needs_ocr
+
+    stub = (
+        "Para obter o manual em formato digital, consulte nosso site:\n"
+        "www.emondial.com.br\n09/20 Rev. 01\n\n[Tabela 1]\n | "
+    )
+    assert native_text_needs_ocr(stub)
+    assert not native_text_needs_ocr(
+        "Mondial Manual Ventilador de Teto\nModelo: VTE-02\nPotência 100W " * 3
+    )
+
+
+def test_wiring_diagram_pdf_needs_ocr():
+    """Scan VTE-02: pdfplumber só vê DIP/fiação e pulava o OCR do manual."""
+    from apps.manuals.services.pdf_extract import native_text_needs_ocr
+
+    stub = (
+        "ON DIP ON DIP ON DIP ON DIP\n"
+        "1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4\n" * 4
+        + "REDE (FASE / NEUTRO)\nFIO MARROM\nRECEPTOR\n"
+    )
+    assert native_text_needs_ocr(stub)
 
 
 def test_guess_brand_prefers_philco_over_britania():

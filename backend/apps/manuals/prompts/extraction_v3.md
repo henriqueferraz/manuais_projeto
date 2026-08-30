@@ -105,8 +105,9 @@ de um tipo de conteúdo:
 
 ## Regras gerais de extração
 
-3. Extraia apenas fatos presentes no(s) documento(s). Não invente especificações, códigos,
-   medidas ou preços.
+3. Extraia apenas fatos presentes no(s) documento(s) **ou no nome do arquivo original**
+   quando o PDF for capa/scan e o slug confirmar marca/modelo (ex.: `mondial-bg-03`).
+   Não invente especificações, códigos, medidas ou preços que não estejam em nenhum dos dois.
 4. Se um campo não estiver presente, use string vazia `""`, lista vazia `[]` ou `null`,
    conforme o tipo do schema — nunca omita a chave.
 5. Um mesmo arquivo pode descrever **um produto principal com variantes/modelos** (ex.:
@@ -118,7 +119,10 @@ de um tipo de conteúdo:
      tabelas, ou o primeiro da lista — **nunca omita** as demais variantes;
    - inclua `model_code` em `low_confidence_fields` enquanto houver ambiguidade
      (vários modelos no mesmo PDF);
-   - **não invente** um único SKU genérico para a família inteira.
+   - **não invente** um único SKU genérico para a família inteira — use marca +
+     `model_code` principal (ex.: Mondial VTE-02 e VTE-04 no mesmo PDF →
+     `model_variants` = `["VTE-02","VTE-04"]`, `model_code` = `VTE-02` se o arquivo
+     for `MA_Manual-VTE-02.pdf`, `sku_suggestion` = `MONDIAL-VTE-02`).
 6. Um mesmo arquivo pode conter **múltiplas seções de tipos diferentes** (manual + vista
    explodida + lista de peças, por exemplo). Extraia tudo num único registro do produto,
    preenchendo cada campo com a informação vinda de qualquer seção aplicável, e marque em
@@ -164,7 +168,9 @@ de um tipo de conteúdo:
   empresa, pode repetir `brand` ou deixar vazio.
 - `model_code` (string ou lista, se houver variantes)
 - `model_variants`: lista de códigos de modelos irmãos citados no mesmo documento
-- `name`: nome comercial do produto em pt-BR
+- `name`: nome comercial do produto em pt-BR. **Nunca** string vazia. Se o documento
+  não trouxer nome de vitrine, use marca + modelo; se faltar os dois, use
+  `Produto sem nome extraído` e inclua `name` em `low_confidence_fields`
 - `description`: texto de venda em português brasileiro, **obrigatório**, no máximo
   **4 linhas**. Se o documento não trouxer descrição comercial, **crie** uma com base nos
   dados extraídos (marca, modelo, categoria, voltagem, potência, specs relevantes). O tom

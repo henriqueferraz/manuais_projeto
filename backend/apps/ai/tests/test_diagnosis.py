@@ -361,6 +361,19 @@ def test_evidence_supports_real_fault_chunk():
     )
 
 
+def test_evidence_barulho_matches_ruido_in_manual():
+    from apps.ai.services.confidence import evidence_supports_answer
+
+    assert evidence_supports_answer(
+        "ventilador VTE-02 faz barulho e não gira",
+        section="Problemas",
+        content=(
+            "PROBLEMA CAUSA SOLUÇÃO. O produto apresenta ruído magnético. "
+            "Defeito no motor ou capacitor. Encaminhe a uma assistência autorizada."
+        ),
+    )
+
+
 @pytest.mark.django_db
 def test_diagnosis_answers_usage_and_recipe_from_manual(indexed_oster_safety_manual):
     """Uso/receita devem responder com o trecho — não recusar como 'sem evidência'."""
@@ -484,6 +497,32 @@ def test_enrich_none_on_usage_keeps_manual_excerpt(
     assert assistant.found_in_manual is True
     assert "gelo" in text.lower()
     assert meta.get("ticket_code") is None
+
+
+@pytest.mark.django_db
+def test_enrich_none_on_fault_keeps_manual_excerpt(
+    indexed_diagnosis_manual, settings, monkeypatch
+):
+    """NO_EVIDENCE do LLM não descarta trecho que já passou no groundedness."""
+    from apps.ai.models import ChatSession
+
+    settings.DIAGNOSIS_LLM_MODE = "openai"
+    monkeypatch.setattr(
+        "apps.ai.graphs.diagnosis._enrich_diagnosis_openai",
+        lambda **kwargs: None,
+    )
+    _, equipment, _ = indexed_diagnosis_manual
+    session = ChatSession.objects.create(product=equipment, anonymous_key="diag-enrich-fault")
+    assistant, stream, meta = diagnose_question(
+        session,
+        "O ventilador VTE-02 faz barulho e não gira, parece capacitor",
+    )
+    text = "".join(stream)
+    assert assistant.found_in_manual is True
+    assert assistant.confidence is not None and assistant.confidence >= 0.70
+    assert "capacitor" in text.lower()
+    assert meta.get("ticket_code") is None
+    assert "não sei a resposta" not in text.lower()
 
 
 @pytest.mark.django_db

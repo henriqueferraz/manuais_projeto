@@ -61,7 +61,7 @@ Demais rotas `django-two-factor` (setup/profile/QR) usam templates em `two_facto
 | `/dashboard/home-hero/<id>/toggle/` | `dashboard:home_hero_toggle` | POST | Ativar/desativar |
 | `/dashboard/home-hero/<id>/excluir/` | `dashboard:home_hero_delete` | POST | Excluir slide |
 | `/manuais/revisao/` | `manuals:review_queue` | `manuals/review_queue.html` | Fila HITL |
-| `/manuais/revisao/<id>/` | `manuals:review_detail` | `manuals/review_detail.html` | Revisar extração |
+| `/manuais/revisao/<id>/` | `manuals:review_detail` | `manuals/review_detail.html` | Revisar extração (nome vazio da IA não quebra o job) |
 | `/chamados/suporte/` | `tickets:support` | `tickets/support_panel.html` | Painel suporte |
 | `/chamados/<code>/status/` | `tickets:update_status` | POST | Atualizar status |
 | `/devolucoes/operacao/` | `returns:ops` | `returns/ops_panel.html` | Painel devoluções |

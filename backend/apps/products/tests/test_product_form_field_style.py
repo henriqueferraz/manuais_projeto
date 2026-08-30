@@ -44,3 +44,15 @@ def test_internal_product_form_applies_field_style():
     assert form.cleaned_data["specs_extra"] == "nivel_de_ruido=Baixo"
     assert form.cleaned_specs()["material"] == "ABS"
     assert form.cleaned_specs()["nivel_de_ruido"] == "Baixo"
+
+
+@pytest.mark.django_db
+def test_categories_widget_wrapper_is_not_form_check_input():
+    """Bootstrap .form-check-input no wrapper do M2M deixa os nomes sobrepostos."""
+    Brand.objects.create(name="Mondial", slug="mondial")
+    Category.objects.create(name="Ventiladores", slug="ventiladores")
+    Category.objects.create(name="Aparadores", slug="aparadores")
+    html = str(InternalProductForm()["categories"])
+    assert 'id="id_categories"' in html
+    assert 'id="id_categories" class="form-check-input"' not in html
+    assert html.count('type="checkbox"') >= 2

@@ -187,7 +187,11 @@ def approve_extraction(
     data = corrected if corrected is not None else (log.corrected_json or log.raw_json)
     product_schema = ExtractedProduct.model_validate(data)
     # Reaplica normalização (SKU+medidas etc.) para JSON antigo / pré-regra.
-    product_schema = prepare_extracted_product(product_schema, log.raw_text_preview or "")
+    product_schema = prepare_extracted_product(
+        product_schema,
+        log.raw_text_preview or "",
+        filename=log.manual.original_filename,
+    )
 
     category = _resolve_category(product_schema.category or product_schema.category_hint)
     sku = product_schema.sku_suggestion or f"DRAFT-{log.pk}-{product_schema.model_code}"
