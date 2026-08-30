@@ -371,7 +371,10 @@ def test_retrieve_barulho_finds_ruido_troubleshooting(db):
         model_code="VTE-02",
     )
     assert hits
-    assert any("ruído" in h.chunk.content.lower() or "ruido" in h.chunk.content.lower() for h in hits)
+    assert any(
+        "ruído" in hit.chunk.content.lower() or "ruido" in hit.chunk.content.lower()
+        for hit in hits
+    )
 
 
 def test_expand_retrieval_query_adds_ruido():

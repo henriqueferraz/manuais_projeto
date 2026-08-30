@@ -185,8 +185,8 @@ def test_guess_model_from_mondial_slug_filename():
     from apps.manuals.services.structure import (
         _guess_brand,
         _guess_model,
+    _structure_mock,
         enrich_product_identity,
-        _structure_mock,
     )
 
     fname = "MA_aparador-de-pelos-mondial-bg-03-9-pentes-sem-fio-172407332427.pdf"
@@ -215,8 +215,8 @@ def test_guess_identity_from_ma_manual_vte02_filename():
     from apps.manuals.services.structure import (
         _guess_brand,
         _guess_model,
+    _structure_mock,
         enrich_product_identity,
-        _structure_mock,
     )
 
     fname = "MA_Manual-VTE-02.pdf"
