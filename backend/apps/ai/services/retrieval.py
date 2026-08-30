@@ -131,7 +131,8 @@ def retrieve(
     # relaxa o FK e busca por modelo/categoria (manuais ainda não vinculados).
     scoped_product_id = product_id
     scoped_category_id = category_id
-    if product_id and not qs.exists():
+    has_fallback_scope = bool(category_id or category_name.strip() or model_code.strip())
+    if product_id and has_fallback_scope and not qs.exists():
         logger.info(
             "retrieve_empty_product_scope",
             product_id=product_id,
