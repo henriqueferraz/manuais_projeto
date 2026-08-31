@@ -8,7 +8,7 @@ Guia rápido de **quais documentos usar**. Evita ler rascunhos obsoletos ou font
 |---|---|
 | [`../README.md`](../README.md) | **Primeiros passos**, bootstrap local/Docker e configuração inicial |
 | [`.env.example`](../.env.example) (raiz) | **Única** fonte de variáveis de ambiente de exemplo |
-| [`deploy.md`](deploy.md) | Staging, produção, backup (RPO) |
+| [`deploy.md`](deploy.md) | Staging, produção, backup (RPO), EasyPanel |
 | [`security-hardening.md`](security-hardening.md) | Checklist de segurança pré-go-live |
 | [`plano-tarefas.md`](plano-tarefas.md) | Status das fases F0–F8 e pós-F8 |
 | [`regra-ouro-campos-produto.md`](regra-ouro-campos-produto.md) | Normalização de campos no cadastro / IA |

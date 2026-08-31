@@ -86,6 +86,114 @@ Não há `docker-compose.production.yml` versionado ainda — produção pode re
 
 Alternativa host: qualquer PaaS que rode Gunicorn + worker Celery + beat (mesmas env vars). Este repositório documenta **Compose**; não há runbook Vercel para o monólito Django.
 
+## EasyPanel (passo a passo)
+
+O n8n já pode estar no EasyPanel. O Django **não** é site estático: sobe **web** (Gunicorn) + **Redis** + **worker** Celery. Banco: Neon (`DATABASE_URL`) ou Postgres do painel. Imagem: `docker/Dockerfile`. O `entrypoint.sh` espera o Postgres, roda `migrate` e `bootstrap_rbac`.
+
+Não publique com `config.settings.local` nem `DEBUG=true`. Use `staging` no primeiro ar (HTTPS do EasyPanel + `SECURE_SSL_REDIRECT=true` quando o proxy manda `X-Forwarded-Proto: https`).
+
+### 1. Preparar o Git
+
+`main` no GitHub atualizada. O EasyPanel clona o repo (acesso de leitura se for privado).
+
+### 2. Redis
+
+Novo serviço **Redis** no mesmo projeto. Anote o host interno (ex.: `redis`) e a porta `6379`. Sem Redis o worker não processa extração nem indexação RAG.
+
+### 3. Postgres (opcional)
+
+Se **não** usar Neon: crie Postgres no EasyPanel e monte `DATABASE_URL`.
+Se usar Neon: pule este passo e cole a URL com `sslmode=require`.
+
+### 4. App web (serviço principal)
+
+- Origem: GitHub `henriqueferraz/manuais_projeto`, branch `main`
+- Dockerfile: `docker/Dockerfile` (contexto = raiz do repo)
+- Porta: **8000**
+- Domínio + TLS no EasyPanel
+- Comando (depois do entrypoint):
+
+```text
+bash -c "python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+```
+
+Healthcheck: `GET /health/`
+
+### 5. Variáveis no painel (web e worker iguais, salvo o comando)
+
+Não cole secrets no Git. Gere `SECRET_KEY` com ≥50 caracteres.
+
+```text
+DJANGO_SETTINGS_MODULE=config.settings.staging
+DEBUG=false
+SECRET_KEY=<token_urlsafe 64>
+ALLOWED_HOSTS=app.seudominio.com,www.seudominio.com
+CSRF_TRUSTED_ORIGINS=https://app.seudominio.com,https://www.seudominio.com
+PUBLIC_BASE_URL=https://app.seudominio.com
+DATABASE_URL=<neon ou postgres do EasyPanel>
+REDIS_URL=redis://<host-redis>:6379/0
+CELERY_BROKER_URL=redis://<host-redis>:6379/1
+USE_REDIS_CACHE=true
+CELERY_TASK_ALWAYS_EAGER=false
+SECURE_SSL_REDIRECT=true
+SESSION_COOKIE_SECURE=true
+CSRF_COOKIE_SECURE=true
+AXES_ENABLED=true
+AI_TOKEN_BUDGET_DAILY=500000
+MANUAL_CLAMAV_ENABLED=false
+SENTRY_ENVIRONMENT=staging
+LOWCODE_WEBHOOK_SECRET=<mesmo token do n8n>
+```
+
+IA / mídia (se for usar de verdade):
+
+```text
+OPENAI_API_KEY=sk-...
+CHAT_LLM_MODE=openai
+DIAGNOSIS_LLM_MODE=openai
+EXTRACTION_LLM_MODE=openai
+PHOTO_LLM_MODE=openai
+EMBEDDING_MODE=openai
+EMBEDDING_DIMS=1536
+USE_R2_STORAGE=true
+```
+
+(`USE_R2_STORAGE` + credenciais R2 evita perder PDF/foto no rebuild. Sem R2, crie um **volume** em `/app/media`.)
+
+Pagamento/NF-e só com sandbox. `MANUAL_CLAMAV_ENABLED=false` até existir ClamAV.
+
+### 6. Worker Celery (segundo app, mesma imagem)
+
+Mesmas env vars. **Não** publique porta. Comando:
+
+```text
+celery -A config worker -l info
+```
+
+Opcional **beat** (terceiro serviço): `celery -A config beat -l info`.
+
+### 7. Conferir o ar
+
+1. `https://app.seudominio.com/health/` → JSON ok
+2. Login staff (2FA). Se o banco for o Neon de dev, as contas `seed_beta` já existem — **troque as senhas**.
+3. `/assistente/chat/` e `/dashboard/monitoramento/`
+4. No n8n: GET/POST para `https://app.seudominio.com/ops/hooks/lowcode/` (header `X-Lowcode-Secret`). Pode desligar o túnel Cloudflare.
+
+### 8. Se não subir
+
+| Sintoma | Causa típica |
+|---|---|
+| 500 no boot | `SECRET_KEY` fraca ou `ALLOWED_HOSTS` ainda localhost (staging/prod recusam) |
+| Redirect loop | proxy sem `X-Forwarded-Proto: https` → `SECURE_SSL_REDIRECT=false` temporário |
+| CSS/JS 404 | faltou `collectstatic` no comando do web |
+| Extração/RAG parado | worker ou Redis ausente; `CELERY_TASK_ALWAYS_EAGER=true` |
+| CSRF 403 | `CSRF_TRUSTED_ORIGINS` sem `https://` + domínio exato |
+| n8n 503 | `LOWCODE_WEBHOOK_SECRET` diferente do header |
+
+RAM: web + worker + Redis. OCR de PDF é pesado — 2 GB+ no projeto ajuda.
+
+Runbook Compose local continua nas seções acima; EasyPanel **não** substitui o CI.
+
 ## Backup Postgres e RPO
 
 | Item | Valor |
