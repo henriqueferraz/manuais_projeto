@@ -1,6 +1,6 @@
 # Fase 2 — versões estáveis pinadas em 2026-08-04 (R1)
 Django==6.0.8
-djangorestframework==3.17.1
+djangorestframework==3.18.0
 django-environ==0.14.0
 psycopg[binary]==3.3.4
 redis==8.1.0
