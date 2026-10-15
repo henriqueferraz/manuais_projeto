@@ -22,7 +22,7 @@ qrcode==8.2
 
 # Fase 3 — ingestão de manuais (R1, 2026-08-04)
 django-storages[boto3]==1.14.6
-boto3==1.43.64
+boto3==1.43.72
 pydantic==2.13.4
 pdfplumber==0.11.10
 pypdfium2==5.12.1
